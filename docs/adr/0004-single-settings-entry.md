@@ -19,11 +19,13 @@
 **只注册一个 `settings.section`**（id `usage-aggregator`，order 92），内容是一个页签条 + 当前功能的视图：
 
 ```
-设置 → 用量聚合
-        [ 用量查询 ] [ 主题外观 ] [ 插件更新 ]
+设置 → AxzoAggregator
+        [ Theme ] [ 流量 ] [ 插件更新 ]
 ```
 
-三个功能各自提供 `HubView`，页签标签取自各自 locale 命名空间的 `hubTab` 键。
+三个功能各自提供 `HubView`，页签标签取自**聚合页自己的**命名空间（`meta.hubTabKey` 指向 `src/client/hub/i18n.js` 里的键）。不放进各功能的 locale 命名空间：同一个命名空间同时只能被一个包注册，新旧插件并存时功能探不到自己的字典，页签上会显示裸的 key 名。
+
+「插件更新」是**默认选中**的页签（`meta.hubDefault`）—— 打开设置页就先自动检测有哪些插件能升级。
 
 **插件页的 `plugins.tab`（id `updates`）保留原位** —— 它不在设置面板里，而在「插件」页上，是那个页面的自然归宿（官方 marketplace 也在同一组 tab 里）。
 

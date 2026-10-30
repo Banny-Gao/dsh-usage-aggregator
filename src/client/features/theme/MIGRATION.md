@@ -24,7 +24,7 @@
 | `src/brand.js` | `brand.js` | 仅头部路径 |
 | `src/brand-mark.js` | `brand-mark.js` | runtime import 路径 + 头部路径 |
 | `src/hero.js` | `hero.js` | runtime import 路径 + 头部路径 |
-| `src/i18n.js` | `i18n.js` | **新增 `hubTab`** + `makeTranslator` 委托共享实现 |
+| `src/i18n.js` | `i18n.js` | `makeTranslator` 委托共享实现；字典逐字保留（60 key，与源一致） |
 | `src/panel.js` | `panel.js` | runtime import 路径 + 头部路径 |
 | `src/styles.js` | `styles.js` | 仅头部路径 |
 | `src/tasks.js` | `tasks.js` | 仅头部路径 |
@@ -68,8 +68,11 @@
 
 ### 3. `i18n.js`：字典 + translator
 
-- zh / en 字典**逐字保留**（61 个 key，双语 key 集合完全一致）。
-- **唯一新增**：`hubTab`（zh `'主题外观'` / en `'Theme'`）—— 聚合页的页签标签取自它。
+- zh / en 字典**逐字保留**（60 个 key，与源 `src/i18n.js` 完全一致，双语 key 集合相同）。
+- 页签标签**不在本字典里** —— 归聚合页自己的命名空间（`meta.hubTabKey` 指向
+  `src/client/hub/i18n.js` 的 `tabTheme`）。理由：同一个 locale 命名空间同时只能
+  被一个包注册，标签放在功能自己的命名空间下，新旧插件并存时功能探不到自己的
+  字典，页签上会出现裸的 key 名。
 - `makeTranslator(locale)` 改为委托共享实现：
   `sharedMakeTranslator(locale, NS, zh)`。
   行为不变：命名空间仍是 `settings.axzoTheme`、回落字典仍是本文件的 zh、
@@ -173,8 +176,8 @@ export const HubView = (props) => h(Panel, props);
 |---|---|---|
 | 语法 | 逐个 `cp x.js /tmp/x.mjs && node --check /tmp/x.mjs`（17/17） | ✅ 全过 |
 | 模块可加载 | `node --input-type=module -e "await import('./src/client/features/theme/index.js')"` | ✅ 4 个契约导出齐全 |
-| 契约形状 | `meta` / `dictionaries` / `apply` / `HubView` | ✅ `{id:'theme', namespace:'settings.axzoTheme', hubOrder:10}` |
-| 字典 | zh / en key 集合一致、仅多 `hubTab` | ✅ 61 = 61，差集为空 |
+| 契约形状 | `meta` / `dictionaries` / `apply` / `HubView` | ✅ `{id:'theme', namespace:'settings.axzoTheme', hubOrder:10, hubTabKey:'tabTheme'}` |
+| 字典 | zh / en key 集合一致、且与源逐字相同 | ✅ 60 = 60，差集为空 |
 | token 集合 | 与源 `tokens.js` 逐一比对 | ✅ 43 = 43，集合相同 |
 | CSS 变量集合 | 17 个文件全量扫描 `--dsh-axzo-*` | ✅ 17 = 17，集合相同 |
 | localStorage key | 与源 `constants.js` 比对 | ✅ 3 = 3 |

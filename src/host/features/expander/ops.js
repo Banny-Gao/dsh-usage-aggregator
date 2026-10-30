@@ -102,7 +102,7 @@ export function createOps(options) {
   const run = options.run ?? runCommand;
 
   let cache = null;
-  const job = { running: false, current: null, results: [], startedAt: null, finishedAt: null };
+  const job = { running: false, current: null, results: [], startedAt: null, finishedAt: null, total: 0 };
 
   /**
    * 官方插件管理器。没有它（组合里没装 base）就没有「已装清单」这件事。
@@ -386,6 +386,9 @@ export function createOps(options) {
       results: job.results,
       startedAt: job.startedAt,
       finishedAt: job.finishedAt,
+      // 本次任务一共要处理几个包 —— 客户端拿它当进度的分母。
+      // 不给的话，客户端在页面重挂载后就不知道该除以几，只能显示个没有分母的进度。
+      total: job.total,
     };
   }
 
@@ -407,6 +410,7 @@ export function createOps(options) {
     job.results = [];
     job.startedAt = Date.now();
     job.finishedAt = null;
+    job.total = list.length;
     void (async () => {
       for (const name of list) {
         job.current = name;

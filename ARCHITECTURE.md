@@ -169,7 +169,9 @@ export function HubView(props) { … }
 | `meta.id` | 功能标识 | 稳定，勿改 |
 | `meta.namespace` | locale 命名空间 | **保持各功能原值**（`settings.axzoTheme` / `usage-query` / `pluginExpander`）——改名会让新旧命名空间并存，切换语言就退回内置字典 |
 | `meta.hubOrder` | 聚合页页签顺序 | |
-| `dictionaries` | 中英文字典 | 必须含 `hubTab` 键（页签标签） |
+| `meta.hubTabKey` | 页签标签的键 | 指向**聚合页**字典（`src/client/hub/i18n.js`）里的键，不指向本功能的字典 |
+| `meta.hubDefault` | 是否为默认选中的页签 | `true` = 打开聚合页就停在这一页 |
+| `dictionaries` | 中英文字典 | **不含** `hubTab`（页签标签归聚合页） |
 | `apply(ctx, t)` | 装配自己的槽位 / effect / 定时器 | **不要**注册 `settings.section` —— 那是聚合页的事 |
 | `HubView(props)` | 聚合页里的视图 | `props = { t, ctx }` |
 
@@ -279,7 +281,11 @@ config:
 
 > 绝不能把三份字典合并进同一个命名空间：三者都有 `tab` / `title` / `reset` / `loading` 这类 key，合并即互相覆盖 —— 表现是「一个功能的界面显示另一个功能的文案」。
 
-聚合页的页签标签取自各功能自己字典的 `hubTab` 键，因此跟着各自的命名空间一起切语言。
+聚合页的页签标签与设置入口名归**聚合页自己的**命名空间（`dsh-usage-aggregator`）：功能通过 `meta.hubTabKey` 指向 `src/client/hub/i18n.js` 里的键。
+
+> 为什么不放回各功能的命名空间？同一个命名空间同时只能被一个包注册 —— 新旧插件并存时（迁移期很常见）命名空间归旧包，功能就探不到自己的字典，翻译服务把 key 本身当答案返回，页签上会出现字面量 `hubTab`。这个坑踩过，改成由聚合页统一持有。
+
+聚合页的页签标签与设置入口名都是**每次渲染时求值**（不是建 `views` 时定死），所以切换语言会跟着变。
 
 ---
 
@@ -326,7 +332,7 @@ config:
 3. 在 `src/client/features/index.js` 与 `src/host/features/index.js` 各加一行 import + 加进数组。
 4. 如果需要 HTTP 路由：在 `src/host/shared/context.js` 的约定下给一个**全局唯一**的 `routePrefix`，并在客户端 `src/client/shared/constants.js` 里加对应的端点常量。
 5. 如果需要配置：在 `cordis.patch.yml` 的 `config` 里加一段 `<id>:`，并在 Host 模块里用 `featureConfig.<key>` 读。
-6. 如果需要新的文案：给自己的 locale 命名空间，字典里加 `hubTab`。
+6. 如果需要新的文案：给自己的 locale 命名空间，字典里加 key；页签标签另在 `src/client/hub/i18n.js` 加一个键，并用 `meta.hubTabKey` 指过去。
 7. **不需要**碰：`src/client/index.js`、`src/host/index.js`、`src/client/hub/*`、`src/host/shared/*`、构建链。
 
 这个「新增功能只加一个目录 + 两行登记」的形状，是本架构的核心目标。

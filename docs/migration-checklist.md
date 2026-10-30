@@ -106,7 +106,7 @@
 | 原文件 | 新文件 | 核对结论 |
 |---|---|---|
 | `01-runtime.js` | `constants.js`（+ 共享 runtime） | React 句柄改从 `../../runtime.js` 取；6 个常量拆出 |
-| `02-i18n.js` | `i18n.js` | 字典 **108 → 109 key**（只多 `hubTab`），删除 0、值变 0 |
+| `02-i18n.js` | `i18n.js` | 字典 **108 → 108 key**（与源逐字一致；页签标签 `hubTab` 不在本字典里 —— 归聚合页，见 §4） |
 | `03-api.js` | `api.js` | 11 个方法路径换成 `USAGE_ENDPOINT` |
 | `04-format.js` | `format.js` | — |
 | `05-atoms.js` | `atoms.js` | — |
@@ -198,7 +198,7 @@ pnpm run check          # 一把跑全部验证（verify.sh）
 | 脚本 | 覆盖 |
 |---|---|
 | `scripts/check-host.mjs` | 用**真实 cordis** 装载 `src/host/index.js`；导出形状、`name`、硬 `inject === ['tools']` |
-| `scripts/check-client.mjs` | 假 window 加载产物；loader id、硬 `inject === ['slots','locale','theme']`、**所有槽位注册**（含「`settings.section` 只有一个且 id 是 `usage-aggregator`」）、theme 的 43 token 契约、三个 locale 命名空间与 `hubTab` |
+| `scripts/check-client.mjs` | 假 window 加载产物；loader id、硬 `inject === ['slots','locale','theme']`、**所有槽位注册**（含「`settings.section` 只有一个且 id 是 `usage-aggregator`」）、theme 的 43 token 契约、三个功能命名空间 + 聚合页命名空间的页签标签键 |
 | `scripts/verify.sh` | 语法、资源、清单一致性、**三处端点常量同值**、构建产物一致性、token / CSS 变量 / localStorage key / 落盘路径 / 工具名 / 旧包名排除 / 路由路径唯一性 |
 | `scripts/smoke.mjs` | 用量查询 Host 侧全部纯函数与集成断言（curl 解析、过期判定、模板校验/兜底、标签排序、格式化、脱敏、落盘、并发写、字段顺序、自动查询判定、模型选择、芯片选择、辅助截图、HTTP 路由） |
 | `scripts/smoke-renewal.mjs` | 续期纯函数断言（换 token 不动别处、认站点、冷却判定、投影不含凭证） |

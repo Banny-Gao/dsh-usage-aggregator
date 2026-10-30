@@ -9,7 +9,8 @@
 // ⚠️ 字典内容**逐字保留**：用户在旧插件里看到的每一句文案都对应一个 key，
 //   删 key = 界面上出现裸的 key 名。
 //
-// 唯一新增的是 `hubTab` —— 聚合设置页（hub）用它作为本功能的页签标签。
+// 聚合页的页签标签**不在本字典里** —— 它归聚合页自己（src/client/hub/i18n.js），
+// 本功能通过 meta.hubTabKey 指向那个键。原因见 hub/i18n.js 顶部的说明。
 
 import { NS } from './constants.js';
 import { makeTranslator as sharedMakeTranslator } from '../../shared/i18n.js';
@@ -18,7 +19,6 @@ import { makeTranslator as sharedMakeTranslator } from '../../shared/i18n.js';
 /* ───────────────────────────── 字典 ───────────────────────────── */
 export const zh = {
   tab: "AxzoTheme",
-  hubTab: "主题外观",
   sectionPreset: "预设色板",
   sectionColor: "主色微调",
   hue: "色相",
@@ -83,7 +83,6 @@ export const zh = {
 
 export const en = {
   tab: "AxzoTheme",
-  hubTab: "Theme",
   sectionPreset: "Presets",
   sectionColor: "Fine-tune",
   hue: "Hue",

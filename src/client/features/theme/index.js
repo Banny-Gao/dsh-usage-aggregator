@@ -5,8 +5,8 @@
 // 这里是**功能契约**的实现。src/client/features/index.js 登记本模块，
 // 聚合入口（src/client/index.js）按契约调用：
 //
-//   meta         { id, namespace, hubOrder }   —— 功能标识
-//   dictionaries { zh, en }                    —— 完整字典（含 hubTab）
+//   meta         { id, namespace, hubOrder, hubTabKey } —— 功能标识
+//   dictionaries { zh, en }                    —— 完整字典
 //   apply(ctx, t)                             —— 装配本功能自己的槽位与 effect
 //   HubView(props)                            —— 聚合设置页里渲染的视图（props = { t, ctx }）
 //
@@ -48,13 +48,16 @@ import { releaseBrandTokens, setBrandTokens } from './tokens.js';
  * namespace 保持 settings.axzoTheme —— 改名会让新旧命名空间并存
  * （locale 服务按命名空间存字典，旧的不注销就一直占着）。
  * hubOrder 10 —— 聚合页里排第一个（主题是聚合插件的原主角）。
+ * hubTabKey 'tabTheme' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+ * 字典里（src/client/hub/i18n.js）。不放在本功能的命名空间下，是因为同一个
+ * 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
+ * 页签上会显示裸的 key 名。
  */
-export const meta = { id: 'theme', namespace: NS, hubOrder: 10 };
+export const meta = { id: 'theme', namespace: NS, hubOrder: 10, hubTabKey: 'tabTheme' };
 
 /**
  * 完整字典。聚合入口拿它注册 locale 命名空间
  * （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
- * 必须含 hubTab —— 聚合页的页签标签取自它。
  */
 export const dictionaries = { zh, en };
 

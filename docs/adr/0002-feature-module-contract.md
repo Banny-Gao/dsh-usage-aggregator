@@ -39,7 +39,7 @@ export function apply(ctx, featureConfig, shared) { … }
 
 - 功能必须遵守契约的形状，代价是多写几行 `export`。
 - 契约演进时（例如将来要加 `onUnload` 钩子）需要同时改三个功能 —— 但那是有意的：契约变更必须显式发生，不允许悄悄漂移。
-- `dictionaries` 必须含 `hubTab` 键 —— 契约检查脚本会断言这一点。
+- `dictionaries` 不含 `hubTab` —— 页签标签归聚合页自己（`meta.hubTabKey` 指向聚合页字典里的键）。原因：同一个 locale 命名空间同时只能被一个包注册，标签放在功能自己的命名空间下，新旧插件并存时功能探不到自己的字典，页签上会显示裸的 key 名。
 
 ## 备选方案
 

@@ -14,7 +14,7 @@
 | 同上 · `var ENDPOINT = '/dsh-plugin-expander'` | `src/client/shared/constants.js` → `import { EXPANDER_ENDPOINT } from '../../shared/constants.js'` | 路由前缀成为跨半边契约的一部分，只写一处。 |
 | 同上 · 本文件里的 `function callApi(method, path, body)` | `src/client/shared/api.js` → `import { callApi } from '../../shared/api.js'` | 失败翻译逻辑与原实现等价（见 §3.4）。 |
 | 同上 · 本文件里的 `function makeTranslator(locale)` | `src/client/shared/i18n.js` → `import { makeTranslator } from '../../shared/i18n.js'` | 调用形式变成 `makeTranslator(locale, NS, zh)`（共享版多收命名空间与回退字典两个参数）。 |
-| 同上 · `var zh = {…}` / `var en = {…}` | 同文件内的 `const zh = {…}` / `const en = {…}`，并以 `export const dictionaries = { zh, en }` 导出 | 字典内容逐字保留，仅**新增** `hubTab`。 |
+| 同上 · `var zh = {…}` / `var en = {…}` | 同文件内的 `const zh = {…}` / `const en = {…}`，并以 `export const dictionaries = { zh, en }` 导出 | 原有 29 个 key 逐字保留；**新增** 5 个忙碌态/进度文案；**移除** `hubTab`（页签标签归聚合页）。 |
 | 同上 · `apply: function (ctx) {…}` | `export function apply(ctx, t) {…}` | 签名多一个 `t`（聚合入口传进来的 translator）。 |
 | 同上 · `inject: ['slots', 'locale']` | —— | **删除**：聚合入口 `src/client/index.js` 统一声明 `inject = ['slots', 'locale', 'theme']`。 |
 | 同上 · `ctx.locale.register(NS, { zh, en })` 那一段 effect | —— | **删除**：聚合入口统一注册各功能命名空间（`ctx.locale.register(feature.meta.namespace, feature.dictionaries)`）。 |
@@ -27,8 +27,8 @@
 ## 2. 目标契约
 
 ```js
-export const meta = { id: 'expander', namespace: 'pluginExpander', hubOrder: 30 }
-export const dictionaries = { zh, en }     // 30 个 key = 原 29 个 + hubTab
+export const meta = { id: 'expander', namespace: 'pluginExpander', hubOrder: 30, hubTabKey: 'tabExpander', hubDefault: true }
+export const dictionaries = { zh, en }     // 34 个 key = 原 29 个 + 5 个忙碌态/进度文案
 export function apply(ctx, t) { … }        // 只装配本功能自己的槽位
 export function HubView(props) { … }       // props = { t, ctx }
 export const __ui = { … }                  // 离线渲染自检入口
@@ -81,13 +81,23 @@ export const __ui = { … }                  // 离线渲染自检入口
 
 ### 3.6 字典
 
-- **改动**：`var zh` / `var en` → `const zh` / `const en`，并导出 `dictionaries = { zh, en }`。**内容逐字未动**，只**新增** `hubTab`：
+- **改动**：`var zh` / `var en` → `const zh` / `const en`，并导出 `dictionaries = { zh, en }`。原有 29 个 key **内容逐字未动**；新增 5 个忙碌态 / 进度文案；移除了 `hubTab`：
 
   | | zh | en |
   | --- | --- | --- |
-  | `hubTab` | `插件更新` | `Updates` |
+  | `checking` | `检查中…` | `Checking…` |
+  | `updating` | `正在更新中` | `Updating` |
+  | `progress` | `已完成 {done} / {total}` | `{done} of {total} done` |
+  | `current` | `当前：{name}` | `Current: {name}` |
+  | `updateAllRunning` | `正在更新 {count} 个插件…` | `Updating {count} plugin(s)…` |
 
-- **核对**：原 29 个 key 全部保留、值逐字相同（脚本逐 key 比对：`zh` 29→30、`en` 29→30，多出来的只有 `hubTab`）。`hubTab` 是聚合页页签标签的唯一来源（`src/client/hub/panel.js` 取 `entry.t('hubTab')`）。
+- **核对**：原 29 个 key 全部保留、值逐字相同（脚本逐 key 比对：`zh` 29→34、`en` 29→34，多出来的只有上面 5 个新键）。
+- **页签标签不在本字典里** —— 归聚合页自己的命名空间（`meta.hubTabKey` 指向
+  `src/client/hub/i18n.js` 的 `tabExpander`）。理由：同一个 locale 命名空间同时只能
+  被一个包注册，标签放在功能自己的命名空间下，新旧插件并存时功能探不到自己的
+  字典，页签上会出现裸的 key 名（这个坑踩过）。
+- **`meta.hubDefault = true`** —— 本页签是聚合页**默认选中**的那一页：打开设置页
+  就先自动检测可更新的插件。
 
 ### 3.7 删掉 inject 导出与 locale 注册
 
@@ -171,7 +181,7 @@ export function HubView(props) {
 | `<style>` 的 data 标记 | `data-dsh-plugin-expander="dsh-plugin-expander-style"` | 离线自检按它定位样式节点。 |
 | 轮询节奏 | 2000ms | 更新任务的进度刷新频率。 |
 | 状态位置 | 全部在组件内 | 挂在 `apply()` 里会在 Hook 调用处崩。 |
-| 字典 key 与文案 | 29 个 key 逐字保留 | 文案是对外可见的既有内容；只新增 `hubTab`。 |
+| 字典 key 与文案 | 29 个 key 逐字保留 | 文案是对外可见的既有内容；另加 5 个忙碌态/进度文案。 |
 | `__ui` 的 8 个键 | 原样 | 离线自检的入口。 |
 
 ---
@@ -182,12 +192,12 @@ export function HubView(props) {
 | --- | --- | --- |
 | 语法 | `cp index.js /tmp/x.mjs && node --check /tmp/x.mjs` | ✅ 通过 |
 | 打包（抓漏掉的 import） | `npx --yes esbuild src/client/features/expander/index.js --bundle --outfile=/dev/null --format=esm` | ✅ 通过（20.5kb，无告警） |
-| 字典逐 key 比对 | 脚本比对原 29 key 的值 | ✅ 全部相同，仅多出 `hubTab` |
+| 字典逐 key 比对 | 脚本比对原 29 key 的值 | ✅ 全部相同；新增的只有 5 个忙碌态/进度文案 |
 | CSS 逐条比对 | 脚本比对 42 条规则 | ✅ byte-identical；无 `#rrggbb` / `rgb()` / `hsl()`；自定义属性全为 `--dsw-alias-*` |
 | 逻辑等价性 | 归一化（去注释 / `var`→`const` / `function`→箭头）后逐块 diff：`PackageRow` / `UpdatesTab` / `statusText` / `kindText` / `Styles` / `fallbackTranslate` | ✅ 六块全部等价 |
 | `apply` 等价性 | 同上 | ✅ 除删除 locale 注册、把 `t` 换成同义的 `translator` 外一致 |
 | `callApi` 等价性 | 8 种响应形态逐条对拍 | ✅ 结果逐字相同 |
 | 真渲染（react 18.3.1 + react-dom/server） | 9 项断言：契约、字典、槽位注册、locale 不自行注册、translator 回落、UpdatesTab 用真机夹具渲染、HubView 渲染、样式无写死颜色、状态/来源文案 | ✅ 9/9 通过 |
 | 跨半边路由对账 | Host `server.js` 的 `GET <base>/state` / `POST <base>/update` vs 客户端拼出的 URL | ✅ 一致 |
-| 聚合装配全流程（走 `src/client/features/index.js` registry） | 模拟 `src/client/index.js` 的 apply：注册三个命名空间 → 取三个 translator → 依次 apply | ✅ 三个功能契约齐全（`hubTab` 齐备）；命名空间 `settings.axzoTheme` / `usage-query` / `pluginExpander`；槽位里 `plugins.tab` = `{name:'plugins.tab', id:'updates', order:20, locale:'pluginExpander'}`（`label` 是函数） |
+| 聚合装配全流程（走 `src/client/features/index.js` registry） | 模拟 `src/client/index.js` 的 apply：注册三个命名空间 → 取三个 translator → 依次 apply | ✅ 三个功能契约齐全（`hubTabKey` 齐备）；命名空间 `settings.axzoTheme` / `usage-query` / `pluginExpander`；槽位里 `plugins.tab` = `{name:'plugins.tab', id:'updates', order:20, locale:'pluginExpander'}`（`label` 是函数） |
 | 真实 Vite 构建产物 | `client/client.js`（工具链同事构建） | ✅ 产物里 `var EXPANDER_ENDPOINT = ENDPOINT_BASE + "/expander";` 与 `callApi("GET", EXPANDER_ENDPOINT + "/state" …)` / `callApi("POST", EXPANDER_ENDPOINT + "/update", payload)` 均在 |

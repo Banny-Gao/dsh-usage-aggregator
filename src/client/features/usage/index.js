@@ -6,7 +6,7 @@
 // 拼进同一个 factory 作用域」这件事。现在整包走 Vite + 真 ESM，共享作用域没了，
 // 于是这里改成**具名导出**，并按聚合插件的功能契约导出四个东西：
 //
-//   meta         { id, namespace, hubOrder }
+//   meta         { id, namespace, hubOrder, hubTabKey }
 //   dictionaries { zh, en }
 //   apply(ctx, t)
 //   HubView(props)
@@ -29,10 +29,18 @@ import { FieldOrderEditor, fieldRows, moveItem } from './field-order.js';
 import { pickChipProvider, isInsideRect, isInsideUnion, createHoverLiveness, UsageIcon } from './hover.js';
 import { clipText } from './format.js';
 
-/** 功能元信息。namespace 保持 'usage-query'（改名会让新旧命名空间并存）。 */
-export const meta = { id: 'usage', namespace: 'usage-query', hubOrder: 20 };
+/**
+ * 功能元信息。
+ *
+ * namespace 保持 'usage-query'（改名会让新旧命名空间并存）。
+ * hubTabKey 'tabUsage' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+ * 字典里（src/client/hub/i18n.js）。不放在本功能的命名空间下，是因为同一个
+ * 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
+ * 页签上会显示裸的 key 名。
+ */
+export const meta = { id: 'usage', namespace: 'usage-query', hubOrder: 20, hubTabKey: 'tabUsage' };
 
-/** 完整字典（含 hubTab —— 聚合页的页签标签从这里取）。 */
+/** 完整字典。 */
 export const dictionaries = { zh, en };
 
 /**

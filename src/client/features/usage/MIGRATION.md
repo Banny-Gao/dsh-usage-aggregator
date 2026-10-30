@@ -18,7 +18,7 @@
 | 原文件 | 新文件 | 行数 | 说明 |
 | --- | --- | --- | --- |
 | `01-runtime.js` | **删除**（拆分到两处） | — | React 句柄 → `../../runtime.js`；常量 → `constants.js` |
-| `02-i18n.js` | `i18n.js` | 252 | zh/en 逐字保留 + 新增 `hubTab`；`makeTranslator` 改走共享实现 |
+| `02-i18n.js` | `i18n.js` | 252 | zh/en 逐字保留（108 key，与源一致）；`makeTranslator` 改走共享实现 |
 | `03-api.js` | `api.js` | 44 | `callApi` → 共享；`ENDPOINT` → `USAGE_ENDPOINT` |
 | `04-format.js` | `format.js` | 105 | 纯函数，原样搬 |
 | `05-atoms.js` | `atoms.js` | 225 | 原样搬 + 补 import/export |
@@ -58,7 +58,7 @@
 
 | 标识符 | 原处 | 现在 |
 | --- | --- | --- |
-| `zh` / `en` | `02-i18n.js` | 本文件 `export const`（**逐字保留 + `hubTab`**） |
+| `zh` / `en` | `02-i18n.js` | 本文件 `export const`（**逐字保留**，108 key 与源一致） |
 | `NS` | 共享作用域 | `import { NS } from './constants.js'` |
 | `makeTranslator` | `02-i18n.js` 本地实现 | `import { makeTranslator as sharedMakeTranslator } from '../../shared/i18n.js'`，本文件包一层：`return sharedMakeTranslator(locale, NS, zh)` |
 
@@ -212,8 +212,8 @@ index.js ──┬─→ i18n.js ──→ shared/i18n.js
 
 | 导出 | 内容 |
 | --- | --- |
-| `meta` | `{ id: 'usage', namespace: 'usage-query', hubOrder: 20 }` |
-| `dictionaries` | `{ zh, en }` —— 完整字典，**含 `hubTab`**（zh `'用量查询'` / en `'Usage'`） |
+| `meta` | `{ id: 'usage', namespace: 'usage-query', hubOrder: 20, hubTabKey: 'tabUsage' }` |
+| `dictionaries` | `{ zh, en }` —— 完整字典，108 key 与源逐字一致（**不含** `hubTab`：页签标签归聚合页） |
 | `apply(ctx, t)` | 只装配**会话头芯片**这一个槽位 |
 | `HubView(props)` | 渲染 `PanelShell`（= `<Styles/>` + `<Panel/>`） |
 | `__ui` | 23 个条目（21 个内部组件/函数 + `zh` + `en`），供离线渲染自检用 |
@@ -298,8 +298,13 @@ Host 路由来自 `src/host/features/usage/`（另一项任务），前缀 `shar
 ### 6.2 locale 命名空间
 
 `NS = 'usage-query'` **未变**（`constants.js`）。
-`dictionaries` 里 zh/en 各 109 个 key（原 108 + 新增 `hubTab`），
-**逐字保留**：脚本核对结果为「新增 `hubTab`、删除 0 个、值变 0 个」。
+`dictionaries` 里 zh/en 各 108 个 key，**与源逐字一致**：脚本核对结果为「删除 0 个、
+值变 0 个」。
+
+页签标签**不在本字典里** —— 归聚合页自己的命名空间（`meta.hubTabKey` 指向
+`src/client/hub/i18n.js` 的 `tabUsage`）。理由：同一个 locale 命名空间同时只能被
+一个包注册，标签放在功能自己的命名空间下，新旧插件并存时功能探不到自己的字典，
+页签上会出现裸的 key 名。
 
 ### 6.3 CSS
 
@@ -337,7 +342,7 @@ Host 路由来自 `src/host/features/usage/`（另一项任务），前缀 `shar
 | 打包 | `npx esbuild src/client/features/usage/index.js --bundle --format=esm --external:react` | ✅ exit 0，无 error 无 warning |
 | 全图打包 | `npx esbuild src/client/index.js --bundle --format=iife --external:react`（含 theme / expander） | ✅ exit 0，210.8kb；**6 条 warning 全部来自 `features/theme/i18n.js`（重复 key），本功能 0 条** |
 | 标识符未定义 | ESLint `no-undef`（ESM + 浏览器 globals） | ✅ **0 error**；3 个 `no-unused-vars` warning 全部**继承自原代码**（`err` catch 参数 ×2、未使用的 `showRenew`） |
-| 字典保真 | 自写脚本逐 key 比对 zh/en | ✅ 新增 `hubTab`、删除 0、值变 0 |
+| 字典保真 | 自写脚本逐 key 比对 zh/en 与源 | ✅ 与源逐字相同：删除 0、值变 0（108 = 108） |
 | CSS 保真 | 自写脚本逐条比对 | ✅ 171/171 字节一致 |
 | 渲染 | `react-dom/server` 真渲染 15 个组件 | ✅ 全部通过；`PanelShell` / `HubView` / `UsageChip` 均含 `<style data-dsh-usage-query>` |
 | 装配 | 模拟聚合入口的 4 个步骤 | ✅ 只注册 1 个槽位（会话头芯片），0 个 locale effect，无 `settings.section`，无 `inject` 导出 |

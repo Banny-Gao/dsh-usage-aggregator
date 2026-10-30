@@ -474,16 +474,22 @@ for (const ns of EXPECTED_NAMESPACES) {
   ok(`注册了 locale 命名空间 '${ns}'`);
   if (typeof dict.zh !== 'object' || dict.zh === null) bad(`命名空间 '${ns}' 缺 zh 字典`);
   if (typeof dict.en !== 'object' || dict.en === null) bad(`命名空间 '${ns}' 缺 en 字典`);
-  if (dict.zh && typeof dict.zh.hubTab !== 'string' || dict.zh.hubTab === '') {
-    bad(`命名空间 '${ns}' 的 zh 字典缺 hubTab 键（聚合页的页签标签取自它）`);
-  } else ok(`命名空间 '${ns}' 的 zh 字典有 hubTab = '${dict.zh.hubTab}'`);
-  if (!dict.en || typeof dict.en.hubTab !== 'string' || dict.en.hubTab === '') {
-    bad(`命名空间 '${ns}' 的 en 字典缺 hubTab 键`);
-  }
 }
 
-if (dictionaries.has(HUB_NAMESPACE)) ok(`聚合页自己的命名空间 '${HUB_NAMESPACE}' 也注册了`);
-else bad(`聚合页的命名空间 '${HUB_NAMESPACE}' 没注册 —— 设置入口的标签没有出处`);
+// 页签标签与设置入口名归**聚合页自己的**命名空间，不在各功能的命名空间下 ——
+// 同一个命名空间同时只能被一个包注册，功能自己那份标签在新旧插件并存时会拿不到。
+const hubDict = dictionaries.get(HUB_NAMESPACE);
+if (hubDict === undefined) {
+  bad(`聚合页的命名空间 '${HUB_NAMESPACE}' 没注册 —— 设置入口与页签标签没有出处`);
+} else {
+  for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander']) {
+    const zhText = hubDict.zh ? hubDict.zh[key] : undefined;
+    const enText = hubDict.en ? hubDict.en[key] : undefined;
+    if (typeof zhText !== 'string' || zhText === '') bad(`聚合页 zh 字典缺 '${key}'`);
+    else if (typeof enText !== 'string' || enText === '') bad(`聚合页 en 字典缺 '${key}'`);
+    else ok(`聚合页字典 '${key}' = '${zhText}' / '${enText}'`);
+  }
+}
 
 const unexpected = [...dictionaries.keys()].filter((ns) => !EXPECTED_NAMESPACES.includes(ns) && ns !== HUB_NAMESPACE);
 if (unexpected.length === 0) ok(`命名空间总数正确（3 个功能 + 1 个聚合页）`);

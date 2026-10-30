@@ -328,19 +328,26 @@ for (const [name, file, want] of specs) {
   if (value !== null) found.push(value)
 }
 check('三个命名空间互不相同', new Set(found).size === found.length, found.join(', '))
-// 每个功能的字典都要有 hubTab —— 聚合页的页签标签取自它。
-const dicts = [
-  path.join(dir, 'src/client/features/theme/i18n.js'),
-  path.join(dir, 'src/client/features/usage/i18n.js'),
-  path.join(dir, 'src/client/features/expander/index.js'),
-]
-for (const file of dicts) {
-  const src = read(file)
-  const label = path.basename(path.dirname(file))
-  check(label + ' 的字典有 hubTab（zh）', /hubTab\s*:\s*['"][^'"]+['"]/.test(src))
-  const hubTabCount = (src.match(/hubTab\s*:/g) || []).length
-  check(label + ' 的字典 zh/en 都有 hubTab', hubTabCount >= 2, String(hubTabCount))
+// 页签标签由**聚合页自己**拥有（src/client/hub/i18n.js）：
+//   · 各功能通过 meta.hubTabKey 指向 hub 字典里的键；
+//   · 功能的字典里**不再有** hubTab —— 同一个命名空间同时只能被一个包注册，
+//     标签放在功能自己的命名空间下时，新旧插件并存会探不到，页签上显示裸的 key。
+const hubDict = read(path.join(dir, 'src/client/hub/i18n.js'))
+for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander']) {
+  check('聚合页字典有 ' + key, new RegExp(key + "\\s*:\\s*['\"][^'\"]+['\"]").test(hubDict))
 }
+const tabSpecs = [
+  ['theme', path.join(dir, 'src/client/features/theme/index.js'), path.join(dir, 'src/client/features/theme/i18n.js'), 'tabTheme'],
+  ['usage', path.join(dir, 'src/client/features/usage/index.js'), path.join(dir, 'src/client/features/usage/i18n.js'), 'tabUsage'],
+  ['expander', path.join(dir, 'src/client/features/expander/index.js'), path.join(dir, 'src/client/features/expander/index.js'), 'tabExpander'],
+]
+for (const [name, metaFile, dictFile, want] of tabSpecs) {
+  const metaSrc = read(metaFile)
+  check(name + ' 的 meta 声明了 hubTabKey=' + want, new RegExp("hubTabKey\\s*:\\s*['\"]" + want + "['\"]").test(metaSrc))
+  const dictSrc = read(dictFile)
+  check(name + ' 的字典里没有 hubTab（页签标签归聚合页）', !/hubTab\s*:/.test(dictSrc))
+}
+check('插件更新是聚合页默认选中的页签', /hubDefault\s*:\s*true/.test(read(path.join(dir, 'src/client/features/expander/index.js'))))
 process.exit(bad === 0 ? 0 : 1)
 NODE
 then ok "i18n 命名空间正确"; else bad "i18n 命名空间有问题"; fi

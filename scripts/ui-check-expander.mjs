@@ -142,10 +142,53 @@ check('功能契约：meta / dictionaries / apply / HubView 都在', () => {
   assert.ok(ui !== undefined, '缺 __ui（离线自检入口）');
 });
 
-check('字典里有 hubTab（聚合页的页签标签取自它）', () => {
-  assert.equal(typeof ui.zh.hubTab, 'string');
-  assert.ok(ui.zh.hubTab.length > 0);
-  assert.equal(typeof expander.dictionaries.en.hubTab, 'string');
+check('页签标签归聚合页拥有：meta.hubTabKey 指向它，本页签默认选中', () => {
+  assert.equal(expander.meta.hubTabKey, 'tabExpander', 'meta 必须声明 hubTabKey');
+  assert.equal(expander.meta.hubDefault, true, '本页签必须是聚合页默认选中的那一页');
+  // 页签标签**不在**本功能的字典里 —— 它在聚合页自己的命名空间下。
+  // 放在功能自己的命名空间下时，新旧插件并存（命名空间归旧包）会探不到，
+  // 页签上就会显示裸的 key 名。
+  assert.equal(ui.zh.hubTab, undefined, 'hubTab 不该再留在功能的字典里');
+  assert.equal(expander.dictionaries.en.hubTab, undefined, 'hubTab 不该再留在功能的字典里');
+});
+
+check('忙碌态与进度的文案都在字典里', () => {
+  for (const key of ['checking', 'updating', 'progress', 'current']) {
+    assert.equal(typeof ui.zh[key], 'string', `zh 字典缺 '${key}'`);
+    assert.ok(ui.zh[key].length > 0, `zh 字典的 '${key}' 是空串`);
+    assert.equal(typeof expander.dictionaries.en[key], 'string', `en 字典缺 '${key}'`);
+  }
+  assert.ok(ui.zh.progress.includes('{done}') && ui.zh.progress.includes('{total}'), 'progress 文案要带占位符');
+});
+
+check('更新中：画出「正在更新中」+ 进度条 + 当前包名，且按钮禁用', () => {
+  const runningState = {
+    ok: true,
+    packages: state.packages ?? [],
+    summary: state.summary ?? {},
+    job: {
+      running: true,
+      current: 'dsh-token-use',
+      results: [{ name: 'dsh-token-use', ok: true }],
+      startedAt: Date.now(),
+      finishedAt: null,
+      total: 3,
+    },
+  };
+  const markup = html(React.createElement(ui.UpdatesTab, { t: t, initialState: runningState }));
+  assert.ok(markup.includes(ui.zh.updating), '缺「正在更新中」提示');
+  // 断言**元素**而不是类名 —— 类名也出现在 <style> 的 CSS 文本里，
+  // 那样断言在空闲态也会通过（自检空转，等于没测）。
+  assert.ok(markup.includes('class="dpe-progress-fill"'), '缺进度条元素');
+  assert.ok(markup.includes('dsh-token-use'), '缺当前正在更新的包名');
+  assert.ok(markup.includes('1'), '进度分子没画出来');
+  assert.ok(/<button[^>]*disabled/.test(markup), '更新中时按钮没有禁用');
+});
+
+check('空闲态：不画「正在更新中」，按钮可点', () => {
+  const markup = html(React.createElement(ui.UpdatesTab, { t: t, initialState: state }));
+  assert.ok(!markup.includes(ui.zh.updating), '空闲时不该出现「正在更新中」');
+  assert.ok(!markup.includes('class="dpe-progress-fill"'), '空闲时不该出现进度条元素');
 });
 
 check('槽位注册：插件页只注册「更新」一个标签页', () => {

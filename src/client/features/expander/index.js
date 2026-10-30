@@ -5,8 +5,8 @@
 // 这里是**功能契约**的实现。src/client/features/index.js 登记本模块，
 // 聚合入口（src/client/index.js）按契约调用：
 //
-//   meta         { id, namespace, hubOrder }   —— 功能标识
-//   dictionaries { zh, en }                    —— 完整字典（含 hubTab）
+//   meta         { id, namespace, hubOrder, hubTabKey, hubDefault }
+//   dictionaries { zh, en }
 //   apply(ctx, t)                             —— 装配本功能自己的槽位与 effect
 //   HubView(props)                            —— 聚合设置页里渲染的视图（props = { t, ctx }）
 //
@@ -28,7 +28,7 @@
 // ⚠️ 模块顶层**不要调用 h(...)**：共享 runtime 的 React 要等聚合入口的 factory 里
 //   installRuntime(require) 之后才就绪。顶层只声明函数与常量。
 
-import { React, h, useState, useEffect, useCallback } from '../../runtime.js';
+import { React, h, useState, useEffect, useCallback, useRef } from '../../runtime.js';
 import { makeTranslator } from '../../shared/i18n.js';
 import { callApi } from '../../shared/api.js';
 import { EXPANDER_ENDPOINT } from '../../shared/constants.js';
@@ -77,8 +77,12 @@ const zh = {
   resultFail: '失败',
   restart: '更新已保存，但需要重启 DSH 才生效。',
   foot: '检测到的最新版本来自 npm 注册表与远端 git 仓库；安装动作由 DSH 官方插件管理器执行（同一把 profile 写锁、失败自动回滚）。',
-  // 聚合设置页的页签标签（src/client/hub/panel.js 取的是这个 key）。
-  hubTab: '插件更新',
+  // 忙碌态与进度
+  checking: '检查中…',
+  updating: '正在更新中',
+  progress: '已完成 {done} / {total}',
+  current: '当前：{name}',
+  updateAllRunning: '正在更新 {count} 个插件…',
 };
 
 const en = {
@@ -111,8 +115,12 @@ const en = {
   resultFail: 'failed',
   restart: 'The change is saved but needs a DSH restart to take effect.',
   foot: 'Latest versions come from the npm registry and remote git repositories; installs are executed by the DSH plugin manager (same profile lock, automatic rollback on failure).',
-  // 聚合设置页的页签标签。
-  hubTab: 'Updates',
+  // Busy states and progress
+  checking: 'Checking…',
+  updating: 'Updating',
+  progress: '{done} of {total} done',
+  current: 'Current: {name}',
+  updateAllRunning: 'Updating {count} plugin(s)…',
 };
 
 /* ─────────────────────────── 功能契约 ──────────────────────────── */
@@ -122,13 +130,16 @@ const en = {
  *
  * namespace 保持 pluginExpander；hubOrder 30 —— 聚合页里排第三
  * （主题 10 / 用量 20 / 插件更新 30）。
+ * hubTabKey 'tabExpander' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+ * 字典里（src/client/hub/i18n.js）。
+ * hubDefault true —— 本页签是聚合页**默认选中**的那一个：打开设置就先看插件更新
+ * （这页要做的是自动检测），而不是先落在主题上。
  */
-export const meta = { id: 'expander', namespace: NS, hubOrder: 30 };
+export const meta = { id: 'expander', namespace: NS, hubOrder: 30, hubTabKey: 'tabExpander', hubDefault: true };
 
 /**
  * 完整字典。聚合入口拿它注册 locale 命名空间
  * （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
- * 必须含 hubTab —— 聚合页的页签标签取自它。
  */
 export const dictionaries = { zh, en };
 
@@ -199,6 +210,9 @@ const CSS = [
   '.dpe-banner.is-warn{background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 10%,var(--dsw-alias-bg-layer-1));border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 35%,transparent);}',
   '.dpe-banner-text{font-size:12px;color:var(--dsw-alias-label-secondary);}',
   '.dpe-banner-title{font-weight:600;font-size:12px;}',
+  '.dpe-progress{height:6px;border-radius:999px;background:var(--dsw-alias-bg-layer-2);overflow:hidden;margin-top:6px;}',
+  '.dpe-progress-fill{height:100%;border-radius:999px;background:var(--dsw-alias-brand-primary);transition:width .3s ease;}',
+  '.dpe-progress-meta{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:var(--dsw-alias-label-secondary);margin-top:4px;}',
   '.dpe-empty{padding:18px 14px;text-align:center;font-size:12px;color:var(--dsw-alias-label-secondary);}',
   '.dpe-foot{margin:0;font-size:11px;color:var(--dsw-alias-label-secondary);}',
   '.dpe-list{display:flex;flex-direction:column;gap:8px;}'
@@ -312,14 +326,34 @@ function UpdatesTab(props) {
   // null，数据由下面的 useEffect 去 Host 拉。
   const [state, setState] = useState(props.initialState ?? null);
   const [selected, setSelected] = useState([]);
-  const [busy, setBusy] = useState(false);
+  // 忙碌态分三种：idle（闲）/ checking（查注册表）/ updating（更新中）。
+  // 分开是为了让「检查中」和「正在更新中」给用户两种不同的反馈。
+  const [phase, setPhase] = useState(props.initialState ? 'idle' : 'checking');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  // 本次更新预期处理几个包 —— 进度 = job.results.length / expected。
+  // 不用时间戳算进度：结果数单调递增，「结果数够了就算完」只有一条判据。
+  const expectedRef = useRef(0);
+  // 我们点「更新」的时刻。Host 的 job.startedAt >= 它 才说明那是**我们**发起的
+  // 那一次（否则页面上的 job 还是上一次留下的，进度会立刻显示 100%）。
+  const startedAtRef = useRef(0);
 
   const packages = state === null || state === undefined || state.packages === undefined ? [] : state.packages;
   const updatable = packages.filter(function (item) { return item.updatable === true; });
   const job = state === null || state === undefined ? undefined : state.job;
   const running = job !== undefined && job !== null && job.running === true;
+
+  const done = job !== undefined && job !== null && Array.isArray(job.results) ? job.results.length : 0;
+  const total = expectedRef.current > 0
+    ? expectedRef.current
+    : (job !== undefined && job !== null && Number.isSafeInteger(job.total) ? job.total : 0);
+  const percent = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+
+  const checking = phase === 'checking';
+  const updating = phase === 'updating' || running === true;
+  const busy = checking || updating;
+  const mine = phase === 'updating';
 
   /**
    * 读一次状态。
@@ -336,8 +370,12 @@ function UpdatesTab(props) {
     });
   }, []);
 
+  // 打开这一页就自动检测一次（这一页是聚合页默认选中的页签，进设置页就在检测）。
   useEffect(function () {
-    load(true);
+    setPhase('checking');
+    load(true).then(function () {
+      setPhase(function (current) { return current === 'checking' ? 'idle' : current; });
+    });
   }, [load]);
 
   // 有任务在跑时轮询，直到它结束。
@@ -353,31 +391,45 @@ function UpdatesTab(props) {
    * 启动一次更新。真正的进度由轮询拿回来。
    *
    * @param {object} payload 请求体（names 或 all）。
+   * @param {number} expected 预期要处理几个包（进度分母）。
    * @returns {void}
    */
-  const startUpdate = useCallback(function (payload) {
-    setBusy(true);
+  const startUpdate = useCallback(function (payload, expected) {
+    startedAtRef.current = Date.now();
+    expectedRef.current = expected;
+    setPhase('updating');
     setError('');
     setMessage('');
     api.update(payload).catch(function (failure) {
-      setBusy(false);
+      expectedRef.current = 0;
+      startedAtRef.current = 0;
+      setPhase('idle');
       setError(String(failure.message || failure));
     });
   }, []);
 
-  // 任务跑完（running 由 true 变 false）时解除置灰并报结果。
+  // 任务跑完时解除置灰并报结果。
   useEffect(function () {
-    if (busy !== true) return;
-    if (state === null || state === undefined || state.job === undefined || state.job === null) return;
-    if (state.job.running === true) return;
-    setBusy(false);
-    const results = Array.isArray(state.job.results) ? state.job.results : [];
+    if (job === undefined || job === null) return;
+    if (!mine) {
+      // 不是我发起的（Host 工具跑的）：只是解除忙碌态。
+      setPhase('idle');
+      return;
+    }
+    const jobStartedAt = Number.isSafeInteger(job.startedAt) ? job.startedAt : 0;
+    if (jobStartedAt < startedAtRef.current) return;   // 还是上一次留下的 job
+    if (job.running === true) return;                   // 还在跑
+    const results = Array.isArray(job.results) ? job.results : [];
+    if (results.length < expectedRef.current) return;   // 还没跑完
+    expectedRef.current = 0;
+    startedAtRef.current = 0;
+    setPhase('idle');
     const failed = results.filter(function (item) { return item.ok !== true; });
     if (failed.length === 0) setMessage(t('done', { count: results.length }));
     else setMessage(t('failed', { count: failed.length }));
     setSelected([]);
     load(true);
-  }, [state, busy, load, t]);
+  }, [state, mine, load, t]);
 
   const onToggle = useCallback(function (name, checked) {
     setSelected(function (current) {
@@ -391,23 +443,25 @@ function UpdatesTab(props) {
   }, [updatable]);
 
   const onUpdateOne = useCallback(function (name) {
-    startUpdate({ names: [name] });
+    startUpdate({ names: [name] }, 1);
   }, [startUpdate]);
 
   const onUpdateSelected = useCallback(function () {
     setSelected(function (current) {
-      if (current.length > 0) startUpdate({ names: current });
+      if (current.length > 0) startUpdate({ names: current }, current.length);
       return current;
     });
   }, [startUpdate]);
 
   const onUpdateAll = useCallback(function () {
-    startUpdate({ all: true });
-  }, [startUpdate]);
+    startUpdate({ all: true }, updatable.length);
+  }, [startUpdate, updatable]);
 
   const onCheck = useCallback(function () {
-    setBusy(true);
-    load(true).then(function () { setBusy(false); });
+    setPhase('checking');
+    load(true).then(function () {
+      setPhase(function (current) { return current === 'checking' ? 'idle' : current; });
+    });
   }, [load]);
 
   return h('div', { className: 'dpe-root' },
@@ -423,7 +477,7 @@ function UpdatesTab(props) {
           className: 'dpe-btn is-quiet',
           disabled: busy === true,
           onClick: onCheck
-        }, t('check')),
+        }, checking === true ? t('checking') : t('check')),
         updatable.length > 0
           ? h('button', {
             type: 'button',
@@ -454,7 +508,9 @@ function UpdatesTab(props) {
             className: 'dpe-btn is-primary',
             disabled: busy === true,
             onClick: onUpdateAll
-          }, t('updateAll') + '（' + updatable.length + '）')
+          }, updating === true
+            ? t('updateAllRunning', { count: updatable.length })
+            : t('updateAll') + '（' + updatable.length + '）')
           : null
       )
     ),
@@ -470,17 +526,37 @@ function UpdatesTab(props) {
       h('div', null, h('div', { className: 'dpe-banner-text' }, message))
     ) : null,
 
-    running
-      ? h('div', { className: 'dpe-banner is-warn' },
-        h('div', null,
-          h('div', { className: 'dpe-banner-title' }, t('running', { name: job.current === null || job.current === undefined ? '' : job.current })),
-          h('div', { className: 'dpe-banner-text' }, t('foot'))
-        )
+    checking === true ? h('div', { className: 'dpe-banner is-info' },
+      h('div', null,
+        h('div', { className: 'dpe-banner-title' }, t('checking')),
+        h('div', { className: 'dpe-banner-text' }, t('foot'))
       )
-      : null,
+    ) : null,
+
+    updating === true ? h('div', { className: 'dpe-banner is-warn' },
+      h('div', null,
+        h('div', { className: 'dpe-banner-title' },
+          t('updating') + (job !== undefined && job !== null && job.current
+            ? ' · ' + t('current', { name: job.current })
+            : '')),
+        total > 0
+          ? h('div', { className: 'dpe-progress' },
+            h('div', { className: 'dpe-progress-fill', style: { width: String(percent) + '%' } })
+          )
+          : null,
+        total > 0
+          ? h('div', { className: 'dpe-progress-meta' },
+            h('span', null, t('progress', { done: done, total: total })),
+            h('span', null, String(percent) + '%')
+          )
+          : null
+      )
+    ) : null,
 
     packages.length === 0
-      ? h('div', { className: 'dpe-card' }, h('div', { className: 'dpe-empty' }, t('empty')))
+      ? (checking === true
+        ? null
+        : h('div', { className: 'dpe-card' }, h('div', { className: 'dpe-empty' }, t('empty'))))
       : h('div', { className: 'dpe-list' },
         packages.map(function (item) {
           return h(PackageRow, {

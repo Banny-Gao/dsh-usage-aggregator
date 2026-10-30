@@ -7,7 +7,9 @@
 //   入口，这正是本次聚合要消除的问题。所以这里注册**一个** id 为
 //   `usage-aggregator` 的 section，内容是一个页签条 + 当前功能的视图。
 //
-// 页签标签取自各功能自己命名空间里的 `hubTab` 键，因此跟着各自的 locale 走。
+// 页签标签取自**聚合页自己的**字典（tabTheme / tabUsage / tabExpander），
+// 键名由各功能的 meta.hubTabKey 指定 —— 见 src/client/hub/i18n.js 顶部
+// 为什么不从功能的 `hubTab` 取。
 
 import { React, h, useState } from '../runtime.js';
 import { makeTranslator } from '../shared/i18n.js';
@@ -22,7 +24,16 @@ import { Styles } from './styles.js';
  */
 export function HubPanel(props) {
   const views = props.views;
-  const [active, setActive] = useState(views.length > 0 ? views[0].id : null);
+  // 默认选中的页签：优先取 meta.hubDefault 的功能（插件更新默认选中），
+  // 没有就选第一个。useState 只认首次挂载的值，之后由用户点选决定。
+  const fallbackId = views.length > 0 ? views[0].id : null;
+  const defaultId = (function () {
+    for (const view of views) {
+      if (view.isDefault === true) return view.id;
+    }
+    return fallbackId;
+  })();
+  const [active, setActive] = useState(defaultId);
 
   let current = null;
   for (const view of views) {
@@ -58,7 +69,8 @@ export function HubPanel(props) {
               className: 'dua-hub-tab' + (view.id === current.id ? ' dua-hub-tab-active' : ''),
               onClick: () => setActive(view.id),
             },
-            view.label,
+            // 每次渲染都求值 → 切换语言时标签跟着变（不能在建 views 时就定死）。
+            props.t(view.hubTabKey),
           ),
         ),
       ),
@@ -103,12 +115,13 @@ export function registerHub(ctx, registry, meta = {}) {
 
   const t = makeTranslator(ctx.locale, NS, zh);
 
-  // 页签顺序 = 各功能 meta.hubOrder；标签取自各功能自己的字典（hubTab）。
+  // 页签顺序 = 各功能 meta.hubOrder；标签键 = 各功能 meta.hubTabKey。
   const views = registry
     .map((entry) => ({
       id: entry.feature.meta.id,
       order: entry.feature.meta.hubOrder,
-      label: entry.t('hubTab'),
+      hubTabKey: entry.feature.meta.hubTabKey || 'tab',
+      isDefault: entry.feature.meta.hubDefault === true,
       t: entry.t,
       View: entry.feature.HubView,
     }))

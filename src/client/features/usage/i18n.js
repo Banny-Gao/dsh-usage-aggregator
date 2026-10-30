@@ -2,8 +2,10 @@
 //
 // 本功能的文案（对应源插件的 02-i18n.js）。
 //
-// ⚠️ zh / en 两个字典**逐字保留**（原 ~109 个 key 一个字没动、一个 key 没删），
-// 只**新增**了 `hubTab` —— 聚合设置页的页签标签从这里取，跟着各自的 locale 走。
+// ⚠️ zh / en 两个字典**逐字保留**（原 ~109 个 key 一个字没动、一个 key 没删）。
+//
+// 聚合页的页签标签**不在本字典里** —— 它归聚合页自己（src/client/hub/i18n.js），
+// 本功能通过 meta.hubTabKey 指向那个键。原因见 hub/i18n.js 顶部的说明。
 //
 // locale 命名空间仍是 `usage-query`（见 ./constants.js）：改名会让已注册的旧名字空间
 // 与新名字空间并存，字典被注册两次。
@@ -13,8 +15,6 @@ import { NS } from './constants.js';
 
 export const zh = {
   tab: '用量查询',
-  // 聚合设置页里的页签标签（hub 读这个键）。
-  hubTab: '用量查询',
   title: '用量查询',
   emptyTitle: '还没有接入任何接口',
   emptyBody: '点「＋ 接入新接口」，把 DevTools 里那条用量请求整段贴进来。',
@@ -126,8 +126,6 @@ export const zh = {
 
 export const en = {
   tab: 'Usage',
-  // 聚合设置页里的页签标签（hub 读这个键）。
-  hubTab: 'Usage',
   title: 'Usage query',
   emptyTitle: 'No provider yet',
   emptyBody: 'Click “+ Add provider” and paste the usage request copied as cURL from DevTools.',

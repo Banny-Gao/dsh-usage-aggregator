@@ -903,7 +903,6 @@ var dshUsageAggregator = (function(exports) {
 	// src/client/features/theme/i18n.js
 	var zh$3 = {
 		tab: "AxzoTheme",
-		hubTab: "主题外观",
 		sectionPreset: "预设色板",
 		sectionColor: "主色微调",
 		hue: "色相",
@@ -966,7 +965,6 @@ var dshUsageAggregator = (function(exports) {
 	};
 	var en$3 = {
 		tab: "AxzoTheme",
-		hubTab: "Theme",
 		sectionPreset: "Presets",
 		sectionColor: "Fine-tune",
 		hue: "Hue",
@@ -2243,16 +2241,20 @@ var dshUsageAggregator = (function(exports) {
 	* namespace 保持 settings.axzoTheme —— 改名会让新旧命名空间并存
 	* （locale 服务按命名空间存字典，旧的不注销就一直占着）。
 	* hubOrder 10 —— 聚合页里排第一个（主题是聚合插件的原主角）。
+	* hubTabKey 'tabTheme' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+	* 字典里（src/client/hub/i18n.js）。不放在本功能的命名空间下，是因为同一个
+	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
+	* 页签上会显示裸的 key 名。
 	*/
 	var meta$2 = {
 		id: "theme",
 		namespace: NS$3,
-		hubOrder: 10
+		hubOrder: 10,
+		hubTabKey: "tabTheme"
 	};
 	/**
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
-	* 必须含 hubTab —— 聚合页的页签标签取自它。
 	*/
 	var dictionaries$2 = {
 		zh: zh$3,
@@ -2438,7 +2440,6 @@ var dshUsageAggregator = (function(exports) {
 	// src/client/features/usage/i18n.js
 	var zh$2 = {
 		tab: "用量查询",
-		hubTab: "用量查询",
 		title: "用量查询",
 		emptyTitle: "还没有接入任何接口",
 		emptyBody: "点「＋ 接入新接口」，把 DevTools 里那条用量请求整段贴进来。",
@@ -2549,7 +2550,6 @@ var dshUsageAggregator = (function(exports) {
 	};
 	var en$2 = {
 		tab: "Usage",
-		hubTab: "Usage",
 		title: "Usage query",
 		emptyTitle: "No provider yet",
 		emptyBody: "Click “+ Add provider” and paste the usage request copied as cURL from DevTools.",
@@ -3719,7 +3719,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-10-30 14:10:14";
+		return "2026-10-30 15:15:20";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -4609,13 +4609,22 @@ var dshUsageAggregator = (function(exports) {
 		dictionaries: () => dictionaries$1,
 		meta: () => meta$1
 	});
-	/** 功能元信息。namespace 保持 'usage-query'（改名会让新旧命名空间并存）。 */
+	/**
+	* 功能元信息。
+	*
+	* namespace 保持 'usage-query'（改名会让新旧命名空间并存）。
+	* hubTabKey 'tabUsage' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+	* 字典里（src/client/hub/i18n.js）。不放在本功能的命名空间下，是因为同一个
+	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
+	* 页签上会显示裸的 key 名。
+	*/
 	var meta$1 = {
 		id: "usage",
 		namespace: "usage-query",
-		hubOrder: 20
+		hubOrder: 20,
+		hubTabKey: "tabUsage"
 	};
-	/** 完整字典（含 hubTab —— 聚合页的页签标签从这里取）。 */
+	/** 完整字典。 */
 	var dictionaries$1 = {
 		zh: zh$2,
 		en: en$2
@@ -4742,7 +4751,11 @@ var dshUsageAggregator = (function(exports) {
 		resultFail: "失败",
 		restart: "更新已保存，但需要重启 DSH 才生效。",
 		foot: "检测到的最新版本来自 npm 注册表与远端 git 仓库；安装动作由 DSH 官方插件管理器执行（同一把 profile 写锁、失败自动回滚）。",
-		hubTab: "插件更新"
+		checking: "检查中…",
+		updating: "正在更新中",
+		progress: "已完成 {done} / {total}",
+		current: "当前：{name}",
+		updateAllRunning: "正在更新 {count} 个插件…"
 	};
 	var en$1 = {
 		tab: "Updates",
@@ -4774,23 +4787,32 @@ var dshUsageAggregator = (function(exports) {
 		resultFail: "failed",
 		restart: "The change is saved but needs a DSH restart to take effect.",
 		foot: "Latest versions come from the npm registry and remote git repositories; installs are executed by the DSH plugin manager (same profile lock, automatic rollback on failure).",
-		hubTab: "Updates"
+		checking: "Checking…",
+		updating: "Updating",
+		progress: "{done} of {total} done",
+		current: "Current: {name}",
+		updateAllRunning: "Updating {count} plugin(s)…"
 	};
 	/**
 	* 功能标识。
 	*
 	* namespace 保持 pluginExpander；hubOrder 30 —— 聚合页里排第三
 	* （主题 10 / 用量 20 / 插件更新 30）。
+	* hubTabKey 'tabExpander' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+	* 字典里（src/client/hub/i18n.js）。
+	* hubDefault true —— 本页签是聚合页**默认选中**的那一个：打开设置就先看插件更新
+	* （这页要做的是自动检测），而不是先落在主题上。
 	*/
 	var meta = {
 		id: "expander",
 		namespace: NS$1,
-		hubOrder: 30
+		hubOrder: 30,
+		hubTabKey: "tabExpander",
+		hubDefault: true
 	};
 	/**
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
-	* 必须含 hubTab —— 聚合页的页签标签取自它。
 	*/
 	var dictionaries = {
 		zh: zh$1,
@@ -4857,6 +4879,9 @@ var dshUsageAggregator = (function(exports) {
 		".dpe-banner.is-warn{background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 10%,var(--dsw-alias-bg-layer-1));border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 35%,transparent);}",
 		".dpe-banner-text{font-size:12px;color:var(--dsw-alias-label-secondary);}",
 		".dpe-banner-title{font-weight:600;font-size:12px;}",
+		".dpe-progress{height:6px;border-radius:999px;background:var(--dsw-alias-bg-layer-2);overflow:hidden;margin-top:6px;}",
+		".dpe-progress-fill{height:100%;border-radius:999px;background:var(--dsw-alias-brand-primary);transition:width .3s ease;}",
+		".dpe-progress-meta{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:var(--dsw-alias-label-secondary);margin-top:4px;}",
 		".dpe-empty{padding:18px 14px;text-align:center;font-size:12px;color:var(--dsw-alias-label-secondary);}",
 		".dpe-foot{margin:0;font-size:11px;color:var(--dsw-alias-label-secondary);}",
 		".dpe-list{display:flex;flex-direction:column;gap:8px;}"
@@ -4960,15 +4985,24 @@ var dshUsageAggregator = (function(exports) {
 		const t = props.t;
 		const [state, setState] = useState(props.initialState ?? null);
 		const [selected, setSelected] = useState([]);
-		const [busy, setBusy] = useState(false);
+		const [phase, setPhase] = useState(props.initialState ? "idle" : "checking");
 		const [error, setError] = useState("");
 		const [message, setMessage] = useState("");
+		const expectedRef = useRef(0);
+		const startedAtRef = useRef(0);
 		const packages = state === null || state === void 0 || state.packages === void 0 ? [] : state.packages;
 		const updatable = packages.filter(function(item) {
 			return item.updatable === true;
 		});
 		const job = state === null || state === void 0 ? void 0 : state.job;
 		const running = job !== void 0 && job !== null && job.running === true;
+		const done = job !== void 0 && job !== null && Array.isArray(job.results) ? job.results.length : 0;
+		const total = expectedRef.current > 0 ? expectedRef.current : job !== void 0 && job !== null && Number.isSafeInteger(job.total) ? job.total : 0;
+		const percent = total > 0 ? Math.min(100, Math.round(done / total * 100)) : 0;
+		const checking = phase === "checking";
+		const updating = phase === "updating" || running === true;
+		const busy = checking || updating;
+		const mine = phase === "updating";
 		/**
 		* 读一次状态。
 		*
@@ -4984,7 +5018,12 @@ var dshUsageAggregator = (function(exports) {
 			});
 		}, []);
 		useEffect(function() {
-			load(true);
+			setPhase("checking");
+			load(true).then(function() {
+				setPhase(function(current) {
+					return current === "checking" ? "idle" : current;
+				});
+			});
 		}, [load]);
 		useEffect(function() {
 			if (running !== true) return void 0;
@@ -4999,23 +5038,35 @@ var dshUsageAggregator = (function(exports) {
 		* 启动一次更新。真正的进度由轮询拿回来。
 		*
 		* @param {object} payload 请求体（names 或 all）。
+		* @param {number} expected 预期要处理几个包（进度分母）。
 		* @returns {void}
 		*/
-		const startUpdate = useCallback(function(payload) {
-			setBusy(true);
+		const startUpdate = useCallback(function(payload, expected) {
+			startedAtRef.current = Date.now();
+			expectedRef.current = expected;
+			setPhase("updating");
 			setError("");
 			setMessage("");
 			api.update(payload).catch(function(failure) {
-				setBusy(false);
+				expectedRef.current = 0;
+				startedAtRef.current = 0;
+				setPhase("idle");
 				setError(String(failure.message || failure));
 			});
 		}, []);
 		useEffect(function() {
-			if (busy !== true) return;
-			if (state === null || state === void 0 || state.job === void 0 || state.job === null) return;
-			if (state.job.running === true) return;
-			setBusy(false);
-			const results = Array.isArray(state.job.results) ? state.job.results : [];
+			if (job === void 0 || job === null) return;
+			if (!mine) {
+				setPhase("idle");
+				return;
+			}
+			if ((Number.isSafeInteger(job.startedAt) ? job.startedAt : 0) < startedAtRef.current) return;
+			if (job.running === true) return;
+			const results = Array.isArray(job.results) ? job.results : [];
+			if (results.length < expectedRef.current) return;
+			expectedRef.current = 0;
+			startedAtRef.current = 0;
+			setPhase("idle");
 			const failed = results.filter(function(item) {
 				return item.ok !== true;
 			});
@@ -5025,7 +5076,7 @@ var dshUsageAggregator = (function(exports) {
 			load(true);
 		}, [
 			state,
-			busy,
+			mine,
 			load,
 			t
 		]);
@@ -5043,21 +5094,23 @@ var dshUsageAggregator = (function(exports) {
 			}) : []);
 		}, [updatable]);
 		const onUpdateOne = useCallback(function(name) {
-			startUpdate({ names: [name] });
+			startUpdate({ names: [name] }, 1);
 		}, [startUpdate]);
 		const onUpdateSelected = useCallback(function() {
 			setSelected(function(current) {
-				if (current.length > 0) startUpdate({ names: current });
+				if (current.length > 0) startUpdate({ names: current }, current.length);
 				return current;
 			});
 		}, [startUpdate]);
 		const onUpdateAll = useCallback(function() {
-			startUpdate({ all: true });
-		}, [startUpdate]);
+			startUpdate({ all: true }, updatable.length);
+		}, [startUpdate, updatable]);
 		const onCheck = useCallback(function() {
-			setBusy(true);
+			setPhase("checking");
 			load(true).then(function() {
-				setBusy(false);
+				setPhase(function(current) {
+					return current === "checking" ? "idle" : current;
+				});
 			});
 		}, [load]);
 		return h("div", { className: "dpe-root" }, h(Styles$1, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
@@ -5065,7 +5118,7 @@ var dshUsageAggregator = (function(exports) {
 			className: "dpe-btn is-quiet",
 			disabled: busy === true,
 			onClick: onCheck
-		}, t("check")), updatable.length > 0 ? h("button", {
+		}, checking === true ? t("checking") : t("check")), updatable.length > 0 ? h("button", {
 			type: "button",
 			className: "dpe-btn",
 			disabled: busy === true,
@@ -5089,7 +5142,13 @@ var dshUsageAggregator = (function(exports) {
 			className: "dpe-btn is-primary",
 			disabled: busy === true,
 			onClick: onUpdateAll
-		}, t("updateAll") + "（" + updatable.length + "）") : null)), error !== "" ? h("div", { className: "dpe-banner is-error" }, h("div", null, h("div", { className: "dpe-banner-title" }, t("resultFail")), h("div", { className: "dpe-banner-text" }, error))) : null, message !== "" ? h("div", { className: "dpe-banner is-info" }, h("div", null, h("div", { className: "dpe-banner-text" }, message))) : null, running ? h("div", { className: "dpe-banner is-warn" }, h("div", null, h("div", { className: "dpe-banner-title" }, t("running", { name: job.current === null || job.current === void 0 ? "" : job.current })), h("div", { className: "dpe-banner-text" }, t("foot")))) : null, packages.length === 0 ? h("div", { className: "dpe-card" }, h("div", { className: "dpe-empty" }, t("empty"))) : h("div", { className: "dpe-list" }, packages.map(function(item) {
+		}, updating === true ? t("updateAllRunning", { count: updatable.length }) : t("updateAll") + "（" + updatable.length + "）") : null)), error !== "" ? h("div", { className: "dpe-banner is-error" }, h("div", null, h("div", { className: "dpe-banner-title" }, t("resultFail")), h("div", { className: "dpe-banner-text" }, error))) : null, message !== "" ? h("div", { className: "dpe-banner is-info" }, h("div", null, h("div", { className: "dpe-banner-text" }, message))) : null, checking === true ? h("div", { className: "dpe-banner is-info" }, h("div", null, h("div", { className: "dpe-banner-title" }, t("checking")), h("div", { className: "dpe-banner-text" }, t("foot")))) : null, updating === true ? h("div", { className: "dpe-banner is-warn" }, h("div", null, h("div", { className: "dpe-banner-title" }, t("updating") + (job !== void 0 && job !== null && job.current ? " · " + t("current", { name: job.current }) : "")), total > 0 ? h("div", { className: "dpe-progress" }, h("div", {
+			className: "dpe-progress-fill",
+			style: { width: String(percent) + "%" }
+		})) : null, total > 0 ? h("div", { className: "dpe-progress-meta" }, h("span", null, t("progress", {
+			done,
+			total
+		})), h("span", null, String(percent) + "%")) : null)) : null, packages.length === 0 ? checking === true ? null : h("div", { className: "dpe-card" }, h("div", { className: "dpe-empty" }, t("empty"))) : h("div", { className: "dpe-list" }, packages.map(function(item) {
 			return h(PackageRow, {
 				key: item.name,
 				item,
@@ -5173,13 +5232,19 @@ var dshUsageAggregator = (function(exports) {
 	/** 聚合页的 locale 命名空间。 */
 	var NS = "dsh-usage-aggregator";
 	var zh = {
-		tab: "用量聚合",
+		tab: "AxzoAggregator",
+		tabTheme: "Theme",
+		tabUsage: "流量",
+		tabExpander: "插件更新",
 		hint: "三个功能在同一个插件里。左侧切换，下方是当前功能的设置。",
 		empty: "没有可用的功能。",
 		buildAt: "客户端构建于 {at}"
 	};
 	var en = {
-		tab: "Usage Aggregator",
+		tab: "AxzoAggregator",
+		tabTheme: "Theme",
+		tabUsage: "Traffic",
+		tabExpander: "Plugin Updates",
 		hint: "Three capabilities in one plugin. Switch below to configure each one.",
 		empty: "No capability available.",
 		buildAt: "Client built at {at}"
@@ -5188,10 +5253,12 @@ var dshUsageAggregator = (function(exports) {
 	var CSS = `
 .dua-hub{display:flex;flex-direction:column;gap:14px;min-width:0;}
 .dua-hub-tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
-.dua-hub-tab{appearance:none;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:600;line-height:1;padding:7px 12px;border-radius:999px;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;}
-.dua-hub-tab:hover{background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-primary);}
+.dua-hub-tab{appearance:none;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:500;line-height:1;padding:7px 12px;border-radius:999px;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;}
+.dua-hub-tab:hover{background:var(--dsw-alias-interactive-bg-hover);border-color:var(--dsw-alias-border-l3);color:var(--dsw-alias-label-primary);}
 .dua-hub-tab:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;}
-.dua-hub-tab-active{background:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-brand-primary-invert);}
+/* 选中态：不要色块，只用「品牌色描边 + 品牌色文字 + 加粗」表达。 */
+.dua-hub-tab-active{background:transparent;border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-brand-primary);font-weight:700;}
+.dua-hub-tab-active:hover{background:transparent;border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-brand-primary);}
 .dua-hub-body{min-width:0;}
 .dua-hub-hint{font-size:12px;color:var(--dsw-alias-label-tertiary);margin:0;}
 `;
@@ -5212,7 +5279,12 @@ var dshUsageAggregator = (function(exports) {
 	*/
 	function HubPanel(props) {
 		const views = props.views;
-		const [active, setActive] = useState(views.length > 0 ? views[0].id : null);
+		const fallbackId = views.length > 0 ? views[0].id : null;
+		const defaultId = (function() {
+			for (const view of views) if (view.isDefault === true) return view.id;
+			return fallbackId;
+		})();
+		const [active, setActive] = useState(defaultId);
 		let current = null;
 		for (const view of views) if (view.id === active) {
 			current = view;
@@ -5230,7 +5302,7 @@ var dshUsageAggregator = (function(exports) {
 			"aria-selected": view.id === current.id ? "true" : "false",
 			className: "dua-hub-tab" + (view.id === current.id ? " dua-hub-tab-active" : ""),
 			onClick: () => setActive(view.id)
-		}, view.label))), h("div", { className: "dua-hub-body" }, h(current.View, {
+		}, props.t(view.hubTabKey)))), h("div", { className: "dua-hub-body" }, h(current.View, {
 			t: current.t,
 			ctx: props.ctx
 		})), props.buildAt ? h("p", { className: "dua-hub-hint" }, props.t("buildAt", { at: props.buildAt })) : null));
@@ -5261,7 +5333,8 @@ var dshUsageAggregator = (function(exports) {
 		const views = registry.map((entry) => ({
 			id: entry.feature.meta.id,
 			order: entry.feature.meta.hubOrder,
-			label: entry.t("hubTab"),
+			hubTabKey: entry.feature.meta.hubTabKey || "tab",
+			isDefault: entry.feature.meta.hubDefault === true,
 			t: entry.t,
 			View: entry.feature.HubView
 		})).sort((a, b) => a.order - b.order);
@@ -5299,7 +5372,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-10-30 14:10:14";
+	var BUILD_AT = "2026-10-30 15:15:20";
 	/**
 	* 声明要等的服务。
 	*

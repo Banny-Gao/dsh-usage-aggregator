@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dsh-axzo-theme · 品牌预览</title>
+    <style>
+      /*
+       * preview 自己的最小骨架样式 —— 用来摆放预览卡片。品牌视觉（图标、
+       * 字标、玻璃舞台）由 src/ 里的组件渲染，preview 不重画。
+       */
+      :root {
+        --bg: #eef1ef;
+        --fg: #22302c;
+        --muted: #66756f;
+        --card: #ffffff;
+        --border: #e8e8e8;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1a1d1c;
+          --fg: #e7f3ef;
+          --muted: #99a8a3;
+          --card: #23272a;
+          --border: #333;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 28px 32px;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
+          'Helvetica Neue', sans-serif;
+      }
+      h2 {
+        font-size: 12px;
+        font-weight: 400;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        color: var(--muted);
+        margin: 26px 0 10px;
+      }
+      h2:first-of-type {
+        margin-top: 0;
+      }
+      .row {
+        display: flex;
+        gap: 22px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 20px;
+        width: max-content;
+      }
+      .swatch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .swatch span {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .note {
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 640px;
+        margin: 8px 0 0;
+      }
+      .note code {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        background: rgba(127, 127, 127, 0.1);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      /*
+       * 页面下方的说明文字里留了 __AXZO_*__ 占位符：axzo-logo-preview 插件
+       * 会在 transformIndexHtml 阶段把 HTML 里出现的占位符换成真值（与
+       * src/logo.js 共用同一份替换表），所以浏览器里看到的是真实 viewBox。
+       * 未出现的占位符不要求替换，缺席不算错。
+       */
+    </style>
+  </head>
+  <body>
+    <h2>1 · 侧栏品牌（展开 220px / 收起 56px）</h2>
+    <div id="sidebar-light"></div>
+
+    <h2>2 · 侧栏品牌 — 深色（文字自动转亮）</h2>
+    <div id="sidebar-dark"></div>
+
+    <h2>3 · 预设色板（品牌图标跟随主色）</h2>
+    <div id="presets" class="card row"></div>
+
+    <h2>4 · 官方原始 lockup（对照用，未拆分）</h2>
+    <div id="lockup" class="card"></div>
+
+    <p class="note">
+      图标 = path[0]（viewBox <code>__AXZO_ICON_VIEWBOX__</code>）；
+      文字 = path[1]（viewBox <code>__AXZO_TEXT_VIEWBOX__</code>）。<br />
+      由 <code>vite/axzo-logo-plugin.mjs</code> 在 transform 钩子里实时算出，
+      改 <code>assets/axzo-official-logo.svg</code> 后浏览器自动重渲，
+      DSH 那边 HMR 也会接力。
+    </p>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

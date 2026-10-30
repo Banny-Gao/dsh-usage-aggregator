@@ -1,0 +1,137 @@
+// src/client/hub/panel.js
+//
+// 聚合设置页：一个入口，三个功能。
+//
+// 为什么不让三个功能各自注册一个 settings.section：
+//   设置面板的导航条目就是 settings.section 的注册项 —— 每多一个功能就多一个
+//   入口，这正是本次聚合要消除的问题。所以这里注册**一个** id 为
+//   `usage-aggregator` 的 section，内容是一个页签条 + 当前功能的视图。
+//
+// 页签标签取自各功能自己命名空间里的 `hubTab` 键，因此跟着各自的 locale 走。
+
+import { React, h, useState } from '../runtime.js';
+import { makeTranslator } from '../shared/i18n.js';
+import { NS, zh, en } from './i18n.js';
+import { Styles } from './styles.js';
+
+/**
+ * 聚合页主体。
+ *
+ * @param {{views: Array<object>, t: Function, ctx: object, buildAt?: string}} props 属性。
+ * @returns {object} React 元素。
+ */
+export function HubPanel(props) {
+  const views = props.views;
+  const [active, setActive] = useState(views.length > 0 ? views[0].id : null);
+
+  let current = null;
+  for (const view of views) {
+    if (view.id === active) {
+      current = view;
+      break;
+    }
+  }
+  if (current === null) current = views.length > 0 ? views[0] : null;
+
+  if (current === null) {
+    return h(React.Fragment, null, h(Styles, null), h('p', { className: 'dua-hub-hint' }, props.t('empty')));
+  }
+
+  return h(
+    React.Fragment,
+    null,
+    h(Styles, null),
+    h(
+      'div',
+      { className: 'dua-hub' },
+      h(
+        'div',
+        { className: 'dua-hub-tabs', role: 'tablist' },
+        views.map((view) =>
+          h(
+            'button',
+            {
+              key: view.id,
+              type: 'button',
+              role: 'tab',
+              'aria-selected': view.id === current.id ? 'true' : 'false',
+              className: 'dua-hub-tab' + (view.id === current.id ? ' dua-hub-tab-active' : ''),
+              onClick: () => setActive(view.id),
+            },
+            view.label,
+          ),
+        ),
+      ),
+      h(
+        'div',
+        { className: 'dua-hub-body' },
+        h(current.View, { t: current.t, ctx: props.ctx }),
+      ),
+      props.buildAt
+        ? h('p', { className: 'dua-hub-hint' }, props.t('buildAt', { at: props.buildAt }))
+        : null,
+    ),
+  );
+}
+
+/**
+ * 注册聚合设置页。
+ *
+ * @param {object} ctx 插件上下文。
+ * @param {Array<{feature: object, t: Function}>} registry 功能登记表。
+ * @param {{buildAt?: string}} meta 附加信息（构建时间等）。
+ */
+export function registerHub(ctx, registry, meta = {}) {
+  // 聚合页自己的命名空间**必须在取 translator 之前注册** ——
+  // 顺序反了的话 translator 探不到命名空间，会一直退回内置中文字典，
+  // 英文用户看到的设置入口标题永远是中文。
+  ctx.effect(
+    function () {
+      var dispose = null;
+      try {
+        dispose = ctx.locale.register(NS, { zh: zh, en: en });
+      } catch (err) {
+        // 命名空间已被占用（例如 HMR 后残留）：不阻断插件，退回内置字典。
+        console.warn('[dsh-usage-aggregator] hub locale register failed', err);
+      }
+      return function () {
+        if (typeof dispose === 'function') dispose();
+      };
+    },
+    'dsh-usage-aggregator: hub locale',
+  );
+
+  const t = makeTranslator(ctx.locale, NS, zh);
+
+  // 页签顺序 = 各功能 meta.hubOrder；标签取自各功能自己的字典（hubTab）。
+  const views = registry
+    .map((entry) => ({
+      id: entry.feature.meta.id,
+      order: entry.feature.meta.hubOrder,
+      label: entry.t('hubTab'),
+      t: entry.t,
+      View: entry.feature.HubView,
+    }))
+    .sort((a, b) => a.order - b.order);
+
+  ctx.slots.inject('settings.section', function () {
+    return ctx.slots.register(
+      {
+        name: 'settings.section',
+        id: 'usage-aggregator',
+        order: 92,
+        // 用 thunk：宿主每次投影都重新求值，切换语言不必重新注册。
+        label: function () {
+          return t('tab');
+        },
+        locale: NS,
+        inject: function () {
+          return { t: t, ctx: ctx };
+        },
+      },
+      function (slotProps) {
+        return h(HubPanel, { t: t, ctx: ctx, views: views, buildAt: meta.buildAt });
+      },
+    );
+  });
+}

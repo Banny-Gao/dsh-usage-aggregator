@@ -1,0 +1,17 @@
+node_modules/
+*.log
+.DS_Store
+.idea/
+.vscode/
+.pnpm-store/
+
+# Vite 临时文件 + dev server 状态
+node_modules/.vite/
+node_modules/.vite-temp/
+
+# render-check 生成物：每次运行都重新产出，不进版本库
+scripts/render-check*.png
+scripts/render-check*.html
+
+# 构建产物入库（DSH 靠它加载），但 source map 不入库
+client/*.map

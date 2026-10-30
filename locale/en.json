@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Usage Aggregator",
+    "description": "Three capabilities in one plugin: usage query (paste one API request or a usage screenshot; the Host replays it and a local model turns the request/response pair into a cached display template rendered as quota/balance/usage cards); the Axzo brand theme (43 DSH theme tokens, a glass hero stage, a conversation backdrop, sidebar glass and task-status badges); and plugin updates (detect and install newer releases of the installed plugins). All three share a single entry in Settings."
+  }
+}

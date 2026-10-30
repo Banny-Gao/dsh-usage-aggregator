@@ -1,0 +1,77 @@
+{
+  "name": "dsh-usage-aggregator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH 聚合插件：一个插件装下三件能力 —— 用量查询（粘贴一次接口请求即得额度/余量/次数卡片）、安心筑品牌主题（43 个主题 token + 玻璃首屏 + 会话区品牌背景）、插件更新（检测并安装已装插件的新版本）。设置面板只占一个入口，新增功能不再多一个插件行。 · DSH aggregate plugin: usage query (paste one request, get quota/balance/usage cards), Axzo brand theme (43 theme tokens, glass hero stage, conversation backdrop) and plugin updates — all in one plugin with a single Settings entry.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "usage",
+    "quota",
+    "theme",
+    "axzo",
+    "plugin",
+    "update"
+  ],
+  "license": "MIT",
+  "author": "gaozhipeng",
+  "type": "module",
+  "main": "src/host/index.js",
+  "exports": {
+    ".": "./src/host/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "src/host",
+    "client/client.js",
+    "locale",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "icon": "./icon.svg",
+  "engines": {
+    "node": ">=22.19"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "build:watch": "vite build --watch --mode watch",
+    "dev": "vite",
+    "check": "bash scripts/verify.sh",
+    "check:host": "node scripts/check-host.mjs",
+    "check:client": "node scripts/check-client.mjs",
+    "check:routes": "node scripts/check-routes.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:renewal": "node scripts/smoke-renewal.mjs",
+    "ui-check": "node scripts/ui-check.mjs",
+    "ui-check:expander": "node scripts/ui-check-expander.mjs",
+    "render-check": "node scripts/render-check.mjs",
+    "release": "node scripts/release.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0"
+  }
+}

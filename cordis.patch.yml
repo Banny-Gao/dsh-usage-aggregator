@@ -1,0 +1,66 @@
+# dsh-usage-aggregator bundle patch：把本插件插入 profile 的 layer stack。
+#
+# ⚠️ 这里的 config 只交给 **Host 半边**（src/host/）。客户端 bundle 是浏览器
+# 里独立加载的，拿不到这份 config（实测为 undefined，而且 cordis 的 ctx 代理
+# 只放行 inject 里声明过的属性，读 ctx.config 会直接抛错）。
+#
+# 客户端能看到的路由前缀是**写死在客户端源码里**的常量
+# （src/client/shared/constants.js 的 ENDPOINT_BASE）：
+#   · 改这里 → 必须同时改那里，两边对不上就是 404 / SPA 兜底页。
+#   · 客户端读不到这里的 endpoint 配置，所以下面的 endpoint 只是 Host 侧的默认值。
+#
+# 👉 常改的两项：
+#    usage.analysis.provider / usage.analysis.model
+#                              —— 分析「请求 + 响应」用的本地模型，
+#                                 必须来自本 profile 已配置的 provider。
+#    usage.analysis.language    —— 模板标签语言，默认 zh（英文用 en）。
+#
+# 面板侧不主动打上游：界面只在「你点刷新 / 接入即首查 / 响应结构变了」时重放请求，
+# 打开面板只是重读本机状态。
+- insert:
+    - id: dsh-usage-aggregator
+      name: 'dsh-usage-aggregator'
+      config:
+        # 所有插件路由的公共前缀。三个功能各自再挂一段：
+        #   /dsh-usage-aggregator/usage/*      —— 用量查询
+        #   /dsh-usage-aggregator/expander/*   —— 插件更新
+        # 主题功能没有 Host 路由，也没有 Host 配置（它的可调项走 localStorage）。
+        endpoint: /dsh-usage-aggregator
+        # 只有本机（回环地址）能访问插件路由。除非你确实要远程访问，别打开。
+        allowRemote: false
+        # ── 用量查询（原 dsh-usage-query 的 config，原样搬过来）──────────
+        usage:
+          analysis:
+            provider: axzo-one
+            model: auto/deepseek-flash
+            # 现在的提示词要求「字段要全（≤24 条）」+ 中文标签，输出比早期长；
+            # 给足额度，免得被截断后整次分析降级成结构兜底。
+            maxOutputTokens: 8000
+            # 允许截图识别；关掉后只接受粘贴请求文本。
+            allowImage: true
+          # 自动查询：默认开，每 5 分钟一轮。只重放已保存的请求，不触发任何模型分析；
+          # 按每个接口自己的「上次查询时间」算是否到点，刚手动刷过的会自动顺延；
+          # 登录态明确过期的接口会跳过（查了也是 401）。
+          autoRefresh:
+            enabled: true
+            intervalSeconds: 300
+          # 自动续期：登录态快过期时，自己换一枚新的，省得每天去 DevTools 复制 cURL。
+          #   · 只换 authorization 里的 token，接口地址与展示模板都保留 → 不花模型调用
+          #   · 需要人在钉钉授权页点一次「同意」（实测钉钉每次都弹，去掉 prompt 也没用）
+          #   · 因此这类站点走面板上的「自动续期」按钮，而不是定时无人值守
+          # 详见 README「自动续期」一节。
+          renewal:
+            enabled: true
+            # 到期前多久就该动手（默认 30 分钟）。太长会让续期抖动变频繁，
+            # 太短则可能在跨零点那次刷新前就已经过期。
+            leadSeconds: 1800
+            # 一次续期失败后，等多久再试（默认 30 分钟）—— 失败是常态，别自己刷。
+            cooldownSeconds: 1800
+          request:
+            timeoutMs: 30000
+        # ── 插件更新（原 dsh-plugin-expander 的 config，原样搬过来）────────
+        expander:
+          # 查一次注册表（pnpm view）的超时上限，单位毫秒。
+          checkTimeoutMs: 20000
+          # 查远端 git HEAD（git ls-remote）的超时上限，单位毫秒。
+          gitTimeoutMs: 15000

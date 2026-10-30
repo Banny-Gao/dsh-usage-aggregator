@@ -25,7 +25,8 @@ export const zh = {
   tabTheme: 'Theme',
   tabUsage: '流量',
   tabExpander: '插件更新',
-  hint: '三个功能在同一个插件里。左侧切换，下方是当前功能的设置。',
+  tabBoost: '加速',
+  hint: '四块能力在同一个插件里。左侧切换，下方是当前功能的设置。',
   empty: '没有可用的功能。',
   buildAt: '客户端构建于 {at}',
 };
@@ -35,7 +36,8 @@ export const en = {
   tabTheme: 'Theme',
   tabUsage: 'Traffic',
   tabExpander: 'Plugin Updates',
-  hint: 'Three capabilities in one plugin. Switch below to configure each one.',
+  tabBoost: 'Boost',
+  hint: 'Four capabilities in one plugin. Switch below to configure each one.',
   empty: 'No capability available.',
   buildAt: 'Client built at {at}',
 };

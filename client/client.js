@@ -118,7 +118,7 @@ var dshUsageAggregator = (function(exports) {
 	* locale 命名空间。**保持不变**：改名会让新旧命名空间并存（locale 服务按命名
 	* 空间存字典，旧的不注销就一直占着）。
 	*/
-	var NS$3 = "settings.axzoTheme";
+	var NS$4 = "settings.axzoTheme";
 	var STYLE_ID$2 = "dsh-axzo-theme-style";
 	var PANEL_STYLE_ID = "dsh-axzo-theme-panel-style";
 	/** localStorage key —— **保持不变**：改了用户已保存的主色 / 开关 / 品牌名全丢。 */
@@ -901,7 +901,7 @@ var dshUsageAggregator = (function(exports) {
 		};
 	}
 	// src/client/features/theme/i18n.js
-	var zh$3 = {
+	var zh$4 = {
 		tab: "AxzoTheme",
 		sectionPreset: "预设色板",
 		sectionColor: "主色微调",
@@ -963,7 +963,7 @@ var dshUsageAggregator = (function(exports) {
 		sbGrainLabel: "磨砂纹理",
 		fontLabel: "字体"
 	};
-	var en$3 = {
+	var en$4 = {
 		tab: "AxzoTheme",
 		sectionPreset: "Presets",
 		sectionColor: "Fine-tune",
@@ -1039,7 +1039,7 @@ var dshUsageAggregator = (function(exports) {
 	* 旧调用点全都只传 key，行为不变。
 	*/
 	function makeTranslator(locale) {
-		return makeTranslator$1(locale, NS$3, zh$3);
+		return makeTranslator$1(locale, NS$4, zh$4);
 	}
 	// src/client/features/theme/panel.js
 	function sliderTrack(field, primary) {
@@ -2293,10 +2293,10 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/theme/index.js
 	var theme_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$2,
-		apply: () => apply$3,
-		dictionaries: () => dictionaries$2,
-		meta: () => meta$2
+		HubView: () => HubView$3,
+		apply: () => apply$4,
+		dictionaries: () => dictionaries$3,
+		meta: () => meta$3
 	});
 	/**
 	* 功能标识。
@@ -2309,9 +2309,9 @@ var dshUsageAggregator = (function(exports) {
 	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
 	* 页签上会显示裸的 key 名。
 	*/
-	var meta$2 = {
+	var meta$3 = {
 		id: "theme",
-		namespace: NS$3,
+		namespace: NS$4,
 		hubOrder: 10,
 		hubTabKey: "tabTheme"
 	};
@@ -2319,9 +2319,9 @@ var dshUsageAggregator = (function(exports) {
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
 	*/
-	var dictionaries$2 = {
-		zh: zh$3,
-		en: en$3
+	var dictionaries$3 = {
+		zh: zh$4,
+		en: en$4
 	};
 	/**
 	* 命名空间是否已被注册。
@@ -2355,7 +2355,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {(key: string, vars?: object) => string} t 本功能命名空间的 translator。
 	*/
-	function apply$3(ctx, t) {
+	function apply$4(ctx, t) {
 		ctx.effect(function() {
 			startOsPrefs();
 			return function() {
@@ -2466,7 +2466,7 @@ var dshUsageAggregator = (function(exports) {
 			if (namespaceRegistered(ctx.locale, "settings.axzoTheme")) return void 0;
 			var dispose = null;
 			try {
-				dispose = ctx.locale.register(NS$3, dictionaries$2);
+				dispose = ctx.locale.register(NS$4, dictionaries$3);
 			} catch (err) {
 				console.warn("[" + PLUGIN_ID$1 + "] locale register failed", err);
 			}
@@ -2485,7 +2485,7 @@ var dshUsageAggregator = (function(exports) {
 	* 聚合页用 h(View, { t, ctx }) 渲染，而原 Panel 收到的正是 { t, ctx } ——
 	* 原样透传即可。
 	*/
-	var HubView$2 = (props) => h(Panel$1, props);
+	var HubView$3 = (props) => h(Panel$1, props);
 	// src/client/features/usage/constants.js
 	/**
 	* locale 命名空间。
@@ -2493,7 +2493,7 @@ var dshUsageAggregator = (function(exports) {
 	* ⚠️ 保持 'usage-query' 不变 —— 改名会让「已注册的旧命名空间」与「新命名空间」并存，
 	* 字典被注册两次，切换语言时会出现两套文案。
 	*/
-	var NS$2 = "usage-query";
+	var NS$3 = "usage-query";
 	/**
 	* 样式元素的 data 属性值。
 	*
@@ -2508,7 +2508,7 @@ var dshUsageAggregator = (function(exports) {
 	*/
 	var PANEL_ID = "usage-query";
 	// src/client/features/usage/i18n.js
-	var zh$2 = {
+	var zh$3 = {
 		tab: "用量查询",
 		title: "用量查询",
 		emptyTitle: "还没有接入任何接口",
@@ -2618,7 +2618,7 @@ var dshUsageAggregator = (function(exports) {
 		chipUnpin: "取消顶部显示",
 		autoSoon: "即将"
 	};
-	var en$2 = {
+	var en$3 = {
 		tab: "Usage",
 		title: "Usage query",
 		emptyTitle: "No provider yet",
@@ -2769,6 +2769,8 @@ var dshUsageAggregator = (function(exports) {
 	var USAGE_ENDPOINT = ENDPOINT_BASE + "/usage";
 	/** 插件更新的路由前缀。 */
 	var EXPANDER_ENDPOINT = ENDPOINT_BASE + "/expander";
+	/** 电脑加速与清理的路由前缀。 */
+	var BOOST_ENDPOINT = ENDPOINT_BASE + "/boost";
 	// src/client/features/usage/api.js
 	/**
 	* 用量查询的全部接口。
@@ -2787,7 +2789,7 @@ var dshUsageAggregator = (function(exports) {
 	* | setAnalysisModel | POST /usage/analysis-model |
 	* | raw | GET  /usage/raw?id=… |
 	*/
-	var api$1 = {
+	var api$2 = {
 		state: function() {
 			return callApi("GET", USAGE_ENDPOINT);
 		},
@@ -3240,7 +3242,7 @@ var dshUsageAggregator = (function(exports) {
 			setStatus(t("fieldOrderSaving"));
 			setTone("idle");
 			setRows(next);
-			api$1.setFieldOrder(provider.id, next.map(function(row) {
+			api$2.setFieldOrder(provider.id, next.map(function(row) {
 				return row.path;
 			})).then(function() {
 				setStatus(t("fieldOrderSaved"));
@@ -3258,7 +3260,7 @@ var dshUsageAggregator = (function(exports) {
 		var reset = function() {
 			setStatus(t("fieldOrderSaving"));
 			setTone("idle");
-			api$1.setFieldOrder(provider.id, []).then(function() {
+			api$2.setFieldOrder(provider.id, []).then(function() {
 				setStatus(t("fieldOrderSaved"));
 				setTone("ok");
 				return props.onChanged();
@@ -3379,7 +3381,7 @@ var dshUsageAggregator = (function(exports) {
 			});
 		})();
 		var loadRaw = function() {
-			api$1.raw(provider.id).then(function(result) {
+			api$2.raw(provider.id).then(function(result) {
 				setRawText(typeof result.text === "string" ? result.text : JSON.stringify(result.data, null, 2));
 			}).catch(function(error) {
 				setRawError(String(error.message || error));
@@ -3550,7 +3552,7 @@ var dshUsageAggregator = (function(exports) {
 				data: image.data,
 				mediaType: image.mediaType
 			};
-			api$1.importRequest(payload).then(function(result) {
+			api$2.importRequest(payload).then(function(result) {
 				setBusy(false);
 				setPhase("");
 				setText("");
@@ -3637,7 +3639,7 @@ var dshUsageAggregator = (function(exports) {
 		var wrapRef = useRef(null);
 		var panelRef = useRef(null);
 		var load = function() {
-			return api$1.models().then(function(next) {
+			return api$2.models().then(function(next) {
 				setData(next);
 			}).catch(function(failure) {
 				setError(String(failure.message || failure));
@@ -3684,7 +3686,7 @@ var dshUsageAggregator = (function(exports) {
 		var apply = function(providerId, modelId) {
 			setBusy(true);
 			setError("");
-			api$1.setAnalysisModel(providerId, modelId).then(function(result) {
+			api$2.setAnalysisModel(providerId, modelId).then(function(result) {
 				setBusy(false);
 				setOpen(false);
 				setData(function(prev) {
@@ -3789,7 +3791,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-10-30 15:39:19";
+		return "2026-10-30 18:10:56";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -3807,7 +3809,7 @@ var dshUsageAggregator = (function(exports) {
 		var [busy, setBusy] = useState(false);
 		var [message, setMessage] = useState("");
 		var load = function() {
-			return api$1.state().then(function(next) {
+			return api$2.state().then(function(next) {
 				setState(next);
 				setError("");
 				setSelectedId(function(current) {
@@ -3854,7 +3856,7 @@ var dshUsageAggregator = (function(exports) {
 			setBusy(true);
 			setMessage("");
 			Promise.all(queryable.map(function(item) {
-				return api$1.refresh(item.id).catch(function() {
+				return api$2.refresh(item.id).catch(function() {
 					return null;
 				});
 			})).then(function() {
@@ -3915,16 +3917,16 @@ var dshUsageAggregator = (function(exports) {
 			busy,
 			onReload: load,
 			onRefresh: function(id) {
-				run(api$1.refresh(id));
+				run(api$2.refresh(id));
 			},
 			onRenew: function(id) {
-				run(api$1.renew(id, true), t("renewDone"));
+				run(api$2.renew(id, true), t("renewDone"));
 			},
 			onReanalyze: function(id, image) {
-				run(api$1.reanalyze(id, image === void 0 ? void 0 : image));
+				run(api$2.reanalyze(id, image === void 0 ? void 0 : image));
 			},
 			onRemove: function(id) {
-				run(api$1.remove(id));
+				run(api$2.remove(id));
 			},
 			onUpdate: function(provider) {
 				setPreset({
@@ -3936,7 +3938,7 @@ var dshUsageAggregator = (function(exports) {
 		}), h("p", { className: "duq-foot" }, "数据与登录态只存在本机（$DSH_HOME/dsh-usage-query/store.json，仅本人可读）。" + (state === null || state.autoRefresh === void 0 || state.autoRefresh.enabled === false ? "" : "自动查询 " + intervalText(state.autoRefresh.intervalSeconds, t) + "一轮。") + (BUILD_AT$1 === "" ? "" : "　客户端构建于 " + BUILD_AT$1 + "。")));
 	}
 	// src/client/features/usage/styles.js
-	var CSS$2 = [
+	var CSS$3 = [
 		".duq-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary,#111827);}",
 		".duq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".duq-headtext{flex:1 1 auto;min-width:0;}",
@@ -4117,10 +4119,10 @@ var dshUsageAggregator = (function(exports) {
 	* 设置页带一份，会话头芯片就会在「设置没打开」时以裸 DOM 出现。同一份 CSS
 	* 重复出现是幂等的，用 data 属性标记而不是 id，避免重复 id。
 	*/
-	function Styles$2() {
+	function Styles$3() {
 		return h("style", {
 			"data-dsh-usage-query": STYLE_ID$1,
-			dangerouslySetInnerHTML: { __html: CSS$2 }
+			dangerouslySetInnerHTML: { __html: CSS$3 }
 		});
 	}
 	/**
@@ -4130,7 +4132,7 @@ var dshUsageAggregator = (function(exports) {
 	* 一处打开时，另一处也得有样式可用。
 	*/
 	function PanelShell(props) {
-		return h(React.Fragment, null, h(Styles$2, null), h(Panel, props));
+		return h(React.Fragment, null, h(Styles$3, null), h(Panel, props));
 	}
 	// src/client/features/usage/hover.js
 	/**
@@ -4444,7 +4446,7 @@ var dshUsageAggregator = (function(exports) {
 		});
 		var load = function() {
 			loadedAt.current = Date.now();
-			return api$1.state().then(function(next) {
+			return api$2.state().then(function(next) {
 				setState(next);
 			}).catch(function() {});
 		};
@@ -4565,7 +4567,7 @@ var dshUsageAggregator = (function(exports) {
 		var chipName = first !== null && providers.length > 1 && chipProvider !== null ? clipText(chipProvider.label, 12) : "";
 		var pickChip = function(id) {
 			var next = chipId === id ? "" : id;
-			api$1.setChip(next).then(load).catch(function() {
+			api$2.setChip(next).then(load).catch(function() {
 				return load();
 			});
 		};
@@ -4577,7 +4579,7 @@ var dshUsageAggregator = (function(exports) {
 			setNote("");
 			setPinned(true);
 			livenessRef.current.setPinned(true);
-			api$1.refresh(id).then(function() {
+			api$2.refresh(id).then(function() {
 				return load();
 			}).catch(function(error) {
 				setNote(failText(error));
@@ -4591,7 +4593,7 @@ var dshUsageAggregator = (function(exports) {
 			setNote("");
 			setPinned(true);
 			livenessRef.current.setPinned(true);
-			api$1.renew(id, true).then(function(result) {
+			api$2.renew(id, true).then(function(result) {
 				if (result !== null && result.provider !== void 0) setState(function(prev) {
 					if (prev === null) return prev;
 					return {
@@ -4619,7 +4621,7 @@ var dshUsageAggregator = (function(exports) {
 			setPinned(true);
 			livenessRef.current.setPinned(true);
 			Promise.all(queryable.map(function(item) {
-				return api$1.refresh(item.id).catch(function() {
+				return api$2.refresh(item.id).catch(function() {
 					return null;
 				});
 			})).then(function() {
@@ -4631,7 +4633,7 @@ var dshUsageAggregator = (function(exports) {
 			className: "duq-quick",
 			ref: containerRef,
 			onMouseEnter: openNow
-		}, h(Styles$2, null), h("button", {
+		}, h(Styles$3, null), h("button", {
 			type: "button",
 			className: "duq-quick-trigger" + (open ? " is-open" : "") + (first === null ? " is-idle" : ""),
 			title: chipProvider === null ? t("quickTitle") : t("quickTitle") + "：" + chipProvider.label + " · " + (first.detail === "" ? chipValue : first.detail),
@@ -4673,11 +4675,11 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/usage/index.js
 	var usage_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$1,
-		__ui: () => __ui$1,
-		apply: () => apply$2,
-		dictionaries: () => dictionaries$1,
-		meta: () => meta$1
+		HubView: () => HubView$2,
+		__ui: () => __ui$2,
+		apply: () => apply$3,
+		dictionaries: () => dictionaries$2,
+		meta: () => meta$2
 	});
 	/**
 	* 功能元信息。
@@ -4688,16 +4690,16 @@ var dshUsageAggregator = (function(exports) {
 	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
 	* 页签上会显示裸的 key 名。
 	*/
-	var meta$1 = {
+	var meta$2 = {
 		id: "usage",
 		namespace: "usage-query",
 		hubOrder: 20,
 		hubTabKey: "tabUsage"
 	};
 	/** 完整字典。 */
-	var dictionaries$1 = {
-		zh: zh$2,
-		en: en$2
+	var dictionaries$2 = {
+		zh: zh$3,
+		en: en$3
 	};
 	/**
 	* 装配本功能。
@@ -4712,14 +4714,14 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator。
 	*/
-	function apply$2(ctx, t) {
+	function apply$3(ctx, t) {
 		ctx.slots.inject("conversation.session.header.utilities", function() {
 			return ctx.slots.register({
 				name: "conversation.session.header.utilities",
 				id: PANEL_ID,
 				order: 30,
 				label: t("tab"),
-				locale: NS$2,
+				locale: NS$3,
 				inject: function() {
 					return { t };
 				}
@@ -4738,7 +4740,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function, ctx: object}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function HubView$1(props) {
+	function HubView$2(props) {
 		return h(PanelShell, {
 			t: props.t,
 			ctx: props.ctx
@@ -4749,7 +4751,7 @@ var dshUsageAggregator = (function(exports) {
 	* 浏览器的环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类
 	* 只在页面上才暴露的问题。运行时不受影响（聚合入口只认 apply / meta / …）。
 	*/
-	var __ui$1 = {
+	var __ui$2 = {
 		Panel,
 		PanelShell,
 		ProviderDetail,
@@ -4771,16 +4773,16 @@ var dshUsageAggregator = (function(exports) {
 		isInsideUnion,
 		createHoverLiveness,
 		UsageIcon,
-		zh: zh$2,
-		en: en$2
+		zh: zh$3,
+		en: en$3
 	};
 	// src/client/features/expander/index.js
 	var expander_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView,
-		__ui: () => __ui,
-		apply: () => apply$1,
-		dictionaries: () => dictionaries,
-		meta: () => meta
+		HubView: () => HubView$1,
+		__ui: () => __ui$1,
+		apply: () => apply$2,
+		dictionaries: () => dictionaries$1,
+		meta: () => meta$1
 	});
 	/**
 	* locale 命名空间。
@@ -4788,10 +4790,10 @@ var dshUsageAggregator = (function(exports) {
 	* ⚠️ 保持 'pluginExpander' 不变：改名会让新旧命名空间并存
 	* （locale 服务按命名空间存字典，旧的不注销就一直占着）。
 	*/
-	var NS$1 = "pluginExpander";
+	var NS$2 = "pluginExpander";
 	/** <style> 元素的 data-* 标记值。 */
 	var STYLE_ID = "dsh-plugin-expander-style";
-	var zh$1 = {
+	var zh$2 = {
 		tab: "更新",
 		title: "插件更新",
 		intro: "检测当前 profile 已装插件的新版本：npm 包查注册表，git 包比远端仓库的 HEAD。更新走 DSH 官方插件管理器的「卸载 + 安装」两步，完成后立即生效。",
@@ -4827,7 +4829,7 @@ var dshUsageAggregator = (function(exports) {
 		current: "当前：{name}",
 		updateAllRunning: "正在更新 {count} 个插件…"
 	};
-	var en$1 = {
+	var en$2 = {
 		tab: "Updates",
 		title: "Plugin updates",
 		intro: "Checks the plugins installed in this profile for newer releases: npm packages against the registry, git packages against the remote HEAD. Updates reuse the DSH plugin manager's remove-then-install flow and take effect immediately.",
@@ -4873,9 +4875,9 @@ var dshUsageAggregator = (function(exports) {
 	* hubDefault true —— 本页签是聚合页**默认选中**的那一个：打开设置就先看插件更新
 	* （这页要做的是自动检测），而不是先落在主题上。
 	*/
-	var meta = {
+	var meta$1 = {
 		id: "expander",
-		namespace: NS$1,
+		namespace: NS$2,
 		hubOrder: 30,
 		hubTabKey: "tabExpander",
 		hubDefault: true
@@ -4884,9 +4886,9 @@ var dshUsageAggregator = (function(exports) {
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
 	*/
-	var dictionaries = {
-		zh: zh$1,
-		en: en$1
+	var dictionaries$1 = {
+		zh: zh$2,
+		en: en$2
 	};
 	/**
 	* 兜底翻译：直接用内置字典（zh 是基准；en 缺 key 时也回落到这里）。
@@ -4896,12 +4898,12 @@ var dshUsageAggregator = (function(exports) {
 	* @returns {string} 文案。
 	*/
 	function fallbackTranslate(key, vars) {
-		const text = zh$1[key] !== void 0 ? zh$1[key] : key;
+		const text = zh$2[key] !== void 0 ? zh$2[key] : key;
 		return vars === void 0 ? text : text.replace(/\{(\w+)\}/g, function(match, name) {
 			return vars[name] === void 0 ? match : String(vars[name]);
 		});
 	}
-	var api = {
+	var api$1 = {
 		state: function(refresh) {
 			return callApi("GET", EXPANDER_ENDPOINT + "/state" + (refresh === true ? "?refresh=1" : ""));
 		},
@@ -4909,7 +4911,7 @@ var dshUsageAggregator = (function(exports) {
 			return callApi("POST", EXPANDER_ENDPOINT + "/update", payload);
 		}
 	};
-	var CSS$1 = [
+	var CSS$2 = [
 		".dpe-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
 		".dpe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".dpe-headtext{flex:1 1 auto;min-width:0;}",
@@ -4961,10 +4963,10 @@ var dshUsageAggregator = (function(exports) {
 	*
 	* @returns {object} React 元素。
 	*/
-	function Styles$1() {
+	function Styles$2() {
 		return h("style", {
 			"data-dsh-plugin-expander": STYLE_ID,
-			dangerouslySetInnerHTML: { __html: CSS$1 }
+			dangerouslySetInnerHTML: { __html: CSS$2 }
 		});
 	}
 	/**
@@ -5080,7 +5082,7 @@ var dshUsageAggregator = (function(exports) {
 		* @returns {Promise<void>} 完成。
 		*/
 		const load = useCallback(function(refresh) {
-			return api.state(refresh === true).then(function(next) {
+			return api$1.state(refresh === true).then(function(next) {
 				setState(next);
 				setError("");
 			}).catch(function(failure) {
@@ -5117,7 +5119,7 @@ var dshUsageAggregator = (function(exports) {
 			setPhase("updating");
 			setError("");
 			setMessage("");
-			api.update(payload).catch(function(failure) {
+			api$1.update(payload).catch(function(failure) {
 				expectedRef.current = 0;
 				startedAtRef.current = 0;
 				setPhase("idle");
@@ -5183,7 +5185,7 @@ var dshUsageAggregator = (function(exports) {
 				});
 			});
 		}, [load]);
-		return h("div", { className: "dpe-root" }, h(Styles$1, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
+		return h("div", { className: "dpe-root" }, h(Styles$2, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
 			type: "button",
 			className: "dpe-btn is-quiet",
 			disabled: busy === true,
@@ -5243,8 +5245,8 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator（聚合入口传进来）。
 	*/
-	function apply$1(ctx, t) {
-		const translator = typeof t === "function" ? t : makeTranslator$1(ctx.locale, NS$1, zh$1);
+	function apply$2(ctx, t) {
+		const translator = typeof t === "function" ? t : makeTranslator$1(ctx.locale, NS$2, zh$2);
 		ctx.slots.inject("plugins.tab", function() {
 			return ctx.slots.register({
 				name: "plugins.tab",
@@ -5253,7 +5255,7 @@ var dshUsageAggregator = (function(exports) {
 				label: function() {
 					return translator("tab");
 				},
-				locale: NS$1,
+				locale: NS$2,
 				inject: function() {
 					return { t: translator };
 				}
@@ -5272,22 +5274,1010 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function, ctx: object}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function HubView(props) {
+	function HubView$1(props) {
 		const t = typeof props.t === "function" ? props.t : fallbackTranslate;
-		return h(React.Fragment, null, h(Styles$1, null), h(UpdatesTab, { t }));
+		return h(React.Fragment, null, h(Styles$2, null), h(UpdatesTab, { t }));
 	}
 	/**
 	* 离线渲染自检用（scripts/render-check.mjs）：把组件暴露出来，好在没有浏览器的
 	* 环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在页面上
 	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
 	*/
-	var __ui = {
+	var __ui$1 = {
 		UpdatesTab,
 		PackageRow,
-		Styles: Styles$1,
+		Styles: Styles$2,
 		statusText,
 		kindText,
 		fallbackTranslate,
+		zh: zh$2,
+		en: en$2
+	};
+	// src/client/features/boost/i18n.js
+	/** locale 命名空间。新功能，没有历史包袱，取一个不会与别的包撞的名字。 */
+	var NS$1 = "pcBoost";
+	var zh$1 = {
+		entry: "小火箭",
+		entryTitle: "电脑加速与清理",
+		title: "电脑加速与清理",
+		subtitle: "体检这台机器，找出可以清理的过期缓存。",
+		scanning: "正在体检…",
+		scanningHint: "第一次体检要量一遍缓存目录，可能要几十秒。",
+		scanAgain: "重新体检",
+		empty: "这台机器上没有发现可清理的缓存。",
+		emptyHint: "装了什么工具、缓存在哪，都是现场探测的 —— 可能是工具刚装还没用过。",
+		selectAll: "全选",
+		selectNone: "全不选",
+		total: "共可回收 {size}",
+		totalUnknown: "正在统计体积…",
+		run: "交给 Agent 执行",
+		running: "正在交给 Agent…",
+		close: "关闭",
+		groupCache: "工具链缓存",
+		groupDsh: "DSH 自己",
+		groupProcess: "进程与窗口",
+		itemSemanticsPrune: "只删没人引用的",
+		itemSemanticsTerminate: "会结束进程",
+		itemSemanticsRenice: "只降优先级",
+		itemSemanticsCloseWindow: "会关窗口",
+		itemSemanticsFull: "整个清空",
+		itemRiskLow: "低风险",
+		itemRiskMedium: "需重下",
+		itemRiskHistory: "会丢历史",
+		itemRiskInterrupt: "会中断",
+		itemRiskHigh: "会关掉程序",
+		itemInUse: "有正在运行的进程在用，会自动跳过",
+		diagnosis: "体检结论",
+		findings: "观察",
+		warnings: "注意",
+		analysisByModel: "由模型分析",
+		analysisByRules: "按固定规则排序（没有可用的模型）",
+		done: "已交给 Agent，清理结果会回到对话里。",
+		doneDirect: "当前会话不可用，已由面板直接执行。",
+		failed: "执行失败：{error}",
+		reclaimed: "回收了约 {size}",
+		handoffTitle: "交给 Agent 的内容",
+		tab: "加速",
+		hubIntro: "右下角的小火箭是同一份体检结果：这里能看到完整清单与结论。"
+	};
+	var en$1 = {
+		entry: "Rocket",
+		entryTitle: "Speed up & clean up",
+		title: "Speed up & clean up",
+		subtitle: "Check this machine and find expired caches worth clearing.",
+		scanning: "Checking…",
+		scanningHint: "The first check has to measure every cache directory, which can take a while.",
+		scanAgain: "Check again",
+		empty: "No cleanable cache found on this machine.",
+		emptyHint: "Tools and their cache locations are discovered at runtime — the tools may simply not have been used yet.",
+		selectAll: "Select all",
+		selectNone: "Clear selection",
+		total: "{size} reclaimable",
+		totalUnknown: "Measuring…",
+		run: "Let the Agent do it",
+		running: "Handing over…",
+		close: "Close",
+		groupCache: "Toolchain caches",
+		groupDsh: "DSH itself",
+		groupProcess: "Processes & windows",
+		itemSemanticsPrune: "only unreferenced entries",
+		itemSemanticsTerminate: "ends processes",
+		itemSemanticsRenice: "lowers priority",
+		itemSemanticsCloseWindow: "closes a window",
+		itemSemanticsFull: "wiped entirely",
+		itemRiskLow: "low risk",
+		itemRiskMedium: "needs re-download",
+		itemRiskHistory: "loses history",
+		itemRiskInterrupt: "may interrupt",
+		itemRiskHigh: "closes the app",
+		itemInUse: "in use by a running process — will be skipped",
+		diagnosis: "Findings",
+		findings: "Observations",
+		warnings: "Cautions",
+		analysisByModel: "analysed by the model",
+		analysisByRules: "ranked by fixed rules (no model available)",
+		done: "Handed to the Agent — results will come back into the conversation.",
+		doneDirect: "No live session available, so the panel ran it directly.",
+		failed: "Failed: {error}",
+		reclaimed: "reclaimed about {size}",
+		handoffTitle: "What the Agent receives",
+		tab: "Boost",
+		hubIntro: "The rocket in the bottom-right corner shows the same check: here you get the full list and findings."
+	};
+	// src/client/features/boost/view.js
+	/** 与 Host 侧同一套路径（src/client/shared/constants.js）。 */
+	var api = {
+		scan: (refresh) => callApi("GET", `${BOOST_ENDPOINT}/scan${refresh === true ? "?refresh=1" : ""}`),
+		status: () => callApi("GET", `${BOOST_ENDPOINT}/status`),
+		execute: (items) => callApi("POST", `${BOOST_ENDPOINT}/execute`, { items })
+	};
+	/**
+	* 字节数 → 人话。
+	*
+	* @param {number} bytes 字节。
+	* @returns {string} 文本。
+	*/
+	function formatBytes(bytes) {
+		if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+		const units = [
+			"B",
+			"KB",
+			"MB",
+			"GB",
+			"TB"
+		];
+		let value = bytes;
+		let index = 0;
+		while (value >= 1024 && index < units.length - 1) {
+			value /= 1024;
+			index += 1;
+		}
+		return `${value >= 100 || index <= 1 ? Math.round(value) : Math.round(value * 10) / 10} ${units[index]}`;
+	}
+	/**
+	* 找出用户当前正在看的那个会话。
+	*
+	* 判据是 DSH 自己用的那一条：会话列表里 **retainedBy.mainView > 0** 的那个。
+	* 子代理的会话没有这个标记，所以天然被排除在外。
+	*
+	* @param {object} state 会话列表快照。
+	* @returns {string|null} 会话 id。
+	*/
+	function currentSessionId(state) {
+		if (state === null || state === void 0 || typeof state !== "object") return null;
+		const byId = state.byId;
+		if (byId === null || byId === void 0 || typeof byId !== "object") return null;
+		for (const row of Object.values(byId)) {
+			if (row === null || typeof row !== "object") continue;
+			const retained = row.retainedBy;
+			let count = 0;
+			if (typeof retained === "number") count = retained;
+			else if (retained !== null && typeof retained === "object" && typeof retained.mainView === "number") count = retained.mainView;
+			if (count > 0) return typeof row.id === "string" ? row.id : null;
+		}
+		return null;
+	}
+	/**
+	* 体检任务的状态钩子：启动 + 轮询。
+	*
+	* 体检是后台任务（量一个 10 GB 的目录要十几秒），所以是「启动 → 轮询」两段，
+	* 条目会随着测量完成一个个出现在界面上。
+	*
+	* @param {Function} t 翻译函数。
+	* @returns {{job: object|null, error: string, scanning: boolean, start: Function}} 状态。
+	*/
+	function useBoostJob(t, initialJob) {
+		const [job, setJob] = useState(initialJob ?? null);
+		const [error, setError] = useState("");
+		const start = useCallback(function(refresh) {
+			setError("");
+			return api.scan(refresh === true).then(function(next) {
+				setJob(next);
+				return next;
+			}).catch(function(failure) {
+				setError(String(failure.message || failure));
+				return null;
+			});
+		}, []);
+		const running = job !== null && job.running === true;
+		useEffect(function() {
+			if (!running) return void 0;
+			const timer = window.setInterval(function() {
+				api.status().then(function(next) {
+					if (next !== null && next !== void 0) setJob(next);
+				}).catch(function() {});
+			}, 1e3);
+			return function() {
+				window.clearInterval(timer);
+			};
+		}, [running]);
+		return {
+			job,
+			error,
+			scanning: running,
+			start
+		};
+	}
+	/**
+	* 勾选状态。
+	*
+	* 默认值由条目自己决定（`selectedByDefault`）：
+	*   · 可再生的缓存、可重建的缓存、已经删掉的东西 → **默认勾上**；
+	*   · 会结束进程、会关窗口、会删掉用户历史的 → **默认不勾**。
+	*
+	* 「默认全勾」和「不影响用户数据」在结束进程、删历史这两件事上是冲突的。
+	* 这里选后者：默认值写在条目上，用户想执行时自己勾 —— 面板把每一项的后果
+	* 都写在旁边（note），不藏着。
+	*
+	* 用户手动改过的条目记住他的选择；新出现的条目按自己的默认值来。
+	*
+	* @param {Array<object>} items 条目。
+	* @returns {{selected: string[], toggle: Function, setAll: Function}} 状态。
+	*/
+	function useSelection(items) {
+		const [overrides, setOverrides] = useState({});
+		const ids = items.map((item) => item.id);
+		const defaults = new Map(items.map((item) => [item.id, item.selectedByDefault !== false]));
+		return {
+			selected: ids.filter(function(id) {
+				if (Object.prototype.hasOwnProperty.call(overrides, id)) return overrides[id] === true;
+				return defaults.get(id) !== false;
+			}),
+			toggle: useCallback(function(id, checked) {
+				setOverrides(function(current) {
+					const next = Object.assign({}, current);
+					next[id] = checked === true;
+					return next;
+				});
+			}, []),
+			setAll: useCallback(function(checked) {
+				setOverrides(function(current) {
+					const next = Object.assign({}, current);
+					for (const id of ids) next[id] = checked === true;
+					return next;
+				});
+			}, [ids.join(",")])
+		};
+	}
+	/** 条目的语义 → 交接单里的说法。 */
+	var SEMANTICS_TEXT = {
+		prune: "只删没人引用的",
+		full: "整个清空",
+		terminate: "会结束进程",
+		renice: "只降优先级，不关进程",
+		"close-window": "会关窗口"
+	};
+	/**
+	* 组装「交给 Agent」的那段话。
+	*
+	* 这段话是用户与 Agent 之间的交接单：说清楚体检结论、勾了哪几项、每一项
+	* 做什么、能回收多少，以及要求 Agent **先说明再动手**。
+	*
+	* @param {object} t 翻译函数。
+	* @param {object} job 体检任务。
+	* @param {string[]} selected 勾选的条目 id。
+	* @returns {string} 文本。
+	*/
+	function buildHandoffText(t, job, selected) {
+		const chosen = (Array.isArray(job?.items) ? job.items : []).filter((item) => selected.includes(item.id));
+		const analysis = job?.analysis ?? null;
+		const lines = [];
+		lines.push("【小火箭 · 电脑加速与清理】");
+		if (analysis !== null && analysis !== void 0) {
+			lines.push("");
+			lines.push(`体检结论：${analysis.diagnosis}`);
+			for (const finding of analysis.findings ?? []) lines.push(`- ${finding}`);
+			for (const warning of analysis.warnings ?? []) lines.push(`! ${warning}`);
+		}
+		lines.push("");
+		lines.push(`用户已勾选以下 ${chosen.length} 项并点击了「交给 Agent 执行」：`);
+		chosen.forEach((item, index) => {
+			const size = item.sizeBytes > 0 ? formatBytes(item.sizeBytes) : `${item.count} 项`;
+			lines.push(`${index + 1}. [${item.id}] ${item.label} — ${size} — ${SEMANTICS_TEXT[item.semantics] ?? "整个清空"} — ${item.commandText}`);
+			if (typeof item.note === "string" && item.note !== "") lines.push(`   ${item.note}`);
+		});
+		lines.push("");
+		lines.push("请先用一两句话说明将要做什么，然后调用 system_boost 工具的 execute 动作执行（items 传上面的条目 id）。");
+		lines.push("只执行清单里的项目，不要自作主张清理别的东西；某一项失败就如实报告，不要反复重试。");
+		return lines.join("\n");
+	}
+	/**
+	* 「交给 Agent 执行」的那一下。
+	*
+	* 优先走 DSH 自己的 prompt 管线：客户端拿到当前会话的 scope，调 conversation.send
+	* —— 那条路和输入框的发送按钮是同一条，Host 侧会把它变成一条普通的用户消息
+	* 排进 Agent 的下一个 turn。Agent 醒来后先说明要做什么，再调插件自己的工具执行。
+	*
+	* 会话不可用（没开会话 / 会话已结束）时兜底：面板直接调 Host 的执行接口。
+	*
+	* @param {object} options 选项。
+	* @param {Function} options.t 翻译函数。
+	* @param {object} options.job 体检任务。
+	* @param {string[]} options.selected 勾选的条目 id。
+	* @param {{sessions: object|null}} options.runtime 运行时引用（含客户端 sessions 服务）。
+	* @param {string|null} options.sessionId 用户当前正在看的会话。
+	* @returns {{phase: string, message: string, tone: string, run: Function}} 状态。
+	*/
+	function useHandoff(options) {
+		const { t, job, selected, runtime, sessionId } = options;
+		const [phase, setPhase] = useState("idle");
+		const [message, setMessage] = useState("");
+		const [tone, setTone] = useState("");
+		return {
+			phase,
+			message,
+			tone,
+			run: useCallback(function() {
+				if (selected.length === 0) return;
+				setPhase("running");
+				setMessage("");
+				setTone("");
+				/**
+				* 兜底：当前会话不可用，面板直接执行。
+				*
+				* @returns {void}
+				*/
+				function runDirectly() {
+					api.execute(selected).then(function(result) {
+						setPhase("done");
+						setTone("is-ok");
+						const reclaimed = result && result.reclaimedBytes ? result.reclaimedBytes : 0;
+						setMessage(`${t("doneDirect")} ${t("reclaimed", { size: formatBytes(reclaimed) })}`);
+					}).catch(function(failure) {
+						setPhase("idle");
+						setTone("is-error");
+						setMessage(t("failed", { error: String(failure && failure.message ? failure.message : failure) }));
+					});
+				}
+				const text = buildHandoffText(t, job, selected);
+				const service = runtime === void 0 || runtime === null ? null : runtime.sessions;
+				const scope = sessionId !== null && service !== null && typeof service.scope === "function" ? service.scope(sessionId) : void 0;
+				const conversation = scope === void 0 || scope === null ? void 0 : scope.conversation;
+				if (conversation !== void 0 && conversation !== null && typeof conversation.send === "function") {
+					conversation.send(text).then(function() {
+						setPhase("done");
+						setTone("is-ok");
+						setMessage(t("done"));
+					}).catch(function() {
+						runDirectly();
+					});
+					return;
+				}
+				runDirectly();
+			}, [
+				selected,
+				t,
+				job,
+				runtime,
+				sessionId
+			])
+		};
+	}
+	// src/client/features/boost/parts.js
+	/**
+	* 诊断块。
+	*
+	* @param {{analysis: object, t: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function DiagnosisBlock(props) {
+		const analysis = props.analysis;
+		const t = props.t;
+		if (analysis === null || analysis === void 0) return null;
+		const findings = Array.isArray(analysis.findings) ? analysis.findings : [];
+		const warnings = Array.isArray(analysis.warnings) ? analysis.warnings : [];
+		return h("div", { className: "dsh-boost-diag" }, h("div", { className: "dsh-boost-diag-title" }, t("diagnosis")), h("div", { className: "dsh-boost-diag-main" }, analysis.diagnosis), findings.length > 0 ? h("ul", { className: "dsh-boost-diag-list" }, findings.map(function(finding, index) {
+			return h("li", { key: `f${index}` }, finding);
+		})) : null, warnings.length > 0 ? h("div", { className: "dsh-boost-diag-warn" }, warnings.map(function(warning, index) {
+			return h("div", { key: `w${index}` }, `! ${warning}`);
+		})) : null);
+	}
+	/** 条目的语义 → 标签。语义说的是「这条动作会做什么」。 */
+	var SEMANTICS_LABEL = {
+		prune: "itemSemanticsPrune",
+		full: "itemSemanticsFull",
+		terminate: "itemSemanticsTerminate",
+		renice: "itemSemanticsRenice",
+		"close-window": "itemSemanticsCloseWindow"
+	};
+	/**
+	* 这一条的风险标签。
+	*
+	* 「需重下」是缓存的说法（删了下次要重新下载）；会话那种是「会丢历史」；
+	* 进程那种是「会关掉程序」。按分组说不同的词。
+	*
+	* @param {object} item 条目。
+	* @returns {string|null} 标签的 key。
+	*/
+	function riskLabelKey(item) {
+		if (item.risk === "high") return "itemRiskHigh";
+		if (item.risk !== "medium") return null;
+		if (item.group === "dsh") return "itemRiskHistory";
+		if (item.group === "process") return "itemRiskInterrupt";
+		return "itemRiskMedium";
+	}
+	/** 清单的分组顺序。顺序也是风险的顺序：先无损的，后有代价的。 */
+	var ITEM_GROUPS = [
+		{
+			key: "cache",
+			labelKey: "groupCache"
+		},
+		{
+			key: "dsh",
+			labelKey: "groupDsh"
+		},
+		{
+			key: "process",
+			labelKey: "groupProcess"
+		}
+	];
+	/**
+	* 一条清理项。
+	*
+	* @param {{item: object, selected: boolean, toggle: Function, t: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function ItemRow(props) {
+		const item = props.item;
+		const t = props.t;
+		const memoryBytes = item.group === "process" && item.detail !== void 0 && item.detail !== null ? Number(item.detail.rssBytes ?? 0) : 0;
+		const size = item.sizeBytes > 0 ? formatBytes(item.sizeBytes) : memoryBytes > 0 ? formatBytes(memoryBytes) : typeof item.count === "number" && item.count > 1 ? item.group === "process" ? `${item.count} 个进程` : `${item.count} 项` : "";
+		return h("label", { className: "dsh-boost-item" }, h("input", {
+			type: "checkbox",
+			className: "dsh-boost-check",
+			checked: props.selected,
+			onChange: function(event) {
+				props.toggle(item.id, event.target.checked);
+			}
+		}), h("div", { className: "dsh-boost-item-main" }, h("div", { className: "dsh-boost-item-name" }, h("span", null, item.label), size === "" ? null : h("span", { className: "dsh-boost-item-size" }, size), h("span", { className: "dsh-boost-tag" }, t(SEMANTICS_LABEL[item.semantics] ?? "itemSemanticsFull")), riskLabelKey(item) === null ? null : h("span", { className: `dsh-boost-tag ${item.risk === "high" ? "is-danger" : "is-warn"}` }, t(riskLabelKey(item)))), h("div", { className: "dsh-boost-item-meta" }, item.commandText), typeof item.note === "string" && item.note !== "" ? h("div", { className: "dsh-boost-item-note" }, item.note) : null));
+	}
+	/**
+	* 清理清单（按组分段）。
+	*
+	* @param {{items: Array<object>, selected: string[], toggle: Function, t: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function ItemList(props) {
+		const items = props.items;
+		const selected = props.selected;
+		const toggle = props.toggle;
+		const t = props.t;
+		if (items.length === 0) return null;
+		const groups = ITEM_GROUPS.map(function(group) {
+			return {
+				group,
+				items: items.filter(function(item) {
+					return (item.group ?? "cache") === group.key;
+				})
+			};
+		}).filter(function(entry) {
+			return entry.items.length > 0;
+		});
+		const claimed = new Set(groups.reduce(function(all, entry) {
+			return all.concat(entry.items.map(function(item) {
+				return item.id;
+			}));
+		}, []));
+		const rest = items.filter(function(item) {
+			return !claimed.has(item.id);
+		});
+		if (rest.length > 0) groups.push({
+			group: {
+				key: "other",
+				labelKey: "groupCache"
+			},
+			items: rest
+		});
+		return h("div", { className: "dsh-boost-list" }, groups.map(function(entry) {
+			return h("div", {
+				key: entry.group.key,
+				className: "dsh-boost-group"
+			}, h("div", { className: "dsh-boost-group-title" }, t(entry.group.labelKey)), entry.items.map(function(item) {
+				return h(ItemRow, {
+					key: item.id,
+					item,
+					selected: selected.includes(item.id),
+					toggle,
+					t
+				});
+			}));
+		}));
+	}
+	// src/client/features/boost/ref.js
+	/**
+	* 运行时共享状态。
+	*
+	* sessions —— 客户端的 sessions 服务（可选注入拿到的）。
+	* sessionId —— 用户当前正在看的会话 id（由浮层写，设置页读）。
+	*/
+	var BOOST_RUNTIME = {
+		sessions: null,
+		sessionId: null
+	};
+	// src/client/features/boost/styles.js
+	/** 样式表正文。 */
+	var CSS$1 = [
+		".dsh-boost{position:fixed;right:24px;bottom:24px;z-index:2147483000;pointer-events:auto;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
+		".dsh-boost-launch{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease,background .15s ease;user-select:none;touch-action:none;-webkit-user-select:none;}",
+		".dsh-boost-launch:hover{background:var(--dsw-alias-interactive-bg-hover);box-shadow:0 8px 22px rgba(0,0,0,.24);}",
+		".dsh-boost-launch:active{cursor:grabbing;}",
+		".dsh-boost-launch.is-dragging{cursor:grabbing;transform:scale(1.06);box-shadow:0 10px 26px rgba(0,0,0,.28);}",
+		".dsh-boost-launch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;}",
+		".dsh-boost-launch svg{width:26px;height:26px;display:block;pointer-events:none;}",
+		".dsh-boost.is-dragging .dsh-boost-launch{border-color:var(--dsw-alias-brand-primary);}",
+		"@keyframes dsh-boost-rise{0%{transform:translateY(0) scale(1);opacity:1;}18%{transform:translateY(4px) scale(.92);opacity:1;}100%{transform:translateY(-220px) scale(.55);opacity:0;}}",
+		".dsh-boost-launch.is-launching{animation:dsh-boost-rise .85s cubic-bezier(.28,.72,.35,1) forwards;pointer-events:none;}",
+		"@keyframes dsh-boost-flame{0%,100%{transform:scaleY(1);opacity:.95;}50%{transform:scaleY(1.45) translateY(1px);opacity:.7;}}",
+		".dsh-boost-flame{transform-origin:center top;transform-box:fill-box;}",
+		".dsh-boost-launch.is-launching .dsh-boost-flame{animation:dsh-boost-flame .18s linear infinite;}",
+		"@keyframes dsh-boost-land{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}",
+		".dsh-boost-launch.is-landing{animation:dsh-boost-land .28s ease-out;}",
+		"@keyframes dsh-boost-smoke{0%{transform:translate(0,0) scale(.4);opacity:.55;}100%{transform:translate(-6px,16px) scale(1.5);opacity:0;}}",
+		".dsh-boost-smoke{opacity:0;}",
+		".dsh-boost-launch.is-launching .dsh-boost-smoke{animation:dsh-boost-smoke .7s ease-out infinite;}",
+		".dsh-boost-panel{position:absolute;bottom:calc(100% + 12px);right:0;width:min(420px,calc(100vw - 32px));max-height:min(72vh,620px);display:flex;flex-direction:column;border-radius:14px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);box-shadow:0 16px 44px rgba(0,0,0,.26);overflow:hidden;}",
+		".dsh-boost.is-high .dsh-boost-panel{bottom:auto;top:calc(100% + 12px);}",
+		".dsh-boost-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--dsw-alias-border-l1);}",
+		".dsh-boost-title{margin:0;font-size:15px;font-weight:600;}",
+		".dsh-boost-sub{margin:3px 0 0;font-size:11px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-boost-close{border:0;background:transparent;color:var(--dsw-alias-label-secondary);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;}",
+		".dsh-boost-close:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-boost-body{flex:1 1 auto;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}",
+		".dsh-boost-diag{border-radius:10px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-2);padding:10px 12px;display:flex;flex-direction:column;gap:6px;}",
+		".dsh-boost-diag-title{font-size:11px;color:var(--dsw-alias-label-secondary);text-transform:none;}",
+		".dsh-boost-diag-main{font-size:13px;font-weight:600;}",
+		".dsh-boost-diag-list{margin:0;padding-left:16px;font-size:12px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-boost-diag-warn{font-size:12px;color:var(--dsw-alias-state-warn-primary);}",
+		".dsh-boost-list{display:flex;flex-direction:column;gap:6px;}",
+		".dsh-boost-group{margin-top:10px;}",
+		".dsh-boost-group:first-child{margin-top:0;}",
+		".dsh-boost-group-title{font-size:12px;font-weight:600;color:var(--dsw-alias-label-secondary);letter-spacing:.04em;padding:6px 2px 2px;}",
+		".dsh-boost-item{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:9px;border:1px solid var(--dsw-alias-border-l1);cursor:pointer;}",
+		".dsh-boost-item:hover{background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-boost-check{margin-top:2px;width:15px;height:15px;flex:0 0 auto;accent-color:var(--dsw-alias-brand-primary);cursor:pointer;}",
+		".dsh-boost-item-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}",
+		".dsh-boost-item-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}",
+		".dsh-boost-item-size{font-variant-numeric:tabular-nums;color:var(--dsw-alias-brand-primary);font-weight:600;}",
+		".dsh-boost-item-meta{font-size:11px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-boost-item-note{font-size:11px;color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;}",
+		".dsh-boost-tag{display:inline-flex;align-items:center;padding:1px 7px;border-radius:999px;font-size:10px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);white-space:nowrap;}",
+		".dsh-boost-tag.is-danger{background:rgba(180,35,24,.12);color:var(--dsw-alias-state-error-primary,#b42318);}",
+		".dsh-boost-tag.is-warn{background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 18%,transparent);color:var(--dsw-alias-state-warn-primary);}",
+		".dsh-boost-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-top:1px solid var(--dsw-alias-border-l1);font-size:12px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-boost-foot-actions{display:flex;align-items:center;gap:8px;}",
+		".dsh-boost-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap;}",
+		".dsh-boost-btn:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-boost-btn.is-primary{background:var(--dsw-alias-button-primary-fill);border-color:transparent;color:var(--dsw-alias-label-primary-foreground);}",
+		".dsh-boost-btn.is-primary:hover:not(:disabled){background:var(--dsw-alias-button-primary-hover);}",
+		".dsh-boost-btn:disabled{opacity:.5;cursor:not-allowed;}",
+		".dsh-boost-btn.is-quiet{border-color:transparent;color:var(--dsw-alias-label-secondary);}",
+		".dsh-boost-msg{margin:0;font-size:12px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-boost-msg.is-error{color:var(--dsw-alias-state-error-primary);}",
+		".dsh-boost-msg.is-ok{color:var(--dsw-alias-state-success-primary);}",
+		".dsh-boost-empty{padding:14px 4px;text-align:center;font-size:12px;color:var(--dsw-alias-label-secondary);display:flex;flex-direction:column;gap:4px;}",
+		".dsh-boost-hub{display:flex;flex-direction:column;gap:14px;}",
+		".dsh-boost-hub-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}"
+	].join("\n");
+	/**
+	* 样式组件。
+	*
+	* @returns {object} React 元素。
+	*/
+	function Styles$1() {
+		return h("style", {
+			"data-dsh-boost": "dsh-boost-style",
+			dangerouslySetInnerHTML: { __html: CSS$1 }
+		});
+	}
+	// src/client/features/boost/panel.js
+	/**
+	* 「加速」页签。
+	*
+	* @param {{t: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function BoostPanel(props) {
+		const t = props.t;
+		const { job, error, scanning, start } = useBoostJob(t, props.initialJob);
+		const items = Array.isArray(job?.items) ? job.items : [];
+		const { selected, toggle, setAll } = useSelection(items);
+		const handoff = useHandoff({
+			t,
+			job,
+			selected,
+			runtime: BOOST_RUNTIME,
+			sessionId: BOOST_RUNTIME.sessionId
+		});
+		useEffect(function() {
+			start(false);
+		}, [start]);
+		const totalBytes = items.reduce(function(sum, item) {
+			return sum + (item.sizeBytes ?? 0);
+		}, 0);
+		const analysis = job?.analysis ?? null;
+		return h("div", { className: "dsh-boost-hub" }, h(Styles$1, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
+			type: "button",
+			className: "dsh-boost-btn is-quiet",
+			onClick: function() {
+				setAll(selected.length !== items.length);
+			}
+		}, selected.length === items.length ? t("selectNone") : t("selectAll")) : null, h("button", {
+			type: "button",
+			className: "dsh-boost-btn is-quiet",
+			disabled: scanning === true,
+			onClick: function() {
+				start(true);
+			}
+		}, t("scanAgain")), h("button", {
+			type: "button",
+			className: "dsh-boost-btn is-primary",
+			disabled: scanning === true || handoff.phase === "running" || selected.length === 0,
+			onClick: handoff.run
+		}, handoff.phase === "running" ? t("running") : t("run")))), scanning === true ? h("div", { className: "dsh-boost-empty" }, h("span", null, t("scanning")), h("span", null, t("scanningHint"))) : null, error !== "" ? h("div", { className: "dsh-boost-msg is-error" }, error) : null, h(DiagnosisBlock, {
+			analysis,
+			t
+		}), items.length === 0 && scanning !== true && error === "" ? h("div", { className: "dsh-boost-empty" }, h("span", null, t("empty")), h("span", null, t("emptyHint"))) : null, h(ItemList, {
+			items,
+			selected,
+			toggle,
+			t
+		}), handoff.message !== "" ? h("p", { className: "dsh-boost-msg " + handoff.tone }, handoff.message) : null);
+	}
+	// src/client/features/boost/rocket.js
+	/**
+	* 火箭图标。
+	*
+	* @param {{size?: number}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function RocketIcon(props) {
+		const size = typeof props.size === "number" ? props.size : 26;
+		return h("svg", {
+			viewBox: "0 0 32 32",
+			width: size,
+			height: size,
+			"aria-hidden": "true",
+			focusable: "false"
+		}, h("g", { className: "dsh-boost-flame" }, h("path", {
+			d: "M13.6 21.5h4.8l-2.4 7.2z",
+			fill: "var(--dsw-alias-state-warn-primary, #f59e0b)",
+			opacity: "0.9"
+		})), h("path", {
+			d: "M9.6 19.4 5.4 25.8l4.6-1.1z",
+			fill: "var(--dsw-alias-bg-layer-2)",
+			stroke: "currentColor",
+			strokeWidth: "1.2",
+			strokeLinejoin: "round"
+		}), h("path", {
+			d: "M22.4 19.4l4.2 6.4-4.6-1.1z",
+			fill: "var(--dsw-alias-bg-layer-2)",
+			stroke: "currentColor",
+			strokeWidth: "1.2",
+			strokeLinejoin: "round"
+		}), h("path", {
+			d: "M16 2.4c-4.4 4.6-6 10.6-6 16.2v2.6h12v-2.6c0-5.6-1.6-11.6-6-16.2z",
+			fill: "var(--dsw-alias-bg-layer-2)",
+			stroke: "currentColor",
+			strokeWidth: "1.4",
+			strokeLinejoin: "round"
+		}), h("circle", {
+			cx: "16",
+			cy: "12.4",
+			r: "3.1",
+			fill: "var(--dsw-alias-brand-primary)",
+			stroke: "currentColor",
+			strokeWidth: "1.2"
+		}), h("path", {
+			d: "M10 18.4h12",
+			stroke: "currentColor",
+			strokeWidth: "1.1",
+			strokeLinecap: "round",
+			opacity: "0.55"
+		}));
+	}
+	// src/client/features/boost/widget.js
+	/** 按钮位置记在哪。 */
+	var POS_KEY = "dsh-usage-aggregator:boost:pos";
+	/** 按钮边长（与样式里的 48px 对齐）。 */
+	var BUTTON_SIZE = 48;
+	/** 离屏幕边缘的距离。 */
+	var EDGE = 24;
+	/** 发射动画时长（毫秒），与样式里的 .85s 对齐。 */
+	var LAUNCH_MS = 850;
+	/**
+	* 没有 useSessions 时的占位（保持 Hook 调用顺序稳定）。
+	*
+	* @param {Function} selector 选择器。
+	* @returns {null} 永远没有会话。
+	*/
+	function noSessions(selector) {
+		return selector(null);
+	}
+	/**
+	* 读记住的位置。
+	*
+	* @returns {{x: number, y: number}|null} 位置；没有就是 null。
+	*/
+	function readPos() {
+		try {
+			const raw = window.localStorage.getItem(POS_KEY);
+			if (raw === null || raw === "") return null;
+			const value = JSON.parse(raw);
+			if (value === null || typeof value !== "object") return null;
+			if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) return null;
+			return {
+				x: value.x,
+				y: value.y
+			};
+		} catch {
+			return null;
+		}
+	}
+	/**
+	* 记住位置。
+	*
+	* @param {{x: number, y: number}} pos 位置。
+	*/
+	function writePos(pos) {
+		try {
+			window.localStorage.setItem(POS_KEY, JSON.stringify(pos));
+		} catch {}
+	}
+	/**
+	* 把位置夹回屏幕内。
+	*
+	* @param {{x: number, y: number}} pos 位置。
+	* @returns {{x: number, y: number}} 夹好之后的位置。
+	*/
+	function clampPos(pos) {
+		const maxX = Math.max(EDGE, window.innerWidth - BUTTON_SIZE - EDGE);
+		const maxY = Math.max(EDGE, window.innerHeight - BUTTON_SIZE - EDGE);
+		return {
+			x: Math.min(Math.max(EDGE, pos.x), maxX),
+			y: Math.min(Math.max(EDGE, pos.y), maxY)
+		};
+	}
+	/**
+	* 小火箭浮层。
+	*
+	* @param {{t: Function, runtime: {sessions: object|null}, useSessions?: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function BoostWidget(props) {
+		const t = props.t;
+		const runtime = props.runtime ?? { sessions: null };
+		const sessionId = currentSessionId((typeof props.useSessions === "function" ? props.useSessions : noSessions)(function(all) {
+			return all;
+		}));
+		const [open, setOpen] = useState(props.initialOpen === true);
+		const [launching, setLaunching] = useState(false);
+		const [landing, setLanding] = useState(false);
+		const [pos, setPos] = useState(null);
+		const [dragging, setDragging] = useState(false);
+		const buttonRef = useRef(null);
+		const dragRef = useRef(null);
+		const suppressClickRef = useRef(false);
+		const launchTimerRef = useRef(null);
+		const { job, error, scanning, start } = useBoostJob(t, props.initialJob);
+		const items = Array.isArray(job?.items) ? job.items : [];
+		const { selected, toggle, setAll } = useSelection(items);
+		useEffect(function() {
+			BOOST_RUNTIME.sessionId = sessionId;
+		}, [sessionId]);
+		useEffect(function() {
+			const saved = readPos();
+			if (saved !== null) setPos(clampPos(saved));
+			const onResize = function() {
+				setPos(function(current) {
+					return current === null ? current : clampPos(current);
+				});
+			};
+			window.addEventListener("resize", onResize);
+			return function() {
+				window.removeEventListener("resize", onResize);
+			};
+		}, []);
+		useEffect(function() {
+			return function() {
+				if (launchTimerRef.current !== null) window.clearTimeout(launchTimerRef.current);
+			};
+		}, []);
+		/**
+		* 发射：火箭升空 → 落回原位 → 展开清单。
+		*/
+		const launch = useCallback(function() {
+			setLaunching(true);
+			setLanding(false);
+			setOpen(false);
+			launchTimerRef.current = window.setTimeout(function() {
+				launchTimerRef.current = null;
+				setLaunching(false);
+				setLanding(true);
+				setOpen(true);
+				start(false);
+			}, LAUNCH_MS);
+		}, [start]);
+		const onPointerDown = useCallback(function(event) {
+			if (event.button !== 0) return;
+			const node = buttonRef.current;
+			if (node === null) return;
+			const rect = node.getBoundingClientRect();
+			dragRef.current = {
+				startX: event.clientX,
+				startY: event.clientY,
+				baseX: rect.left,
+				baseY: rect.top,
+				moved: false
+			};
+			try {
+				node.setPointerCapture(event.pointerId);
+			} catch {}
+		}, []);
+		const onPointerMove = useCallback(function(event) {
+			const drag = dragRef.current;
+			if (drag === null) return;
+			const dx = event.clientX - drag.startX;
+			const dy = event.clientY - drag.startY;
+			if (!drag.moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+			drag.moved = true;
+			setDragging(true);
+			setPos(clampPos({
+				x: drag.baseX + dx,
+				y: drag.baseY + dy
+			}));
+		}, []);
+		const onPointerUp = useCallback(function(event) {
+			const drag = dragRef.current;
+			dragRef.current = null;
+			setDragging(false);
+			try {
+				buttonRef.current?.releasePointerCapture(event.pointerId);
+			} catch {}
+			if (drag !== null && drag.moved) {
+				suppressClickRef.current = true;
+				setPos(function(current) {
+					if (current !== null) writePos(current);
+					return current;
+				});
+			}
+		}, []);
+		const onClick = useCallback(function() {
+			if (suppressClickRef.current) {
+				suppressClickRef.current = false;
+				return;
+			}
+			if (open) {
+				setOpen(false);
+				return;
+			}
+			launch();
+		}, [open, launch]);
+		const handoff = useHandoff({
+			t,
+			job,
+			selected,
+			runtime,
+			sessionId
+		});
+		const totalBytes = items.reduce(function(sum, item) {
+			return sum + (item.sizeBytes ?? 0);
+		}, 0);
+		const analysis = job?.analysis ?? null;
+		const high = pos !== null && pos.y < 320;
+		const style = pos === null ? void 0 : {
+			left: `${pos.x}px`,
+			top: `${pos.y}px`,
+			right: "auto",
+			bottom: "auto"
+		};
+		return h("div", {
+			className: "dsh-boost" + (dragging ? " is-dragging" : "") + (high ? " is-high" : ""),
+			style
+		}, h(Styles$1, null), open ? h("div", {
+			className: "dsh-boost-panel",
+			role: "dialog",
+			"aria-label": t("title")
+		}, h("div", { className: "dsh-boost-head" }, h("div", null, h("h2", { className: "dsh-boost-title" }, t("title")), h("p", { className: "dsh-boost-sub" }, t("subtitle"))), h("button", {
+			type: "button",
+			className: "dsh-boost-close",
+			"aria-label": t("close"),
+			onClick: function() {
+				setOpen(false);
+			}
+		}, "×")), h("div", { className: "dsh-boost-body" }, scanning === true || job === null && error === "" ? h("div", { className: "dsh-boost-empty" }, h("span", null, t("scanning")), h("span", null, t("scanningHint"))) : null, error !== "" ? h("div", { className: "dsh-boost-msg is-error" }, error) : null, h(DiagnosisBlock, {
+			analysis,
+			t
+		}), items.length === 0 && scanning !== true && error === "" ? h("div", { className: "dsh-boost-empty" }, h("span", null, t("empty")), h("span", null, t("emptyHint"))) : null, h(ItemList, {
+			items,
+			selected,
+			toggle,
+			t
+		})), h("div", { className: "dsh-boost-foot" }, h("span", null, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
+			type: "button",
+			className: "dsh-boost-btn is-quiet",
+			onClick: function() {
+				setAll(selected.length !== items.length);
+			}
+		}, selected.length === items.length ? t("selectNone") : t("selectAll")) : null, h("button", {
+			type: "button",
+			className: "dsh-boost-btn is-quiet",
+			disabled: scanning === true,
+			onClick: function() {
+				start(true);
+			}
+		}, t("scanAgain")), h("button", {
+			type: "button",
+			className: "dsh-boost-btn is-primary",
+			disabled: scanning === true || handoff.phase === "running" || selected.length === 0,
+			onClick: handoff.run
+		}, handoff.phase === "running" ? t("running") : t("run")))), handoff.message !== "" ? h("div", { className: "dsh-boost-foot" }, h("p", { className: "dsh-boost-msg " + handoff.tone }, handoff.message)) : null) : null, h("button", {
+			ref: buttonRef,
+			type: "button",
+			className: "dsh-boost-launch" + (launching ? " is-launching" : "") + (landing ? " is-landing" : ""),
+			title: t("entryTitle"),
+			"aria-label": t("entryTitle"),
+			onPointerDown,
+			onPointerMove,
+			onPointerUp,
+			onPointerCancel: onPointerUp,
+			onClick
+		}, h(RocketIcon, { size: 26 })));
+	}
+	// src/client/features/boost/index.js
+	var boost_exports = /* @__PURE__ */ __exportAll({
+		HubView: () => HubView,
+		__ui: () => __ui,
+		apply: () => apply$1,
+		dictionaries: () => dictionaries,
+		meta: () => meta
+	});
+	/**
+	* 功能标识。
+	*
+	* namespace 'pcBoost' —— 新功能，没有历史包袱，取一个不会与别的包撞的名字。
+	* hubOrder 40 —— 聚合页里排第四（主题 10 / 用量 20 / 插件更新 30 / 加速 40）。
+	* hubTabKey 'tabBoost' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+	* 字典里（src/client/hub/i18n.js）。
+	*/
+	var meta = {
+		id: "boost",
+		namespace: NS$1,
+		hubOrder: 40,
+		hubTabKey: "tabBoost"
+	};
+	/**
+	* 完整字典。聚合入口拿它注册 locale 命名空间。
+	*/
+	var dictionaries = {
+		zh: zh$1,
+		en: en$1
+	};
+	/**
+	* 装配本功能。
+	*
+	* @param {object} ctx 插件上下文。
+	* @param {(key: string, vars?: object) => string} t 本功能命名空间的 translator。
+	*/
+	function apply$1(ctx, t) {
+		const translator = typeof t === "function" ? t : (key) => zh$1[key] !== void 0 ? zh$1[key] : key;
+		ctx.slots.inject("shell.overlay", function() {
+			return ctx.slots.register({
+				name: "shell.overlay",
+				id: "axzo-boost",
+				order: 30,
+				locale: NS$1
+			}, function(slotProps) {
+				return h(BoostWidget, {
+					t: translator,
+					runtime: BOOST_RUNTIME,
+					useSessions: slotProps !== void 0 && slotProps !== null ? slotProps.useSessions : void 0
+				});
+			});
+		});
+		ctx.inject(["sessions"], function(scope) {
+			BOOST_RUNTIME.sessions = scope.sessions;
+			return function() {
+				BOOST_RUNTIME.sessions = null;
+			};
+		});
+	}
+	/**
+	* 聚合设置页里本功能的视图。
+	*
+	* @param {{t: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	var HubView = (props) => h(BoostPanel, props);
+	/**
+	* 离线渲染自检用（scripts/ui-check-boost.mjs）：把组件暴露出来，好在没有浏览器的
+	* 环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在页面上
+	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
+	*/
+	var __ui = {
+		BoostWidget,
+		BoostPanel,
+		DiagnosisBlock,
+		ItemList,
 		zh: zh$1,
 		en: en$1
 	};
@@ -5296,7 +6286,8 @@ var dshUsageAggregator = (function(exports) {
 	var features = [
 		theme_exports,
 		usage_exports,
-		expander_exports
+		expander_exports,
+		boost_exports
 	];
 	// src/client/hub/i18n.js
 	/** 聚合页的 locale 命名空间。 */
@@ -5306,7 +6297,8 @@ var dshUsageAggregator = (function(exports) {
 		tabTheme: "Theme",
 		tabUsage: "流量",
 		tabExpander: "插件更新",
-		hint: "三个功能在同一个插件里。左侧切换，下方是当前功能的设置。",
+		tabBoost: "加速",
+		hint: "四块能力在同一个插件里。左侧切换，下方是当前功能的设置。",
 		empty: "没有可用的功能。",
 		buildAt: "客户端构建于 {at}"
 	};
@@ -5315,7 +6307,8 @@ var dshUsageAggregator = (function(exports) {
 		tabTheme: "Theme",
 		tabUsage: "Traffic",
 		tabExpander: "Plugin Updates",
-		hint: "Three capabilities in one plugin. Switch below to configure each one.",
+		tabBoost: "Boost",
+		hint: "Four capabilities in one plugin. Switch below to configure each one.",
 		empty: "No capability available.",
 		buildAt: "Client built at {at}"
 	};
@@ -5442,7 +6435,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-10-30 15:39:19";
+	var BUILD_AT = "2026-10-30 18:10:56";
 	/**
 	* 声明要等的服务。
 	*

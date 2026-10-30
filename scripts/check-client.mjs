@@ -70,7 +70,7 @@ const EXPECTED_AXZO_COUNT = 17;
  * 聚合页自己还有一个命名空间（src/client/hub/i18n.js 的 NS），它放设置入口的
  * 标签，不需要 hubTab —— 见 HUB_NAMESPACE。
  */
-const EXPECTED_NAMESPACES = ['settings.axzoTheme', 'usage-query', 'pluginExpander'];
+const EXPECTED_NAMESPACES = ['settings.axzoTheme', 'usage-query', 'pluginExpander', 'pcBoost'];
 
 /** 聚合页自己的命名空间（设置入口的标签在这里）。 */
 const HUB_NAMESPACE = 'dsh-usage-aggregator';
@@ -83,6 +83,8 @@ const EXPECTED_SLOTS = {
   'sidebar.brand.mark': { priority: -1 },
   'sidebar.brand.name': { priority: -1 },
   'conversation.hero.brand.mark': { priority: -1 },
+  // 小火箭浮层：挂在 root scope 的浮层槽上。
+  'shell.overlay': { id: 'axzo-boost' },
 };
 
 /** 期望在 sidebar.footer.action 上注册的项：id → order。 */
@@ -381,6 +383,12 @@ for (const [name, expected] of Object.entries(EXPECTED_SLOTS)) {
     else bad(`${name} 的 priority 是 ${priority}，必须是 ${expected.priority}`);
   }
 }
+
+// 小火箭只能占一个浮层槽，且 id 固定 —— 它是「内容区域右下角那个入口」，
+// 注册两次就是页面上冒出两个火箭。
+const overlays = byName('shell.overlay');
+if (overlays.length === 1) ok('shell.overlay 只注册一次（小火箭浮层）');
+else bad(`shell.overlay 注册了 ${overlays.length} 次`);
 
 // 聚合页必须是**唯一**的 settings.section 入口。
 const sections = byName('settings.section');

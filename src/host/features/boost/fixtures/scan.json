@@ -1,0 +1,2254 @@
+{
+  "id": "boost-1",
+  "running": false,
+  "startedAt": 1793354824067,
+  "finishedAt": 1793354861235,
+  "facts": {
+    "platform": "darwin",
+    "cpuCount": 8,
+    "load": {
+      "avg1": 15.08,
+      "avg5": 23.17,
+      "avg15": 21.6
+    },
+    "memory": {
+      "totalBytes": 8589934592,
+      "freeBytes": 57442304,
+      "usedBytes": 8532492288,
+      "swapTotalBytes": 7516192768,
+      "swapUsedBytes": 6663826309.12,
+      "swapPressure": true
+    },
+    "disk": [
+      {
+        "path": "/Users/gaozhipeng",
+        "totalBytes": 245107195904,
+        "usedBytes": 195266011136,
+        "freeBytes": 19139604480,
+        "usePct": 92
+      },
+      {
+        "path": "/System/Volumes/Data",
+        "totalBytes": 245107195904,
+        "usedBytes": 195266011136,
+        "freeBytes": 19139604480,
+        "usePct": 92
+      }
+    ],
+    "topProcesses": [
+      {
+        "pid": 3756,
+        "name": "Google Chrome Helper (Aperitif Renderer)",
+        "cpuPct": 53.7,
+        "rssBytes": 609370112
+      },
+      {
+        "pid": 4791,
+        "name": "node",
+        "cpuPct": 13.2,
+        "rssBytes": 534822912
+      },
+      {
+        "pid": 38979,
+        "name": "Code Helper (Renderer)",
+        "cpuPct": 0,
+        "rssBytes": 472416256
+      },
+      {
+        "pid": 665,
+        "name": "Google Chrome",
+        "cpuPct": 1.4,
+        "rssBytes": 156811264
+      },
+      {
+        "pid": 99532,
+        "name": "Google Chrome Helper (Aperitif Renderer)",
+        "cpuPct": 7.7,
+        "rssBytes": 134807552
+      },
+      {
+        "pid": 51451,
+        "name": "Google Chrome",
+        "cpuPct": 6.6,
+        "rssBytes": 93274112
+      },
+      {
+        "pid": 620,
+        "name": "DingTalk",
+        "cpuPct": 7.6,
+        "rssBytes": 82919424
+      },
+      {
+        "pid": 85661,
+        "name": "Google Chrome Helper (Aperitif Renderer)",
+        "cpuPct": 0,
+        "rssBytes": 80904192
+      }
+    ],
+    "apps": [
+      {
+        "app": "Google Chrome.app",
+        "rssBytes": 1857372160,
+        "cpuPct": 105,
+        "pids": [
+          3756,
+          665,
+          99532,
+          63340,
+          51451,
+          85661,
+          85723,
+          85724,
+          1419,
+          3732,
+          51465,
+          1423,
+          5675,
+          3629,
+          51466,
+          12112,
+          3594,
+          5419,
+          5676,
+          35543,
+          63339,
+          22798,
+          1932,
+          11752,
+          51468,
+          51455,
+          1297
+        ],
+        "count": 27,
+        "mainPid": 3756,
+        "members": [
+          {
+            "pid": 3756,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 606912512,
+            "cpuSeconds": 6836.51,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=18 --launch-time-ticks=65040589 --shared-files --metrics-shmem-handle=1752395122,r,1560083504035382481,11306062877464936655,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709003178624776 --seatbelt-client=136",
+            "app": "Google Chrome.app",
+            "cpuPct": 33.3
+          },
+          {
+            "pid": 665,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 145768448,
+            "cpuSeconds": 892.5,
+            "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "command": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "app": "Google Chrome.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 99532,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 134283264,
+            "cpuSeconds": 170.21,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=483 --launch-time-ticks=25110985576 --shared-files --metrics-shmem-handle=1752395122,r,16338548136929381460,7875832776660883033,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709438903084561 --seatbelt-client=47",
+            "app": "Google Chrome.app",
+            "cpuPct": 6.7
+          },
+          {
+            "pid": 63340,
+            "ppid": 51451,
+            "uid": 501,
+            "rssBytes": 133480448,
+            "cpuSeconds": 4.09,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --disable-background-timer-throttling --disable-breakpad --enable-automation --force-color-profile=srgb --remote-debugging-pipe --allow-pre-commit-input --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=31 --launch-time-ticks=30593681011 --shared-files --metrics-shmem-handle=1752395122,r,13262496340373869670,13583219957890582670,1572864 --field-trial-handle=1718379636,r,5695959726766970643,1965638851050586854,262144 --enable-features=PdfOopif --disable-features=AcceptCHFrame,IsolateSandboxedIframes,MediaRouter,OptimizationHints,ProcessPerSiteUpToMainFrameThreshold,Translate,WebUIOmniboxAimPopup,WebUIOmniboxPopup,WebUIReloadButton --variations-seed-version --pseudonymization-salt-handle=1935764596,r,7545725009153943483,11333023318120732998,4 --trace-process-track-uuid=3190709015360168813 --seatbelt-client=70",
+            "app": "Google Chrome.app",
+            "cpuPct": 9.2
+          },
+          {
+            "pid": 51451,
+            "ppid": 5808,
+            "uid": 501,
+            "rssBytes": 123944960,
+            "cpuSeconds": 68.28,
+            "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "command": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --allow-pre-commit-input --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-crash-reporter --disable-default-apps --disable-dev-shm-usage --disable-hang-monitor --disable-infobars --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-search-engine-choice-screen --disable-sync --enable-automation --export-tagged-pdf --force-color-profile=srgb --generate-pdf-document-outline --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --disable-features=Translate,AcceptCHFrame,MediaRouter,OptimizationHints,WebUIReloadButton,WebUIOmniboxPopup,WebUIOmniboxAimPopup,ProcessPerSiteUpToMainFrameThreshold,IsolateSandboxedIframes --enable-features=PdfOopif --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --disable-extensions about:blank --hide-crash-restore-bubble --remote-debugging-pipe",
+            "app": "Google Chrome.app",
+            "cpuPct": 10.8
+          },
+          {
+            "pid": 85661,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 80560128,
+            "cpuSeconds": 0.17,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --extension-process --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=574 --launch-time-ticks=30984185306 --shared-files --metrics-shmem-handle=1752395122,r,17260233612383363614,5253715915562755405,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709524173892820 --seatbelt-client=139",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 85723,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 72466432,
+            "cpuSeconds": 0.1,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --extension-process --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=575 --launch-time-ticks=31001348164 --shared-files --metrics-shmem-handle=1752395122,r,7008243083046633849,1862965753058491817,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709525110934669 --seatbelt-client=216",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 85724,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 71024640,
+            "cpuSeconds": 0.11,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --extension-process --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=576 --launch-time-ticks=31001386785 --shared-files --metrics-shmem-handle=1752395122,r,11015414873271891866,6062032349585172742,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709526047976518 --seatbelt-client=137",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 1419,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 66273280,
+            "cpuSeconds": 3960.46,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif) --type=gpu-process --gpu-recent-crash-count=0 --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --gpu-preferences=WAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAADAAAAAEAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --shared-files --metrics-shmem-handle=1752395122,r,3569944750580649326,2531163144906678714,262144 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190708988185955192 --seatbelt-client=23",
+            "app": "Google Chrome.app",
+            "cpuPct": 38.3
+          },
+          {
+            "pid": 3732,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 49709056,
+            "cpuSeconds": 15.44,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --extension-process --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=15 --launch-time-ticks=64232836 --shared-files --metrics-shmem-handle=1752395122,r,1243315348829722369,11152755786419949802,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709000367499229 --seatbelt-client=100",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 51465,
+            "ppid": 51451,
+            "uid": 501,
+            "rssBytes": 48332800,
+            "cpuSeconds": 578.26,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper --type=gpu-process --gpu-recent-crash-count=0 --disable-breakpad --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --gpu-preferences=WAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAADAAAAAEAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --shared-files --metrics-shmem-handle=1752395122,r,17512235450852362843,268673367560694808,262144 --field-trial-handle=1718379636,r,5695959726766970643,1965638851050586854,262144 --enable-features=PdfOopif --disable-features=AcceptCHFrame,IsolateSandboxedIframes,MediaRouter,OptimizationHints,ProcessPerSiteUpToMainFrameThreshold,Translate,WebUIOmniboxAimPopup,WebUIOmniboxPopup,WebUIReloadButton --variations-seed-version --pseudonymization-salt-handle=1935764596,r,7545725009153943483,11333023318120732998,4 --trace-process-track-uuid=3190708988185955192 --seatbelt-client=30",
+            "app": "Google Chrome.app",
+            "cpuPct": 4.2
+          },
+          {
+            "pid": 1423,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 45039616,
+            "cpuSeconds": 116.78999999999999,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif) --type=utility --utility-sub-type=network.mojom.NetworkService --lang=zh-CN --service-sandbox-type=network --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --shared-files --metrics-shmem-handle=1752395122,r,10629628261367529709,6781560348978022164,524288 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190708989122997041 --seatbelt-client=23",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5675,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 40419328,
+            "cpuSeconds": 27.52,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=30 --launch-time-ticks=365152993 --shared-files --metrics-shmem-handle=1752395122,r,7347032551976567525,3839269125191550051,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709014423126964 --seatbelt-client=206",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 3629,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 40075264,
+            "cpuSeconds": 47.79,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=8 --launch-time-ticks=63547605 --shared-files --metrics-shmem-handle=1752395122,r,7180318528656613872,11797134141375927521,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190708993808206286 --seatbelt-client=97",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 51466,
+            "ppid": 51451,
+            "uid": 501,
+            "rssBytes": 29982720,
+            "cpuSeconds": 6.43,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=zh-CN --service-sandbox-type=network --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --shared-files --metrics-shmem-handle=1752395122,r,17180275908622767752,14303594713622358354,524288 --field-trial-handle=1718379636,r,5695959726766970643,1965638851050586854,262144 --enable-features=PdfOopif --disable-features=AcceptCHFrame,IsolateSandboxedIframes,MediaRouter,OptimizationHints,ProcessPerSiteUpToMainFrameThreshold,Translate,WebUIOmniboxAimPopup,WebUIOmniboxPopup,WebUIReloadButton --variations-seed-version --pseudonymization-salt-handle=1935764596,r,7545725009153943483,11333023318120732998,4 --trace-process-track-uuid=3190708989122997041 --seatbelt-client=21",
+            "app": "Google Chrome.app",
+            "cpuPct": 1.7
+          },
+          {
+            "pid": 12112,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 27344896,
+            "cpuSeconds": 1.83,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --extension-process --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=513 --launch-time-ticks=27936704316 --shared-files --metrics-shmem-handle=1752395122,r,11575352625762252344,13725986777742419191,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709467014340031 --seatbelt-client=139",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 3594,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 25772032,
+            "cpuSeconds": 8.57,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --top-chrome-webui --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=7 --launch-time-ticks=63465243 --shared-files --metrics-shmem-handle=1752395122,r,11405155227420405358,10548979444423871782,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190708992871164437 --seatbelt-client=94",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5419,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 23494656,
+            "cpuSeconds": 8.76,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=27 --launch-time-ticks=324815998 --shared-files --metrics-shmem-handle=1752395122,r,2099518581129694966,5439502641969897159,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709011612001417 --seatbelt-client=182",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5676,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 16302080,
+            "cpuSeconds": 3.38,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=31 --launch-time-ticks=365530765 --shared-files --metrics-shmem-handle=1752395122,r,14253707419109630331,9180542085286058592,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709015360168813 --seatbelt-client=206",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 35543,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 14942208,
+            "cpuSeconds": 0.26,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=548 --launch-time-ticks=29742759618 --shared-files --metrics-shmem-handle=1752395122,r,10815560950956978052,1863607828111494111,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709499810804746 --seatbelt-client=137",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 63339,
+            "ppid": 51451,
+            "uid": 501,
+            "rssBytes": 14057472,
+            "cpuSeconds": 0.25,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --disable-background-timer-throttling --disable-breakpad --enable-automation --force-color-profile=srgb --remote-debugging-pipe --allow-pre-commit-input --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=32 --launch-time-ticks=30593647566 --shared-files --metrics-shmem-handle=1752395122,r,9328450325874445384,12558652503515318422,1572864 --field-trial-handle=1718379636,r,5695959726766970643,1965638851050586854,262144 --enable-features=PdfOopif --disable-features=AcceptCHFrame,IsolateSandboxedIframes,MediaRouter,OptimizationHints,ProcessPerSiteUpToMainFrameThreshold,Translate,WebUIOmniboxAimPopup,WebUIOmniboxPopup,WebUIReloadButton --variations-seed-version --pseudonymization-salt-handle=1935764596,r,7545725009153943483,11333023318120732998,4 --trace-process-track-uuid=3190709016297210662 --seatbelt-client=70",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 22798,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 12959744,
+            "cpuSeconds": 9.49,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif) --type=utility --utility-sub-type=video_capture.mojom.VideoCaptureService --lang=zh-CN --service-sandbox-type=none --message-loop-type-ui --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --shared-files --metrics-shmem-handle=1752395122,r,6013938908658903643,18330653618589713646,524288 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709119371814052",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 1932,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 10747904,
+            "cpuSeconds": 6.55,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif) --type=utility --utility-sub-type=storage.mojom.StorageService --lang=zh-CN --service-sandbox-type=service --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --shared-files --metrics-shmem-handle=1752395122,r,3823684648591593410,18063117274873247084,524288 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190708990060038890 --seatbelt-client=32",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 11752,
+            "ppid": 665,
+            "uid": 501,
+            "rssBytes": 10665984,
+            "cpuSeconds": 4.4,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif)",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif) --type=utility --utility-sub-type=audio.mojom.AudioService --lang=zh-CN --service-sandbox-type=audio --message-loop-type-ui --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --shared-files --metrics-shmem-handle=1752395122,r,7979961021562542566,11724083636399601329,524288 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709042534382434 --seatbelt-client=220",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 51468,
+            "ppid": 51451,
+            "uid": 501,
+            "rssBytes": 8437760,
+            "cpuSeconds": 1.32,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper --type=utility --utility-sub-type=storage.mojom.StorageService --lang=zh-CN --service-sandbox-type=service --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --shared-files --metrics-shmem-handle=1752395122,r,10750669234213654934,15877836336844919562,524288 --field-trial-handle=1718379636,r,5695959726766970643,1965638851050586854,262144 --enable-features=PdfOopif --disable-features=AcceptCHFrame,IsolateSandboxedIframes,MediaRouter,OptimizationHints,ProcessPerSiteUpToMainFrameThreshold,Translate,WebUIOmniboxAimPopup,WebUIOmniboxPopup,WebUIReloadButton --variations-seed-version --pseudonymization-salt-handle=1935764596,r,7545725009153943483,11333023318120732998,4 --trace-process-track-uuid=3190708990060038890 --seatbelt-client=48",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 51455,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 2424832,
+            "cpuSeconds": 0.05,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/chrome_crashpad_handler",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/chrome_crashpad_handler --monitor-self-annotation=ptype=crashpad-handler --database=/Users/gaozhipeng/Library/Application Support/Google/Chrome/Crashpad --metrics-dir=/Users/gaozhipeng/Library/Application Support/Google/Chrome --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=plat=OS X --annotation=prod=Chrome_Mac --annotation=ver=156.0.8078.79 --handshake-fd=7",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 1297,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 1949696,
+            "cpuSeconds": 0.09,
+            "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/chrome_crashpad_handler",
+            "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/chrome_crashpad_handler --monitor-self-annotation=ptype=crashpad-handler --database=/Users/gaozhipeng/Library/Application Support/Google/Chrome/Crashpad --metrics-dir=/Users/gaozhipeng/Library/Application Support/Google/Chrome --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=plat=OS X --annotation=prod=Chrome_Mac --annotation=ver=156.0.8078.49 --handshake-fd=5",
+            "app": "Google Chrome.app",
+            "cpuPct": 0
+          }
+        ]
+      },
+      {
+        "app": "Visual Studio Code.app",
+        "rssBytes": 1003307008,
+        "cpuPct": 3.3,
+        "pids": [
+          38979,
+          49354,
+          659,
+          49374,
+          38996,
+          81976,
+          1538,
+          916,
+          39021,
+          40459,
+          40458,
+          49368,
+          918,
+          3578,
+          39180,
+          51001,
+          4549,
+          39116,
+          50691,
+          49484,
+          49485,
+          49848,
+          39037,
+          39218,
+          49639,
+          50685,
+          50690,
+          2732,
+          40475,
+          50684,
+          3827,
+          913
+        ],
+        "count": 32,
+        "mainPid": 38979,
+        "members": [
+          {
+            "pid": 38979,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 398934016,
+            "cpuSeconds": 502.53,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer) --type=renderer --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-path=/Applications/Visual Studio Code.app/Contents/Resources/app --enable-sandbox --enable-blink-features=HighlightAPI --max-active-webgl-contexts=32 --disable-blink-features=FontMatchingCTMigration,StandardizedBrowserZoom, --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=17 --time-ticks-at-unix-epoch=-1793323807953921 --launch-time-ticks=7949736345 --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709002241582927 --vscode-window-config=vscode:ea1ce07a-51a8-49bb-8e66-7436a25bde0e --seatbelt-client=130",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 49354,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 78069760,
+            "cpuSeconds": 205.54,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer) --type=renderer --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-path=/Applications/Visual Studio Code.app/Contents/Resources/app --enable-sandbox --enable-blink-features=HighlightAPI --max-active-webgl-contexts=32 --disable-blink-features=FontMatchingCTMigration,StandardizedBrowserZoom, --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=21 --time-ticks-at-unix-epoch=-1793323807953921 --launch-time-ticks=16926658835 --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709005989750323 --vscode-window-config=vscode:f3f9cbbe-abd4-4dcd-a8b2-52b00a870a73 --seatbelt-client=145",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 1.7
+          },
+          {
+            "pid": 659,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 74121216,
+            "cpuSeconds": 223.11,
+            "executable": "/Applications/Visual Studio Code.app/Contents/MacOS/Code",
+            "command": "/Applications/Visual Studio Code.app/Contents/MacOS/Code",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 49374,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 45285376,
+            "cpuSeconds": 29.14,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --dns-result-order=ipv4first --experimental-network-inspection --inspect-port=0 --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709007863834021",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 38996,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 44859392,
+            "cpuSeconds": 61.35,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --dns-result-order=ipv4first --experimental-network-inspection --inspect-port=0 --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709003178624776",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 81976,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 37748736,
+            "cpuSeconds": 11.58,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer) --type=renderer --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-path=/Applications/Visual Studio Code.app/Contents/Resources/app --enable-sandbox --enable-blink-features=HighlightAPI --max-active-webgl-contexts=32 --disable-blink-features=FontMatchingCTMigration,StandardizedBrowserZoom, --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=31 --time-ticks-at-unix-epoch=-1793323807953921 --launch-time-ticks=21870408554 --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709015360168813 --vscode-window-config=vscode:ea1ce07a-51a8-49bb-8e66-7436a25bde0e --seatbelt-client=82",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 1538,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 36618240,
+            "cpuSeconds": 200.39,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190708990997080739",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 916,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 31522816,
+            "cpuSeconds": 141.07,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=gpu-process --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --gpu-preferences=UAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAOAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAABgAAAAAAAAAGAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190708988185955192 --seatbelt-client=30",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 39021,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 23855104,
+            "cpuSeconds": 16.58,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709004115666625",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 40459,
+            "ppid": 38996,
+            "uid": 501,
+            "rssBytes": 23576576,
+            "cpuSeconds": 31.33,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) --max-old-space-size=3072 --require /Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13/dist/patch-tsserver.js /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/tsserver.js --useInferredProjectPerProjectRoot --enableTelemetry --cancellationPipeName /var/folders/77/4hlvy5sx59v_gfbj8_bg03nh0000gn/T/vscode-typescript501/4893ec737f89b83a1576/tscancellation-30fdf771b2cccc055861.tmp* --globalPlugins @vscode/copilot-typescript-server-plugin,vue-reactivity-analysis-plugin-pack,vue-typescript-plugin-pack --pluginProbeLocations /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/copilot,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13 --locale zh-cn --noGetErrOnBackgroundUpdate --canUseWatchEvents --validateDefaultNpmLocation --useNodeIpc",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 40458,
+            "ppid": 38996,
+            "uid": 501,
+            "rssBytes": 21856256,
+            "cpuSeconds": 4.88,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) --max-old-space-size=3072 --require /Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13/dist/patch-tsserver.js /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/tsserver.js --serverMode partialSemantic --useInferredProjectPerProjectRoot --disableAutomaticTypingAcquisition --cancellationPipeName /var/folders/77/4hlvy5sx59v_gfbj8_bg03nh0000gn/T/vscode-typescript501/4893ec737f89b83a1576/tscancellation-d8cd48f18d514ace00fa.tmp* --globalPlugins @vscode/copilot-typescript-server-plugin,vue-reactivity-analysis-plugin-pack,vue-typescript-plugin-pack --pluginProbeLocations /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/copilot,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13 --locale zh-cn --noGetErrOnBackgroundUpdate --canUseWatchEvents --validateDefaultNpmLocation --useNodeIpc",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 49368,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 20463616,
+            "cpuSeconds": 9.01,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709006926792172",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 918,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 19791872,
+            "cpuSeconds": 14.69,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=zh-CN --service-sandbox-type=network --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190708989122997041 --seatbelt-client=30",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 3578,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 19578880,
+            "cpuSeconds": 33.12,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190708993808206286",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 39180,
+            "ppid": 38996,
+            "uid": 501,
+            "rssBytes": 15646720,
+            "cpuSeconds": 3.57,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Users/gaozhipeng/.vscode/extensions/dbaeumer.vscode-eslint-3.0.34/server/out/eslintServer.js --node-ipc --clientProcessId=38996",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 51001,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 11288576,
+            "cpuSeconds": 38.12,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer) --type=renderer --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-path=/Applications/Visual Studio Code.app/Contents/Resources/app --enable-sandbox --enable-blink-features=HighlightAPI --max-active-webgl-contexts=32 --disable-blink-features=FontMatchingCTMigration,StandardizedBrowserZoom, --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=25 --time-ticks-at-unix-epoch=-1793323807953921 --launch-time-ticks=17914366522 --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190709009737917719 --vscode-window-config=vscode:f3f9cbbe-abd4-4dcd-a8b2-52b00a870a73 --seatbelt-client=52",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4549,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 10485760,
+            "cpuSeconds": 8.34,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190708996619331833",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 39116,
+            "ppid": 38996,
+            "uid": 501,
+            "rssBytes": 8749056,
+            "cpuSeconds": 3.46,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/json-language-features/server/dist/node/jsonServerMain --node-ipc --clientProcessId=38996",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 50691,
+            "ppid": 49374,
+            "uid": 501,
+            "rssBytes": 7847936,
+            "cpuSeconds": 2.44,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/markdown-language-features/dist/serverWorkerMain --node-ipc --clientProcessId=49374",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 49484,
+            "ppid": 49374,
+            "uid": 501,
+            "rssBytes": 7553024,
+            "cpuSeconds": 2.74,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Users/gaozhipeng/.vscode/extensions/dbaeumer.vscode-eslint-3.0.34/server/out/eslintServer.js --node-ipc --clientProcessId=49374",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 49485,
+            "ppid": 49374,
+            "uid": 501,
+            "rssBytes": 7241728,
+            "cpuSeconds": 3.17,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/json-language-features/server/dist/node/jsonServerMain --node-ipc --clientProcessId=49374",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 49848,
+            "ppid": 49374,
+            "uid": 501,
+            "rssBytes": 7061504,
+            "cpuSeconds": 3.11,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/html-language-features/server/dist/node/htmlServerMain --node-ipc --clientProcessId=49374",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 39037,
+            "ppid": 38996,
+            "uid": 501,
+            "rssBytes": 7028736,
+            "cpuSeconds": 4.04,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/markdown-language-features/dist/serverWorkerMain --node-ipc --clientProcessId=38996",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 39218,
+            "ppid": 38996,
+            "uid": 501,
+            "rssBytes": 6815744,
+            "cpuSeconds": 3.01,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Users/gaozhipeng/.vscode/extensions/github.vscode-github-actions-0.32.3/dist/server-node.js --node-ipc --clientProcessId=38996",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 49639,
+            "ppid": 3578,
+            "uid": 501,
+            "rssBytes": 6176768,
+            "cpuSeconds": 2.22,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper /Applications/Visual Studio Code.app/Contents/Resources/app/out/bootstrap-fork --type=fileWatcher",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 50685,
+            "ppid": 49374,
+            "uid": 501,
+            "rssBytes": 5898240,
+            "cpuSeconds": 3.86,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) --max-old-space-size=3072 --require /Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13/dist/patch-tsserver.js /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/tsserver.js --useInferredProjectPerProjectRoot --enableTelemetry --cancellationPipeName /var/folders/77/4hlvy5sx59v_gfbj8_bg03nh0000gn/T/vscode-typescript501/0c76afa031677f40f26d/tscancellation-ec1b287d8c69f1b7d16c.tmp* --globalPlugins @vscode/copilot-typescript-server-plugin,vue-reactivity-analysis-plugin-pack,vue-typescript-plugin-pack --pluginProbeLocations /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/copilot,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13 --locale zh-cn --noGetErrOnBackgroundUpdate --canUseWatchEvents --validateDefaultNpmLocation --useNodeIpc",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 50690,
+            "ppid": 50685,
+            "uid": 501,
+            "rssBytes": 5865472,
+            "cpuSeconds": 1.1,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/typingsInstaller.js --globalTypingsCacheLocation /Users/gaozhipeng/Library/Caches/typescript/6.0 --enableTelemetry --typesMapLocation /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/typesMap.json --validateDefaultNpmLocation",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 2732,
+            "ppid": 659,
+            "uid": 501,
+            "rssBytes": 5521408,
+            "cpuSeconds": 4.79,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper --type=utility --utility-sub-type=audio.mojom.AudioService --lang=zh-CN --service-sandbox-type=audio --message-loop-type-ui --user-data-dir=/Users/gaozhipeng/Library/Application Support/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files --field-trial-handle=1718379636,r,15155444319125536751,11287612964732811699,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,UpdateCompositorMemoryPolicyOnScreenChange --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,3670235111049115430,12980627873722847939,4 --trace-process-track-uuid=3190708992871164437 --seatbelt-client=95",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 40475,
+            "ppid": 40459,
+            "uid": 501,
+            "rssBytes": 5423104,
+            "cpuSeconds": 1.31,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/typingsInstaller.js --globalTypingsCacheLocation /Users/gaozhipeng/Library/Caches/typescript/6.0 --enableTelemetry --typesMapLocation /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/typesMap.json --validateDefaultNpmLocation",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 50684,
+            "ppid": 49374,
+            "uid": 501,
+            "rssBytes": 3571712,
+            "cpuSeconds": 2.03,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin) --max-old-space-size=3072 --require /Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13/dist/patch-tsserver.js /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/node_modules/typescript/lib/tsserver.js --serverMode partialSemantic --useInferredProjectPerProjectRoot --disableAutomaticTypingAcquisition --cancellationPipeName /var/folders/77/4hlvy5sx59v_gfbj8_bg03nh0000gn/T/vscode-typescript501/0c76afa031677f40f26d/tscancellation-77798f244cee8a06d625.tmp* --globalPlugins @vscode/copilot-typescript-server-plugin,vue-reactivity-analysis-plugin-pack,vue-typescript-plugin-pack --pluginProbeLocations /Applications/Visual Studio Code.app/Contents/Resources/app/extensions/copilot,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13,/Users/gaozhipeng/.vscode/extensions/vue.volar-3.3.13 --locale zh-cn --noGetErrOnBackgroundUpdate --canUseWatchEvents --validateDefaultNpmLocation --useNodeIpc",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 3827,
+            "ppid": 3578,
+            "uid": 501,
+            "rssBytes": 2850816,
+            "cpuSeconds": 5.19,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Resources/app/node_modules.asar.unpacked/@github/copilot-sdk-darwin-arm64/prebuilds/darwin-arm64/copilot-runtime",
+            "command": "/Applications/Visual Studio Code.app/Contents/Resources/app/node_modules.asar.unpacked/@github/copilot-sdk-darwin-arm64/prebuilds/darwin-arm64/copilot-runtime --headless --no-auto-update --log-level info --stdio --no-auto-login",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 913,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 1998848,
+            "cpuSeconds": 0.11,
+            "executable": "/Applications/Visual Studio Code.app/Contents/Frameworks/Electron Framework.framework/Helpers/chrome_crashpad_handler",
+            "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Electron Framework.framework/Helpers/chrome_crashpad_handler --no-rate-limit --monitor-self-annotation=ptype=crashpad-handler --database=/Users/gaozhipeng/Library/Application Support/Code/Crashpad --url=appcenter://code?aid=de75e3cc-e22f-4f42-a03f-1409c21d8af8&uid=1bc2b2cc-85c7-448b-b09f-34ba974a1f5d&iid=1bc2b2cc-85c7-448b-b09f-34ba974a1f5d&sid=1bc2b2cc-85c7-448b-b09f-34ba974a1f5d --annotation=_companyName=Microsoft --annotation=_productName=VSCode --annotation=_version=1.144.0 --annotation=plat=OS X --annotation=prod=Electron --annotation=ver=43.8.3 --handshake-fd=17",
+            "app": "Visual Studio Code.app",
+            "cpuPct": 0
+          }
+        ]
+      },
+      {
+        "app": "node",
+        "rssBytes": 690126848,
+        "cpuPct": 12.5,
+        "pids": [
+          4791,
+          88102,
+          23921,
+          5809,
+          5749,
+          5011,
+          5198,
+          4996,
+          4964,
+          5595,
+          5551,
+          4951,
+          4790,
+          5047,
+          5138
+        ],
+        "count": 15,
+        "mainPid": 4791,
+        "members": [
+          {
+            "pid": 4791,
+            "ppid": 4790,
+            "uid": 501,
+            "rssBytes": 533561344,
+            "cpuSeconds": 1768.81,
+            "executable": "node",
+            "command": "node /Users/gaozhipeng/Library/Caches/pnpm/dlx/274d89f269c8750a07a3aabbcab4a7a7/mvswsky7-4xr/node_modules/.bin/../../../../../../../pnpm/store/v11/links/@deepseek-ai/dsh/0.2.1-rc.2/43fb7abe65cd59348bc7821c65d19cca644dc87d097abfd34d901a782c81547f/node_modules/@deepseek-ai/dsh/lib/bin.js web",
+            "app": "node",
+            "cpuPct": 6.7
+          },
+          {
+            "pid": 88102,
+            "ppid": 88099,
+            "uid": 501,
+            "rssBytes": 56705024,
+            "cpuSeconds": 0.09,
+            "executable": "node",
+            "command": "node /tmp/capture-fixture.mjs",
+            "app": "node",
+            "cpuPct": 2.5
+          },
+          {
+            "pid": 23921,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 51167232,
+            "cpuSeconds": 1.56,
+            "executable": "node",
+            "command": "node node_modules/.bin/../vite/bin/vite.js --config /tmp/boost-preview/vite.config.mjs",
+            "app": "node",
+            "cpuPct": 3.3
+          },
+          {
+            "pid": 5809,
+            "ppid": 5808,
+            "uid": 501,
+            "rssBytes": 15810560,
+            "cpuSeconds": 0.86,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.npm/_npx/15c61037b1978c83/node_modules/chrome-devtools-mcp/build/src/telemetry/watchdog/main.js --parent-pid=5808 --app-version=1.12.0 --os-type=2",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5749,
+            "ppid": 4791,
+            "uid": 501,
+            "rssBytes": 8372224,
+            "cpuSeconds": 0.82,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-mcp-connector/lib/stdio-startup-guard.js --timeout-ms 15000 -- npx -y chrome-devtools-mcp@latest",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5011,
+            "ppid": 4996,
+            "uid": 501,
+            "rssBytes": 5390336,
+            "cpuSeconds": 11.66,
+            "executable": "node",
+            "command": "node /Users/gaozhipeng/Library/pnpm/bin/../global/v11/394b-19fabf060b5-067ce82f1ec6a88f/node_modules/gitnexus/dist/cli/index.js mcp",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5198,
+            "ppid": 5165,
+            "uid": 501,
+            "rssBytes": 3637248,
+            "cpuSeconds": 1.17,
+            "executable": "node",
+            "command": "node /Users/gaozhipeng/.npm/_npx/de2bd410102f5eda/node_modules/.bin/mcp-server-sequential-thinking",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4996,
+            "ppid": 4791,
+            "uid": 501,
+            "rssBytes": 3620864,
+            "cpuSeconds": 0.44,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-mcp-connector/lib/stdio-startup-guard.js --timeout-ms 15000 -- gitnexus mcp",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4964,
+            "ppid": 4951,
+            "uid": 501,
+            "rssBytes": 2736128,
+            "cpuSeconds": 1.99,
+            "executable": "node",
+            "command": "node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-ai-coding/skills/_shared/mcp-servers/jira/mcp.js",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5595,
+            "ppid": 5564,
+            "uid": 501,
+            "rssBytes": 1572864,
+            "cpuSeconds": 0.05,
+            "executable": "node",
+            "command": "node /Users/gaozhipeng/.npm/_npx/5d5a4bfad01522f4/node_modules/.bin/dsh-mcp-cli-bridge --provider dingtalk-dws",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5551,
+            "ppid": 4791,
+            "uid": 501,
+            "rssBytes": 1572864,
+            "cpuSeconds": 0.04,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-mcp-connector/lib/stdio-startup-guard.js --timeout-ms 15000 -- npx --yes --legacy-peer-deps --package dsh-mcp-connector@0.2.71 --package dingtalk-workspace-cli@1.0.61 dsh-mcp-cli-bridge --provider dingtalk-dws",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4951,
+            "ppid": 4791,
+            "uid": 501,
+            "rssBytes": 1507328,
+            "cpuSeconds": 0.17,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-mcp-connector/lib/stdio-startup-guard.js --timeout-ms 15000 -- node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-ai-coding/skills/_shared/mcp-servers/jira/mcp.js",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4790,
+            "ppid": 774,
+            "uid": 501,
+            "rssBytes": 1490944,
+            "cpuSeconds": 0.63,
+            "executable": "node",
+            "command": "node /Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/pnpm dlx -y @deepseek-ai/dsh web",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5047,
+            "ppid": 4791,
+            "uid": 501,
+            "rssBytes": 1490944,
+            "cpuSeconds": 0.05,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-mcp-connector/lib/stdio-startup-guard.js --timeout-ms 15000 -- ccc mcp",
+            "app": "node",
+            "cpuPct": 0
+          },
+          {
+            "pid": 5138,
+            "ppid": 4791,
+            "uid": 501,
+            "rssBytes": 1490944,
+            "cpuSeconds": 0.05,
+            "executable": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node",
+            "command": "/Users/gaozhipeng/.nvm/versions/node/v24.18.0/bin/node /Users/gaozhipeng/.dsh/profiles/web/node_modules/dsh-mcp-connector/lib/stdio-startup-guard.js --timeout-ms 15000 -- npx -y @modelcontextprotocol/server-sequential-thinking",
+            "app": "node",
+            "cpuPct": 0
+          }
+        ]
+      },
+      {
+        "app": "WeChat.app",
+        "rssBytes": 209092608,
+        "cpuPct": 2.4,
+        "pids": [
+          674,
+          4260,
+          4581,
+          21782,
+          4580,
+          4264,
+          4582,
+          4575,
+          4589,
+          4263,
+          4573,
+          4572,
+          4571,
+          4570,
+          814
+        ],
+        "count": 15,
+        "mainPid": 674,
+        "members": [
+          {
+            "pid": 674,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 30736384,
+            "cpuSeconds": 323.46,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChat",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChat",
+            "app": "WeChat.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 4260,
+            "ppid": 674,
+            "uid": 501,
+            "rssBytes": 26116096,
+            "cpuSeconds": 67.49,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/MacOS/WeChatAppEx",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/MacOS/WeChatAppEx --log-level=2 --lang=zh-CN --wechat-files-path=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files --product-id=1002 --wechat-sub-user-agent=MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf2641f50) --web-translate --appshim-flags=15 --client_version=4066647888 --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --wmpf-drm-plugin-path --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --mojo-platform-channel-handle=1554695380",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4581,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 21970944,
+            "cpuSeconds": 54.35,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer)",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer) --type=renderer --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --wmpf-render-type=5 --product-id=1002 --xeditor-instances-per-renderer=16 --no-sandbox --disable-notifications --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=7 --time-ticks-at-unix-epoch=-1793323806388942 --disable-mojo-broker --launch-time-ticks=215005963 --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708992871164437 --log-level=2",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 21782,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 18628608,
+            "cpuSeconds": 3.49,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer)",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer) --type=renderer --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --wmpf-render-type=0 --product-id=1002 --disable-notifications --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=23 --time-ticks-at-unix-epoch=-1793323806388942 --disable-mojo-broker --launch-time-ticks=29069239237 --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190709007863834021 --log-level=2 --seatbelt-client=62",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4580,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 18399232,
+            "cpuSeconds": 103.74000000000001,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer)",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer) --type=renderer --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --wmpf-render-type=0 --product-id=1002 --disable-notifications --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=6 --time-ticks-at-unix-epoch=-1793323806388942 --disable-mojo-broker --launch-time-ticks=214997702 --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708991934122588 --log-level=2 --seatbelt-client=131",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4264,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 16793600,
+            "cpuSeconds": 274.63,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (GPU).app/Contents/MacOS/WeChatAppEx Helper (GPU)",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (GPU).app/Contents/MacOS/WeChatAppEx Helper (GPU) --type=gpu-process --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --product-id=1002 --gpu-preferences=SAAAAAAAAAAgAAAEAAAAAAAAAAAAAGAAAwAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --disable-mojo-broker --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708989122997041 --log-level=2 --seatbelt-client=18",
+            "app": "WeChat.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 4582,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 14729216,
+            "cpuSeconds": 21.68,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer)",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer) --type=renderer --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --wmpf-render-type=0 --product-id=1002 --disable-notifications --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=8 --time-ticks-at-unix-epoch=-1793323806388942 --disable-mojo-broker --launch-time-ticks=215284083 --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708993808206286 --log-level=2 --seatbelt-client=132",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4575,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 14090240,
+            "cpuSeconds": 32.07,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer)",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper (Renderer).app/Contents/MacOS/WeChatAppEx Helper (Renderer) --type=renderer --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --wmpf-render-type=6 --product-id=1002 --disable-notifications --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=5 --time-ticks-at-unix-epoch=-1793323806388942 --disable-mojo-broker --launch-time-ticks=213778247 --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708990997080739 --log-level=2 --seatbelt-client=114",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4589,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 12763136,
+            "cpuSeconds": 23.5,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeApp.app/Contents/MacOS/WeApp",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeApp.app/Contents/MacOS/WeApp --type=renderer --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --wmpf-render-type=4 --wmpf-appid=preload-10 --product-id=1002 --disable-notifications --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=10 --time-ticks-at-unix-epoch=-1793323806388942 --disable-mojo-broker --launch-time-ticks=216750422 --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708995682289984 --log-level=2 --seatbelt-client=144",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4263,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 11141120,
+            "cpuSeconds": 9.98,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper.app/Contents/MacOS/WeChatAppEx Helper",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper.app/Contents/MacOS/WeChatAppEx Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=zh-CN --service-sandbox-type=network --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --product-id=1002 --disable-mojo-broker --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708987248913343 --log-level=2 --seatbelt-client=18",
+            "app": "WeChat.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 4573,
+            "ppid": 674,
+            "uid": 501,
+            "rssBytes": 7831552,
+            "cpuSeconds": 16.45,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/XPlayer.app/Contents/MacOS/XPlayer",
+            "command": "/Applications/WeChat.app/Contents/MacOS/XPlayer.app/Contents/MacOS/XPlayer --type=xplayer --app-path=/Applications/WeChat.app/Contents/MacOS/../Resources --app-data-dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data --base-bundle-id=5A4RE8SF68.com.tencent.xinWeChat --target-spec={\"app_data_dir\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data\",\"copy_dylib_for_test\":false,\"main_bundle_path\":\"/Applications/WeChat.app/Contents/MacOS/XPlayer.app/Contents/Resources\",\"primary_name\":\"libxplayercore.dylib\",\"process_type\":\"xplayer\",\"resolved_patch_path\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/xplugin/plugins/Magicdy/965/extracted/xplayer\",\"runtime_mode\":\"managed\",\"skip_runtime_version_validation\":true,\"user_default_prefix\":\"com.tencent.xinWeChat\",\"work_path\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/magicdy/targets/xplayer\"} --exe-path=/Applications/WeChat.app/Contents/MacOS/XPlayer.app/Contents/MacOS/XPlayer --xplayer-bundle-path=/Applications/WeChat.app/Contents/MacOS/XPlayer.app --x_player_type=server --decoder_type=0 --d3d11_supports_zero_copy=1 --mojo-platform-channel-handle=2012273738",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4572,
+            "ppid": 4260,
+            "uid": 501,
+            "rssBytes": 6242304,
+            "cpuSeconds": 3.25,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper.app/Contents/MacOS/WeChatAppEx Helper",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatAppEx.app/Contents/Frameworks/WeChatAppEx Framework.framework/Versions/C/Helpers/WeChatAppEx Helper.app/Contents/MacOS/WeChatAppEx Helper --type=utility --utility-sub-type=flue.mojom.ILinkServiceHost --lang=zh-CN --service-sandbox-type=none --client_version=4066647888 --enable-crash-reporter --wmpf_root_dir=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/radium --instance-index=0 --bundle-id=5A4RE8SF68.com.tencent.xinWeChat --product-id=1002 --disable-mojo-broker --shared-files --field-trial-handle=1718379636,r,700619529876131667,16907983461328817239,262144 --enable-features=FluentOverlayScrollbar,XWorker --disable-features=AudioServiceOutOfProcess,AutoupgradeMixedContent,BackForwardCache,DigitalGoodsApi,PeriodicBackgroundSync,TFLiteLanguageDetectionEnabled,Vulkan,WebOTP --variations-seed-version --trace-process-track-uuid=3190708990060038890 --log-level=2",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4571,
+            "ppid": 674,
+            "uid": 501,
+            "rssBytes": 3637248,
+            "cpuSeconds": 3.72,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatHelper.app/Contents/MacOS/WeChatHelper",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatHelper.app/Contents/MacOS/WeChatHelper --base-bundle-id=5A4RE8SF68.com.tencent.xinWeChat --target-spec={\"app_data_dir\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data\",\"main_bundle_path\":\"/Applications/WeChat.app/Contents/Resources\",\"primary_name\":\"libwxutility.dylib\",\"process_type\":\"wxutility\",\"resolved_patch_path\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/xplugin/plugins/Magicdy/965/extracted\",\"runtime_mode\":\"managed\",\"skip_runtime_version_validation\":true,\"user_default_prefix\":\"com.tencent.xinWeChat\",\"work_path\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/magicdy/targets/wxutility\"} --shared-files",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4570,
+            "ppid": 674,
+            "uid": 501,
+            "rssBytes": 3555328,
+            "cpuSeconds": 8.45,
+            "executable": "/Applications/WeChat.app/Contents/MacOS/WeChatHelper.app/Contents/MacOS/WeChatHelper",
+            "command": "/Applications/WeChat.app/Contents/MacOS/WeChatHelper.app/Contents/MacOS/WeChatHelper --base-bundle-id=5A4RE8SF68.com.tencent.xinWeChat --target-spec={\"app_data_dir\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data\",\"main_bundle_path\":\"/Applications/WeChat.app/Contents/Resources\",\"primary_name\":\"libwxocr.dylib\",\"process_type\":\"wxocr\",\"resolved_patch_path\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/xplugin/plugins/Magicdy/965/extracted\",\"runtime_mode\":\"managed\",\"skip_runtime_version_validation\":true,\"user_default_prefix\":\"com.tencent.xinWeChat\",\"work_path\":\"/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/magicdy/targets/wxocr\"} --ocr-resource-root=/Applications/WeChat.app/Contents/Resources --shared-files",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 814,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 2457600,
+            "cpuSeconds": 0.13,
+            "executable": "/Applications/WeChat.app/Contents/Frameworks/crashpad_handler",
+            "command": "/Applications/WeChat.app/Contents/Frameworks/crashpad_handler --no-rate-limit --database=/Users/gaozhipeng/Library/Containers/com.tencent.xinWeChat/Data/Documents/app_data/crashinfo --annotation=ext_info={\"app_call_name\":\"WeChat\",\"app_name\":\"WeChat\",\"app_path\":\"/Applications/WeChat.app/Contents/MacOS/WeChat\",\"build_ver\":\"15\",\"crash_notify\":\"1\",\"input_action\":2,\"main_thread_id\":\"259\",\"major_ver\":\"4\",\"minor_ver\":\"1\",\"module_name\":\"xwechat_mac\",\"modules_dir\":\"/Applications/WeChat.app/Contents/MacOS\",\"patch_ver\":\"35\",\"product\":\"WeChat\",\"report_type\":\"9999\",\"restart_app_cmd\":\"\",\"version\":\"4066647843\"} --annotation=product=WeChat --handshake-fd=6",
+            "app": "WeChat.app",
+            "cpuPct": 0
+          }
+        ]
+      },
+      {
+        "app": "MiniMax Code.app",
+        "rssBytes": 191954944,
+        "cpuPct": 1.6,
+        "pids": [
+          35542,
+          35213,
+          35544,
+          35224,
+          35223,
+          35236,
+          35222
+        ],
+        "count": 7,
+        "mainPid": 35542,
+        "members": [
+          {
+            "pid": 35542,
+            "ppid": 35213,
+            "uid": 501,
+            "rssBytes": 61865984,
+            "cpuSeconds": 171.72,
+            "executable": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper.app/Contents/MacOS/MiniMax Code Helper",
+            "command": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper.app/Contents/MacOS/MiniMax Code Helper --type=utility --utility-sub-type=node.mojom.NodeService --lang=zh-CN --service-sandbox-type=none --user-data-dir=/Users/gaozhipeng/Library/Application Support/MiniMax --standard-schemes=app,mavis-preview --secure-schemes=app,mavis-preview --cors-schemes=app --fetch-schemes=app,mavis-preview --streaming-schemes=app,mavis-preview --shared-files --field-trial-handle=1718379636,r,7051804252885458222,11303366915984864361,262144 --enable-features=PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,1590456284433367196,7488809394925717836,4 --trace-process-track-uuid=3190708990997080739",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 35213,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 44826624,
+            "cpuSeconds": 9.63,
+            "executable": "/Applications/MiniMax Code.app/Contents/MacOS/MiniMax Code",
+            "command": "/Applications/MiniMax Code.app/Contents/MacOS/MiniMax Code",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 35544,
+            "ppid": 35213,
+            "uid": 501,
+            "rssBytes": 31014912,
+            "cpuSeconds": 13.08,
+            "executable": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper (Renderer).app/Contents/MacOS/MiniMax Code Helper (Renderer)",
+            "command": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper (Renderer).app/Contents/MacOS/MiniMax Code Helper (Renderer) --type=renderer --user-data-dir=/Users/gaozhipeng/Library/Application Support/MiniMax --standard-schemes=app,mavis-preview --secure-schemes=app,mavis-preview --cors-schemes=app --fetch-schemes=app,mavis-preview --streaming-schemes=app,mavis-preview --app-path=/Applications/MiniMax Code.app/Contents/Resources/app.asar --enable-sandbox --scroll-bounce --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=6 --time-ticks-at-unix-epoch=-1793323806145544 --launch-time-ticks=29742876476 --shared-files --field-trial-handle=1718379636,r,7051804252885458222,11303366915984864361,262144 --enable-features=PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,1590456284433367196,7488809394925717836,4 --trace-process-track-uuid=3190708991934122588 --mavis-desktop-window-kind=main --mavis-desktop-appearance=1 --seatbelt-client=61",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 35224,
+            "ppid": 35213,
+            "uid": 501,
+            "rssBytes": 24690688,
+            "cpuSeconds": 1.21,
+            "executable": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper.app/Contents/MacOS/MiniMax Code Helper",
+            "command": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper.app/Contents/MacOS/MiniMax Code Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=zh-CN --service-sandbox-type=network --user-data-dir=/Users/gaozhipeng/Library/Application Support/MiniMax --standard-schemes=app,mavis-preview --secure-schemes=app,mavis-preview --cors-schemes=app --fetch-schemes=app,mavis-preview --streaming-schemes=app,mavis-preview --shared-files --field-trial-handle=1718379636,r,7051804252885458222,11303366915984864361,262144 --enable-features=PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,1590456284433367196,7488809394925717836,4 --trace-process-track-uuid=3190708989122997041 --seatbelt-client=33",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 35223,
+            "ppid": 35213,
+            "uid": 501,
+            "rssBytes": 16678912,
+            "cpuSeconds": 7.5,
+            "executable": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper.app/Contents/MacOS/MiniMax Code Helper",
+            "command": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper.app/Contents/MacOS/MiniMax Code Helper --type=gpu-process --user-data-dir=/Users/gaozhipeng/Library/Application Support/MiniMax --gpu-preferences=SAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAAwAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --shared-files --field-trial-handle=1718379636,r,7051804252885458222,11303366915984864361,262144 --enable-features=PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,1590456284433367196,7488809394925717836,4 --trace-process-track-uuid=3190708988185955192 --seatbelt-client=33",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 35236,
+            "ppid": 35213,
+            "uid": 501,
+            "rssBytes": 9601024,
+            "cpuSeconds": 0.33,
+            "executable": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper (Renderer).app/Contents/MacOS/MiniMax Code Helper (Renderer)",
+            "command": "/Applications/MiniMax Code.app/Contents/Frameworks/MiniMax Code Helper (Renderer).app/Contents/MacOS/MiniMax Code Helper (Renderer) --type=renderer --user-data-dir=/Users/gaozhipeng/Library/Application Support/MiniMax --standard-schemes=app,mavis-preview --secure-schemes=app,mavis-preview --cors-schemes=app --fetch-schemes=app,mavis-preview --streaming-schemes=app,mavis-preview --app-path=/Applications/MiniMax Code.app/Contents/Resources/app.asar --enable-sandbox --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=4 --time-ticks-at-unix-epoch=-1793323806145544 --launch-time-ticks=29741452870 --shared-files --field-trial-handle=1718379636,r,7051804252885458222,11303366915984864361,262144 --enable-features=PdfUseShowSaveFilePicker,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1935764596,r,1590456284433367196,7488809394925717836,4 --trace-process-track-uuid=3190708990060038890 --seatbelt-client=61",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 35222,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 3276800,
+            "cpuSeconds": 0.01,
+            "executable": "/Applications/MiniMax Code.app/Contents/Frameworks/Electron Framework.framework/Helpers/chrome_crashpad_handler",
+            "command": "/Applications/MiniMax Code.app/Contents/Frameworks/Electron Framework.framework/Helpers/chrome_crashpad_handler --no-rate-limit --monitor-self-annotation=ptype=crashpad-handler --database=/Users/gaozhipeng/Library/Application Support/MiniMax/Crashpad --annotation=_productName=MiniMax --annotation=_version=3.1.7 --annotation=app_instance_id=app_77b8d705-ddb5-40ae-8c3c-fedfa62ae590 --annotation=app_version=3.1.7 --annotation=plat=OS X --annotation=prod=Electron --annotation=ver=42.8.0 --handshake-fd=21",
+            "app": "MiniMax Code.app",
+            "cpuPct": 0
+          }
+        ]
+      },
+      {
+        "app": "BackgroundShortcutRunner",
+        "rssBytes": 85475328,
+        "cpuPct": 51.6,
+        "pids": [
+          84118,
+          84062
+        ],
+        "count": 2,
+        "mainPid": 84118,
+        "members": [
+          {
+            "pid": 84118,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 45563904,
+            "cpuSeconds": 7.99,
+            "executable": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+            "command": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+            "app": "BackgroundShortcutRunner",
+            "cpuPct": 18.3
+          },
+          {
+            "pid": 84062,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 39911424,
+            "cpuSeconds": 8.95,
+            "executable": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+            "command": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+            "app": "BackgroundShortcutRunner",
+            "cpuPct": 33.3
+          }
+        ]
+      },
+      {
+        "app": "NeteaseMusic.app",
+        "rssBytes": 72482816,
+        "cpuPct": 0.8,
+        "pids": [
+          676,
+          875,
+          4266,
+          1881,
+          1880,
+          1736
+        ],
+        "count": 6,
+        "mainPid": 676,
+        "members": [
+          {
+            "pid": 676,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 26656768,
+            "cpuSeconds": 1283.77,
+            "executable": "/Applications/NeteaseMusic.app/Contents/MacOS/NeteaseMusic",
+            "command": "/Applications/NeteaseMusic.app/Contents/MacOS/NeteaseMusic",
+            "app": "NeteaseMusic.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 875,
+            "ppid": 676,
+            "uid": 501,
+            "rssBytes": 12288000,
+            "cpuSeconds": 1022.93,
+            "executable": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper (GPU).app/Contents/MacOS/NeteaseMusic Helper (GPU)",
+            "command": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper (GPU).app/Contents/MacOS/NeteaseMusic Helper (GPU) --type=gpu-process --no-sandbox --enable-transparent-windowed --log-severity=warning --user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 NeteaseMusicDesktop/3.1.10.3401 --lang=en-US --user-data-dir=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/CEFCache --no-sandbox --enable-transparent-windowed --gpu-preferences=WAAAAAAAAAAgAAAEAAAAAAAAAAAAAAAAAABgAAAAAAA4AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaAcAAAAAAABoBwAAAAAAAHgCAABOAAAAcAIAAAAAAAB4AgAAAAAAAIACAAAAAAAAiAIAAAAAAACQAgAAAAAAAJgCAAAAAAAAoAIAAAAAAACoAgAAAAAAALACAAAAAAAAuAIAAAAAAADAAgAAAAAAAMgCAAAAAAAA0AIAAAAAAADYAgAAAAAAAOACAAAAAAAA6AIAAAAAAADwAgAAAAAAAPgCAAAAAAAAAAMAAAAAAAAIAwAAAAAAABADAAAAAAAAGAMAAAAAAAAgAwAAAAAAACgDAAAAAAAAMAMAAAAAAAA4AwAAAAAAAEADAAAAAAAASAMAAAAAAABQAwAAAAAAAFgDAAAAAAAAYAMAAAAAAABoAwAAAAAAAHADAAAAAAAAeAMAAAAAAACAAwAAAAAAAIgDAAAAAAAAkAMAAAAAAACYAwAAAAAAAKADAAAAAAAAqAMAAAAAAACwAwAAAAAAALgDAAAAAAAAwAMAAAAAAADIAwAAAAAAANADAAAAAAAA2AMAAAAAAADgAwAAAAAAAOgDAAAAAAAA8AMAAAAAAAD4AwAAAAAAAAAEAAAAAAAACAQAAAAAAAAQBAAAAAAAABgEAAAAAAAAIAQAAAAAAAAoBAAAAAAAADAEAAAAAAAAOAQAAAAAAABABAAAAAAAAEgEAAAAAAAAUAQAAAAAAABYBAAAAAAAAGAEAAAAAAAAaAQAAAAAAABwBAAAAAAAAHgEAAAAAAAAgAQAAAAAAACIBAAAAAAAAJAEAAAAAAAAmAQAAAAAAACgBAAAAAAAAKgEAAAAAAAAsAQAAAAAAAC4BAAAAAAAAMAEAAAAAAAAyAQAAAAAAADQBAAAAAAAANgEAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAEAAAAQAAAAAAAAAAAAAAACAAAAEAAAAAAAAAAAAAAAAwAAABAAAAAAAAAAAAAAAAYAAAAQAAAAAAAAAAAAAAAHAAAAEAAAAAAAAAAAAAAACAAAABAAAAAAAAAAAAAAAAkAAAAQAAAAAAAAAAAAAAALAAAAEAAAAAAAAAAAAAAADAAAABAAAAAAAAAAAAAAAA4AAAAQAAAAAAAAAAAAAAAPAAAAEAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAQAAAAAAAAAQAAAAAAAAAAEAAAABAAAAEAAAAAAAAAABAAAAAgAAABAAAAAAAAAAAQAAAAMAAAAQAAAAAAAAAAEAAAAGAAAAEAAAAAAAAAABAAAABwAAABAAAAAAAAAAAQAAAAgAAAAQAAAAAAAAAAEAAAAJAAAAEAAAAAAAAAABAAAACwAAABAAAAAAAAAAAQAAAAwAAAAQAAAAAAAAAAEAAAAOAAAAEAAAAAAAAAABAAAADwAAABAAAAAAAAAAAQAAABAAAAAQAAAAAAAAAAQAAAAAAAAAEAAAAAAAAAAEAAAAAQAAABAAAAAAAAAABAAAAAIAAAAQAAAAAAAAAAQAAAADAAAAEAAAAAAAAAAEAAAABgAAABAAAAAAAAAABAAAAAcAAAAQAAAAAAAAAAQAAAAIAAAAEAAAAAAAAAAEAAAACQAAABAAAAAAAAAABAAAAAsAAAAQAAAAAAAAAAQAAAAMAAAAEAAAAAAAAAAEAAAADgAAABAAAAAAAAAABAAAAA8AAAAQAAAAAAAAAAQAAAAQAAAAEAAAAAAAAAAHAAAAAAAAABAAAAAAAAAABwAAAAEAAAAQAAAAAAAAAAcAAAACAAAAEAAAAAAAAAAHAAAAAwAAABAAAAAAAAAABwAAAAYAAAAQAAAAAAAAAAcAAAAHAAAAEAAAAAAAAAAHAAAACAAAABAAAAAAAAAABwAAAAkAAAAQAAAAAAAAAAcAAAALAAAAEAAAAAAAAAAHAAAADAAAABAAAAAAAAAABwAAAA4AAAAQAAAAAAAAAAcAAAAPAAAAEAAAAAAAAAAHAAAAEAAAABAAAAAAAAAACAAAAAAAAAAQAAAAAAAAAAgAAAABAAAAEAAAAAAAAAAIAAAAAgAAABAAAAAAAAAACAAAAAMAAAAQAAAAAAAAAAgAAAAGAAAAEAAAAAAAAAAIAAAABwAAABAAAAAAAAAACAAAAAgAAAAQAAAAAAAAAAgAAAAJAAAAEAAAAAAAAAAIAAAACwAAABAAAAAAAAAACAAAAAwAAAAQAAAAAAAAAAgAAAAOAAAAEAAAAAAAAAAIAAAADwAAABAAAAAAAAAACAAAABAAAAAQAAAAAAAAAAoAAAAAAAAAEAAAAAAAAAAKAAAAAQAAABAAAAAAAAAACgAAAAIAAAAQAAAAAAAAAAoAAAADAAAAEAAAAAAAAAAKAAAABgAAABAAAAAAAAAACgAAAAcAAAAQAAAAAAAAAAoAAAAIAAAAEAAAAAAAAAAKAAAACQAAABAAAAAAAAAACgAAAAsAAAAQAAAAAAAAAAoAAAAMAAAAEAAAAAAAAAAKAAAADgAAABAAAAAAAAAACgAAAA8AAAAQAAAAAAAAAAoAAAAQAAAACAAAAAAAAAAIAAAAAAAAAA== --log-file=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/cef_debug.log --shared-files --field-trial-handle=1718379636,r,16301135256596579941,11415274278541177485,262144 --disable-features=AudioServiceOutOfProcess,StorageServiceOutOfProcess",
+            "app": "NeteaseMusic.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 4266,
+            "ppid": 676,
+            "uid": 501,
+            "rssBytes": 11976704,
+            "cpuSeconds": 333.15999999999997,
+            "executable": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper (Renderer).app/Contents/MacOS/NeteaseMusic Helper (Renderer)",
+            "command": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper (Renderer).app/Contents/MacOS/NeteaseMusic Helper (Renderer) --type=renderer --enable-transparent-windowed --log-severity=warning --user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 NeteaseMusicDesktop/3.1.10.3401 --uncaught-exception-stack-size=8 --user-data-dir=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/CEFCache --no-sandbox --enable-transparent-windowed --no-sandbox --log-file=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/cef_debug.log --js-flags=--max-old-space-size=4096 --expose-gc --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=6 --time-ticks-at-unix-epoch=-1793323806394576 --launch-time-ticks=84305839 --shared-files --field-trial-handle=1718379636,r,16301135256596579941,11415274278541177485,262144 --disable-features=AudioServiceOutOfProcess,StorageServiceOutOfProcess",
+            "app": "NeteaseMusic.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 1881,
+            "ppid": 676,
+            "uid": 501,
+            "rssBytes": 9469952,
+            "cpuSeconds": 598.17,
+            "executable": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper (Renderer).app/Contents/MacOS/NeteaseMusic Helper (Renderer)",
+            "command": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper (Renderer).app/Contents/MacOS/NeteaseMusic Helper (Renderer) --type=renderer --enable-transparent-windowed --log-severity=warning --user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 NeteaseMusicDesktop/3.1.10.3401 --uncaught-exception-stack-size=8 --user-data-dir=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/CEFCache --no-sandbox --enable-transparent-windowed --first-renderer-process --no-sandbox --log-file=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/cef_debug.log --js-flags=--max-old-space-size=4096 --expose-gc --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=5 --time-ticks-at-unix-epoch=-1793323806394576 --launch-time-ticks=60536437 --shared-files --field-trial-handle=1718379636,r,16301135256596579941,11415274278541177485,262144 --disable-features=AudioServiceOutOfProcess,StorageServiceOutOfProcess",
+            "app": "NeteaseMusic.app",
+            "cpuPct": 0
+          },
+          {
+            "pid": 1880,
+            "ppid": 676,
+            "uid": 501,
+            "rssBytes": 7127040,
+            "cpuSeconds": 59.46,
+            "executable": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper.app/Contents/MacOS/NeteaseMusic Helper",
+            "command": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper.app/Contents/MacOS/NeteaseMusic Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=network --no-sandbox --use-mock-keychain --ignore-certificate-errors --ignore-certificate-errors --enable-transparent-windowed --log-severity=warning --user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 NeteaseMusicDesktop/3.1.10.3401 --lang=en-US --user-data-dir=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/CEFCache --no-sandbox --enable-transparent-windowed --log-file=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/cef_debug.log --shared-files --field-trial-handle=1718379636,r,16301135256596579941,11415274278541177485,262144 --disable-features=AudioServiceOutOfProcess,StorageServiceOutOfProcess",
+            "app": "NeteaseMusic.app",
+            "cpuPct": 0.8
+          },
+          {
+            "pid": 1736,
+            "ppid": 676,
+            "uid": 501,
+            "rssBytes": 4964352,
+            "cpuSeconds": 12.17,
+            "executable": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper.app/Contents/MacOS/NeteaseMusic Helper",
+            "command": "/Applications/NeteaseMusic.app/Contents/Frameworks/NeteaseMusic Helper.app/Contents/MacOS/NeteaseMusic Helper --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --service-sandbox-type=service --no-sandbox --use-mock-keychain --ignore-certificate-errors --ignore-certificate-errors --enable-transparent-windowed --log-severity=warning --user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 NeteaseMusicDesktop/3.1.10.3401 --lang=en-US --user-data-dir=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/CEFCache --no-sandbox --enable-transparent-windowed --log-file=/Users/gaozhipeng/Library/Application Support/com.netease.163music/Documents/storage/cef_debug.log --shared-files --field-trial-handle=1718379636,r,16301135256596579941,11415274278541177485,262144 --disable-features=AudioServiceOutOfProcess,StorageServiceOutOfProcess",
+            "app": "NeteaseMusic.app",
+            "cpuPct": 0
+          }
+        ]
+      },
+      {
+        "app": "corespotlightd",
+        "rssBytes": 69484544,
+        "cpuPct": 3.3,
+        "pids": [
+          741
+        ],
+        "count": 1,
+        "mainPid": 741,
+        "members": [
+          {
+            "pid": 741,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 69484544,
+            "cpuSeconds": 151.98,
+            "executable": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+            "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+            "app": "corespotlightd",
+            "cpuPct": 3.3
+          }
+        ]
+      },
+      {
+        "app": "DingTalk.app",
+        "rssBytes": 62554112,
+        "cpuPct": 9.2,
+        "pids": [
+          620
+        ],
+        "count": 1,
+        "mainPid": 620,
+        "members": [
+          {
+            "pid": 620,
+            "ppid": 1,
+            "uid": 501,
+            "rssBytes": 62554112,
+            "cpuSeconds": 3444.18,
+            "executable": "/Applications/DingTalk.app/Contents/MacOS/DingTalk",
+            "command": "/Applications/DingTalk.app/Contents/MacOS/DingTalk",
+            "app": "DingTalk.app",
+            "cpuPct": 9.2
+          }
+        ]
+      },
+      {
+        "app": "chrome-devtools-mcp",
+        "rssBytes": 53952512,
+        "cpuPct": 2.5,
+        "pids": [
+          5808
+        ],
+        "count": 1,
+        "mainPid": 5808,
+        "members": [
+          {
+            "pid": 5808,
+            "ppid": 5762,
+            "uid": 501,
+            "rssBytes": 53952512,
+            "cpuSeconds": 6.9,
+            "executable": "chrome-devtools-mcp",
+            "command": "chrome-devtools-mcp",
+            "app": "chrome-devtools-mcp",
+            "cpuPct": 2.5
+          }
+        ]
+      }
+    ],
+    "topCpu": [
+      {
+        "pid": 407,
+        "ppid": 1,
+        "uid": 88,
+        "rssBytes": 52412416,
+        "cpuSeconds": 12721.9,
+        "executable": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "command": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer -daemon",
+        "app": "WindowServer",
+        "cpuPct": 58.3
+      },
+      {
+        "pid": 1419,
+        "ppid": 665,
+        "uid": 501,
+        "rssBytes": 66273280,
+        "cpuSeconds": 3960.46,
+        "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif)",
+        "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif).app/Contents/MacOS/Google Chrome Helper (Aperitif) --type=gpu-process --gpu-recent-crash-count=0 --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --gpu-preferences=WAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAADAAAAAEAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --shared-files --metrics-shmem-handle=1752395122,r,3569944750580649326,2531163144906678714,262144 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190708988185955192 --seatbelt-client=23",
+        "app": "Google Chrome.app",
+        "cpuPct": 38.3
+      },
+      {
+        "pid": 3756,
+        "ppid": 665,
+        "uid": 501,
+        "rssBytes": 606912512,
+        "cpuSeconds": 6836.51,
+        "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)",
+        "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.49/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --origin-trial-disabled-features=CanvasTextNg|WebAssemblyCustomDescriptors --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=18 --launch-time-ticks=65040589 --shared-files --metrics-shmem-handle=1752395122,r,1560083504035382481,11306062877464936655,1572864 --field-trial-handle=1718379636,r,477433218194547909,9073573508526328898,262144 --variations-seed-version=20261029-010050.844000-production --pseudonymization-salt-handle=1935764596,r,11335430856145004375,9629374110577789092,4 --trace-process-track-uuid=3190709003178624776 --seatbelt-client=136",
+        "app": "Google Chrome.app",
+        "cpuPct": 33.3
+      },
+      {
+        "pid": 84062,
+        "ppid": 1,
+        "uid": 501,
+        "rssBytes": 39911424,
+        "cpuSeconds": 8.95,
+        "executable": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+        "command": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+        "app": "BackgroundShortcutRunner",
+        "cpuPct": 33.3
+      },
+      {
+        "pid": 83862,
+        "ppid": 1,
+        "uid": 501,
+        "rssBytes": 47153152,
+        "cpuSeconds": 12.31,
+        "executable": "/System/Library/PrivateFrameworks/VoiceShortcuts.framework/Versions/A/Support/siriactionsd",
+        "command": "/System/Library/PrivateFrameworks/VoiceShortcuts.framework/Versions/A/Support/siriactionsd",
+        "app": "siriactionsd",
+        "cpuPct": 22.5
+      },
+      {
+        "pid": 84118,
+        "ppid": 1,
+        "uid": 501,
+        "rssBytes": 45563904,
+        "cpuSeconds": 7.99,
+        "executable": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+        "command": "/System/Library/PrivateFrameworks/WorkflowKit.framework/XPCServices/BackgroundShortcutRunner.xpc/Contents/MacOS/BackgroundShortcutRunner",
+        "app": "BackgroundShortcutRunner",
+        "cpuPct": 18.3
+      },
+      {
+        "pid": 51451,
+        "ppid": 5808,
+        "uid": 501,
+        "rssBytes": 123944960,
+        "cpuSeconds": 68.28,
+        "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "command": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --allow-pre-commit-input --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-crash-reporter --disable-default-apps --disable-dev-shm-usage --disable-hang-monitor --disable-infobars --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-search-engine-choice-screen --disable-sync --enable-automation --export-tagged-pdf --force-color-profile=srgb --generate-pdf-document-outline --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --disable-features=Translate,AcceptCHFrame,MediaRouter,OptimizationHints,WebUIReloadButton,WebUIOmniboxPopup,WebUIOmniboxAimPopup,ProcessPerSiteUpToMainFrameThreshold,IsolateSandboxedIframes --enable-features=PdfOopif --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --disable-extensions about:blank --hide-crash-restore-bubble --remote-debugging-pipe",
+        "app": "Google Chrome.app",
+        "cpuPct": 10.8
+      },
+      {
+        "pid": 63340,
+        "ppid": 51451,
+        "uid": 501,
+        "rssBytes": 133480448,
+        "cpuSeconds": 4.09,
+        "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+        "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/156.0.8078.79/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --metrics-client-id=14e203cb-39f7-4f5a-accd-1116a328a129 --user-data-dir=/Users/gaozhipeng/.cache/chrome-devtools-mcp/chrome-profile --disable-background-timer-throttling --disable-breakpad --enable-automation --force-color-profile=srgb --remote-debugging-pipe --allow-pre-commit-input --lang=zh-CN --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=31 --launch-time-ticks=30593681011 --shared-files --metrics-shmem-handle=1752395122,r,13262496340373869670,13583219957890582670,1572864 --field-trial-handle=1718379636,r,5695959726766970643,1965638851050586854,262144 --enable-features=PdfOopif --disable-features=AcceptCHFrame,IsolateSandboxedIframes,MediaRouter,OptimizationHints,ProcessPerSiteUpToMainFrameThreshold,Translate,WebUIOmniboxAimPopup,WebUIOmniboxPopup,WebUIReloadButton --variations-seed-version --pseudonymization-salt-handle=1935764596,r,7545725009153943483,11333023318120732998,4 --trace-process-track-uuid=3190709015360168813 --seatbelt-client=70",
+        "app": "Google Chrome.app",
+        "cpuPct": 9.2
+      }
+    ],
+    "frontApp": "Google Chrome.app",
+    "dsh": {
+      "home": "/Users/gaozhipeng/.dsh",
+      "parts": [
+        {
+          "name": "trash",
+          "bytes": 377065472
+        },
+        {
+          "name": "sessions",
+          "bytes": 149045248
+        },
+        {
+          "name": "attachments",
+          "bytes": 69296128
+        },
+        {
+          "name": "profiles",
+          "bytes": 57585664
+        },
+        {
+          "name": "storages",
+          "bytes": 12328960
+        }
+      ]
+    }
+  },
+  "items": [
+    {
+      "id": "npm",
+      "label": "npm 下载缓存",
+      "group": "cache",
+      "tool": "npm",
+      "semantics": "full",
+      "risk": "low",
+      "note": "清空 npm 下载下来的包缓存；已装好的依赖不受影响，下次安装时重新下载。",
+      "path": "/Users/gaozhipeng/.npm/_cacache",
+      "sizeBytes": 2952540160,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "npm",
+        "args": [
+          "cache",
+          "clean",
+          "--force"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "npm cache clean --force",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "npm",
+        "path": "/Users/gaozhipeng/.npm/_cacache"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "npm",
+        "args": [
+          "cache",
+          "clean",
+          "--force"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "npm-npx",
+      "label": "npx 临时执行目录",
+      "group": "cache",
+      "tool": "npm",
+      "semantics": "full",
+      "risk": "medium",
+      "note": "删掉 npx 临时安装过的包。正在被运行的那几个会自动跳过，不会打断正在跑的命令。",
+      "path": "/Users/gaozhipeng/.npm/_npx",
+      "sizeBytes": 4943970304,
+      "count": 1,
+      "cleanCommand": null,
+      "cleanPath": true,
+      "commandText": "（定向删除目录，正在使用的会自动跳过）",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "npm",
+        "path": "/Users/gaozhipeng/.npm/_npx"
+      },
+      "action": {
+        "type": "remove-dir",
+        "path": "/Users/gaozhipeng/.npm/_npx"
+      },
+      "orphan": false
+    },
+    {
+      "id": "pnpm",
+      "label": "pnpm 全局存储",
+      "group": "cache",
+      "tool": "pnpm",
+      "semantics": "prune",
+      "risk": "low",
+      "note": "只回收已经没有任何项目引用的包；正在用的留在原地。",
+      "path": "/Users/gaozhipeng/Library/pnpm/store/v11",
+      "sizeBytes": 10474409984,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "pnpm",
+        "args": [
+          "store",
+          "prune"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "pnpm store prune",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "pnpm",
+        "path": "/Users/gaozhipeng/Library/pnpm/store/v11"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "pnpm",
+        "args": [
+          "store",
+          "prune"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "yarn",
+      "label": "Yarn 缓存",
+      "group": "cache",
+      "tool": "yarn",
+      "semantics": "full",
+      "risk": "low",
+      "note": "清空 Yarn 下载的包缓存；下次 yarn install 会重新下载。",
+      "path": "/Users/gaozhipeng/Library/Caches/Yarn/v6",
+      "sizeBytes": 1817423872,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "yarn",
+        "args": [
+          "cache",
+          "clean"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "yarn cache clean",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "yarn",
+        "path": "/Users/gaozhipeng/Library/Caches/Yarn/v6"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "yarn",
+        "args": [
+          "cache",
+          "clean"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "bun",
+      "label": "Bun 安装缓存",
+      "group": "cache",
+      "tool": "bun",
+      "semantics": "full",
+      "risk": "low",
+      "note": "清空 Bun 的安装缓存；已装好的 node_modules 不受影响。",
+      "path": "/Users/gaozhipeng/.bun/install/cache",
+      "sizeBytes": 644038656,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "bun",
+        "args": [
+          "pm",
+          "cache",
+          "rm"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "bun pm cache rm",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "bun",
+        "path": "/Users/gaozhipeng/.bun/install/cache"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "bun",
+        "args": [
+          "pm",
+          "cache",
+          "rm"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "uv",
+      "label": "uv 缓存",
+      "group": "cache",
+      "tool": "uv",
+      "semantics": "prune",
+      "risk": "low",
+      "note": "回收已经装不到（不再被任何环境引用）的缓存对象；正在用的虚拟环境不受影响。",
+      "path": "/Users/gaozhipeng/.cache/uv",
+      "sizeBytes": 9756831744,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "uv",
+        "args": [
+          "cache",
+          "prune"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "uv cache prune",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "uv",
+        "path": "/Users/gaozhipeng/.cache/uv"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "uv",
+        "args": [
+          "cache",
+          "prune"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "pip",
+      "label": "pip 缓存",
+      "group": "cache",
+      "tool": "pip",
+      "semantics": "full",
+      "risk": "low",
+      "note": "清空 pip 下载的 wheel 缓存；已装好的包不受影响。",
+      "path": "/Users/gaozhipeng/Library/Caches/pip",
+      "sizeBytes": 455737344,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "pip",
+        "args": [
+          "cache",
+          "purge"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "pip cache purge",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "pip",
+        "path": "/Users/gaozhipeng/Library/Caches/pip"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "pip",
+        "args": [
+          "cache",
+          "purge"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "brew",
+      "label": "Homebrew 下载与旧版本",
+      "group": "cache",
+      "tool": "brew",
+      "semantics": "prune",
+      "risk": "low",
+      "note": "删掉旧版本的 formula 与下载包；当前版本保留。",
+      "path": "/Users/gaozhipeng/Library/Caches/Homebrew",
+      "sizeBytes": 213233664,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "brew",
+        "args": [
+          "cleanup",
+          "-s"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "brew cleanup -s",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "brew",
+        "path": "/Users/gaozhipeng/Library/Caches/Homebrew"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "brew",
+        "args": [
+          "cleanup",
+          "-s"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "cargo",
+      "label": "Cargo 已下载的 crate",
+      "group": "cache",
+      "tool": "cargo",
+      "semantics": "prune",
+      "risk": "low",
+      "note": "删掉已下载的 .crate 归档（只是下载件，不含编译产物）；下次 cargo build 会重新下载。",
+      "path": "/Users/gaozhipeng/.cargo/registry/cache",
+      "sizeBytes": 39665664,
+      "count": 1,
+      "cleanCommand": null,
+      "cleanPath": true,
+      "commandText": "（定向删除目录，正在使用的会自动跳过）",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "cargo",
+        "path": "/Users/gaozhipeng/.cargo/registry/cache"
+      },
+      "action": {
+        "type": "remove-dir",
+        "path": "/Users/gaozhipeng/.cargo/registry/cache"
+      },
+      "orphan": false
+    },
+    {
+      "id": "cocoapods",
+      "label": "CocoaPods 缓存",
+      "group": "cache",
+      "tool": "pod",
+      "semantics": "full",
+      "risk": "medium",
+      "note": "清空 CocoaPods 下载的 pod 缓存；下次 pod install 会重新拉取。",
+      "path": "/Users/gaozhipeng/Library/Caches/CocoaPods",
+      "sizeBytes": 769105920,
+      "count": 1,
+      "cleanCommand": {
+        "cmd": "pod",
+        "args": [
+          "cache",
+          "clean",
+          "--all"
+        ]
+      },
+      "cleanPath": false,
+      "commandText": "pod cache clean --all",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "pod",
+        "path": "/Users/gaozhipeng/Library/Caches/CocoaPods"
+      },
+      "action": {
+        "type": "command",
+        "cmd": "pod",
+        "args": [
+          "cache",
+          "clean",
+          "--all"
+        ]
+      },
+      "orphan": false
+    },
+    {
+      "id": "pnpm-store-orphan",
+      "label": "pnpm 旧版本存储",
+      "group": "cache",
+      "tool": "pnpm",
+      "semantics": "prune",
+      "risk": "medium",
+      "note": "pnpm 升级到新版本之后，旧的一代存储目录没人再写也没人再读，但没有任何官方命令会清它。",
+      "path": "/Users/gaozhipeng/Library/pnpm/store/v3",
+      "sizeBytes": 7695491072,
+      "count": 1,
+      "cleanCommand": null,
+      "cleanPath": true,
+      "commandText": "（定向删除该目录）",
+      "selectedByDefault": true,
+      "detail": {
+        "tool": "pnpm",
+        "path": "/Users/gaozhipeng/Library/pnpm/store/v3"
+      },
+      "action": {
+        "type": "remove-dir",
+        "path": "/Users/gaozhipeng/Library/pnpm/store/v3"
+      },
+      "orphan": true
+    },
+    {
+      "id": "dsh-trash",
+      "label": "DSH 回收站里的旧快照",
+      "group": "dsh",
+      "semantics": "prune",
+      "risk": "low",
+      "note": "回收站里已经删掉的东西，DSH 不会自动清。这里是 23 份快照里的旧的那几份（保留最近 3 份）。",
+      "sizeBytes": 283611136,
+      "count": 20,
+      "commandText": "保留最近 3 份，删掉其余 20 份",
+      "selectedByDefault": true,
+      "action": {
+        "type": "remove-trash-snapshots",
+        "keepNewest": 3
+      }
+    },
+    {
+      "id": "dsh-legacy-sessions",
+      "label": "旧格式的会话日志",
+      "group": "dsh",
+      "semantics": "full",
+      "risk": "low",
+      "note": "这些是 DSH 旧版本格式的会话日志（当前版本只读 session.v4.jsonl.zstd），已经没有任何功能会打开它们。",
+      "sizeBytes": 49986496,
+      "count": 138,
+      "commandText": "删掉 138 个旧格式日志文件",
+      "selectedByDefault": true,
+      "action": {
+        "type": "remove-legacy-logs"
+      }
+    },
+    {
+      "id": "dsh-orphan-sessions",
+      "label": "孤儿子代理会话",
+      "group": "dsh",
+      "semantics": "prune",
+      "risk": "medium",
+      "note": "父会话已经被删掉、但子代理的对话记录还留在盘上的会话。它们不会出现在任何界面里，只有占空间。",
+      "sizeBytes": 58777850,
+      "count": 177,
+      "commandText": "删掉 177 个孤儿子代理会话",
+      "selectedByDefault": false,
+      "action": {
+        "type": "remove-orphan-sessions"
+      }
+    },
+    {
+      "id": "dsh-old-sessions",
+      "label": "7 天没动过的会话",
+      "group": "dsh",
+      "semantics": "prune",
+      "risk": "medium",
+      "note": "超过 7 天没有改动过的会话（含子代理）。删掉之后这些历史就找不回来了。",
+      "sizeBytes": 48437508,
+      "count": 168,
+      "commandText": "删掉 168 个 7 天没动过的会话",
+      "selectedByDefault": false,
+      "action": {
+        "type": "remove-old-sessions",
+        "minAgeDays": 7
+      }
+    },
+    {
+      "id": "dsh-archived-sessions",
+      "label": "已归档会话的正文",
+      "group": "dsh",
+      "semantics": "prune",
+      "risk": "medium",
+      "note": "归档只是把会话收进「已归档」列表，数据仍然在盘上占着。删掉就等于彻底放弃这几段历史。",
+      "sizeBytes": 3725384,
+      "count": 4,
+      "commandText": "删掉 4 个已归档会话的正文",
+      "selectedByDefault": false,
+      "action": {
+        "type": "remove-archived-sessions"
+      }
+    },
+    {
+      "id": "dsh-projcache",
+      "label": "会话投影缓存的残留",
+      "group": "dsh",
+      "semantics": "full",
+      "risk": "low",
+      "note": "投影缓存只是读日志的快捷方式（DSH 自己说它「永远不是权威」），会话没了它留着也没用，可以随时重建。",
+      "sizeBytes": 7187075,
+      "count": 241,
+      "commandText": "删掉 241 个没有对应会话的缓存文件",
+      "selectedByDefault": true,
+      "action": {
+        "type": "remove-stale-projcache"
+      }
+    },
+    {
+      "id": "dsh-usage-browser",
+      "label": "用量查询自动续期的浏览器配置",
+      "group": "dsh",
+      "semantics": "full",
+      "risk": "low",
+      "note": "自动续期要驱动一个真实的 Chrome，那个浏览器的用户配置就落在这里。里面绝大多数是浏览器缓存，清掉不影响配置与登录态。",
+      "sizeBytes": 110149632,
+      "count": 1,
+      "commandText": "清掉这个浏览器配置里的缓存目录",
+      "selectedByDefault": true,
+      "action": {
+        "type": "clear-browser-profile",
+        "path": "/Users/gaozhipeng/.dsh/dsh-usage-query/profiles/axzoone"
+      }
+    },
+    {
+      "id": "mem-app:Visual Studio Code.app",
+      "label": "结束 Visual Studio Code 的全部进程",
+      "group": "process",
+      "semantics": "terminate",
+      "risk": "high",
+      "note": "占 670 MB 内存（32 个进程）。结束它等于关掉这个应用 —— 没保存的内容会丢。想只结束其中几个，看下面按进程列的那些。",
+      "sizeBytes": 0,
+      "count": 32,
+      "commandText": "结束 32 个进程",
+      "selectedByDefault": false,
+      "detail": {
+        "app": "Visual Studio Code.app",
+        "rssBytes": 702939136,
+        "count": 32
+      },
+      "action": {
+        "type": "terminate",
+        "pids": [
+          40459,
+          38979,
+          659,
+          49354,
+          38996,
+          81976,
+          1538,
+          49374,
+          916,
+          3578,
+          39021,
+          40458,
+          49368,
+          918,
+          39180,
+          51001,
+          4549,
+          49485,
+          39116,
+          50691,
+          49484,
+          49848,
+          2732,
+          39037,
+          49639,
+          39218,
+          50690,
+          50685,
+          40475,
+          50684,
+          3827,
+          913
+        ],
+        "expect": {
+          "659": "/Applications/Visual",
+          "913": "/Applications/Visual",
+          "916": "/Applications/Visual",
+          "918": "/Applications/Visual",
+          "1538": "/Applications/Visual",
+          "2732": "/Applications/Visual",
+          "3578": "/Applications/Visual",
+          "3827": "/Applications/Visual",
+          "4549": "/Applications/Visual",
+          "38979": "/Applications/Visual",
+          "38996": "/Applications/Visual",
+          "39021": "/Applications/Visual",
+          "39037": "/Applications/Visual",
+          "39116": "/Applications/Visual",
+          "39180": "/Applications/Visual",
+          "39218": "/Applications/Visual",
+          "40458": "/Applications/Visual",
+          "40459": "/Applications/Visual",
+          "40475": "/Applications/Visual",
+          "49354": "/Applications/Visual",
+          "49368": "/Applications/Visual",
+          "49374": "/Applications/Visual",
+          "49484": "/Applications/Visual",
+          "49485": "/Applications/Visual",
+          "49639": "/Applications/Visual",
+          "49848": "/Applications/Visual",
+          "50684": "/Applications/Visual",
+          "50685": "/Applications/Visual",
+          "50690": "/Applications/Visual",
+          "50691": "/Applications/Visual",
+          "51001": "/Applications/Visual",
+          "81976": "/Applications/Visual"
+        }
+      }
+    },
+    {
+      "id": "mem-proc:35542",
+      "label": "结束 MiniMax Code Helper",
+      "group": "process",
+      "semantics": "terminate",
+      "risk": "high",
+      "note": "MiniMax Code 的一个进程，占 155 MB 内存（pid 35542）。结束它通常等于关掉一个标签页或一个窗口。",
+      "sizeBytes": 0,
+      "count": 1,
+      "commandText": "结束 pid 35542",
+      "selectedByDefault": false,
+      "detail": {
+        "pid": 35542,
+        "app": "MiniMax Code.app",
+        "rssBytes": 162119680,
+        "name": "MiniMax Code Helper"
+      },
+      "action": {
+        "type": "terminate",
+        "pids": [
+          35542
+        ],
+        "expect": {
+          "35542": "/Applications/MiniMax"
+        }
+      }
+    },
+    {
+      "id": "orphan-processes",
+      "label": "结束 1 个孤儿子进程",
+      "group": "process",
+      "semantics": "terminate",
+      "risk": "medium",
+      "note": "父进程已经没了、自己还在跑的一次性命令行工具 —— 通常是崩了没退干净。",
+      "sizeBytes": 0,
+      "count": 1,
+      "commandText": "结束 1 个进程",
+      "selectedByDefault": true,
+      "detail": {
+        "pids": [
+          4995
+        ]
+      },
+      "action": {
+        "type": "terminate",
+        "pids": [
+          4995
+        ],
+        "expect": {
+          "4995": "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+        }
+      }
+    }
+  ],
+  "analysis": {
+    "diagnosis": "这台机器上有 21 项可以加速或清理的内容，磁盘上的缓存合计约 37.6 GB。",
+    "findings": [
+      "磁盘剩余 17.8 GB（已用 92%）",
+      "磁盘接近写满：系统写临时文件、交换分区、缓存都会因此变慢",
+      "内存已用 7.9 GB / 8 GB，交换分区已用 6.2 GB",
+      "交换分区用掉一半以上，说明物理内存已经不够，机器在拿磁盘当内存用",
+      "Google Chrome Helper (Aperitif Renderer) 占了 581 MB 内存，是当前最大的占用者",
+      "这台机器上共发现 21 项可加速 / 可清理的条目，其中 18 项是磁盘上的缓存，合计约 37.6 GB",
+      "内存占用最大的是 Google Chrome.app（1.7 GB，27 个进程）",
+      "此刻最占 CPU 的是 WindowServer（58.3%，pid 407）"
+    ],
+    "priority": [
+      "pnpm",
+      "uv",
+      "pnpm-store-orphan",
+      "npm-npx",
+      "npm",
+      "yarn",
+      "cocoapods",
+      "bun",
+      "pip",
+      "dsh-trash",
+      "brew",
+      "dsh-usage-browser",
+      "dsh-orphan-sessions",
+      "dsh-legacy-sessions",
+      "dsh-old-sessions",
+      "cargo",
+      "dsh-projcache",
+      "dsh-archived-sessions",
+      "mem-app:Visual Studio Code.app",
+      "mem-proc:35542",
+      "orphan-processes"
+    ],
+    "warnings": [
+      "内存吃紧时，腾出磁盘空间能直接缓解：交换分区需要磁盘空间"
+    ],
+    "source": "rules"
+  },
+  "error": ""
+}

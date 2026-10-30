@@ -76,6 +76,14 @@ check_file "src/host/features/usage/tool.js"
 check_file "src/host/features/expander/tool.js"
 check_file "src/host/features/expander/ops.js"
 check_file "src/host/features/expander/fixtures/state.json"
+check_file "src/host/features/boost/index.js"
+check_file "src/host/features/boost/catalog.js"
+check_file "src/host/features/boost/probe.js"
+check_file "src/host/features/boost/execute.js"
+check_file "src/host/features/boost/analyze.js"
+check_file "src/host/features/boost/ops.js"
+check_file "src/host/features/boost/tool.js"
+check_file "src/host/features/boost/fixtures/scan.json"
 check_file "scripts/check-host.mjs"
 check_file "scripts/check-client.mjs"
 check_file "scripts/smoke.mjs"
@@ -83,6 +91,8 @@ check_file "scripts/smoke-renewal.mjs"
 check_file "scripts/ui-check.mjs"
 check_file "scripts/ui-check-expander.mjs"
 check_file "scripts/ui-check-tasks.mjs"
+check_file "scripts/ui-check-boost.mjs"
+check_file "scripts/boost-check.mjs"
 check_file "scripts/render-check.mjs"
 check_file "scripts/release.mjs"
 check_file "scripts/verify.sh"
@@ -319,6 +329,7 @@ const specs = [
   ['theme', path.join(dir, 'src/client/features/theme/constants.js'), 'settings.axzoTheme'],
   ['usage', path.join(dir, 'src/client/features/usage/constants.js'), 'usage-query'],
   ['expander', path.join(dir, 'src/client/features/expander/index.js'), 'pluginExpander'],
+  ['boost', path.join(dir, 'src/client/features/boost/i18n.js'), 'pcBoost'],
 ]
 const found = []
 for (const [name, file, want] of specs) {
@@ -334,13 +345,14 @@ check('三个命名空间互不相同', new Set(found).size === found.length, fo
 //   · 功能的字典里**不再有** hubTab —— 同一个命名空间同时只能被一个包注册，
 //     标签放在功能自己的命名空间下时，新旧插件并存会探不到，页签上显示裸的 key。
 const hubDict = read(path.join(dir, 'src/client/hub/i18n.js'))
-for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander']) {
+for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost']) {
   check('聚合页字典有 ' + key, new RegExp(key + "\\s*:\\s*['\"][^'\"]+['\"]").test(hubDict))
 }
 const tabSpecs = [
   ['theme', path.join(dir, 'src/client/features/theme/index.js'), path.join(dir, 'src/client/features/theme/i18n.js'), 'tabTheme'],
   ['usage', path.join(dir, 'src/client/features/usage/index.js'), path.join(dir, 'src/client/features/usage/i18n.js'), 'tabUsage'],
   ['expander', path.join(dir, 'src/client/features/expander/index.js'), path.join(dir, 'src/client/features/expander/index.js'), 'tabExpander'],
+  ['boost', path.join(dir, 'src/client/features/boost/index.js'), path.join(dir, 'src/client/features/boost/i18n.js'), 'tabBoost'],
 ]
 for (const [name, metaFile, dictFile, want] of tabSpecs) {
   const metaSrc = read(metaFile)
@@ -394,6 +406,8 @@ const usageTool = fs.readFileSync(path.join(dir, 'src/host/features/usage/tool.j
 check('用量查询的工具名仍是 usage_query', /name:\s*'usage_query'/.test(usageTool))
 const expanderTool = fs.readFileSync(path.join(dir, 'src/host/features/expander/tool.js'), 'utf8')
 check('插件更新的工具名仍是 plugin_update', /name:\s*'plugin_update'/.test(expanderTool))
+const boostTool = fs.readFileSync(path.join(dir, 'src/host/features/boost/tool.js'), 'utf8')
+check('加速清理的工具名是 system_boost', /name:\s*'system_boost'/.test(boostTool))
 process.exit(bad === 0 ? 0 : 1)
 NODE
 then ok "工具名没变"; else bad "工具名被改了"; fi
@@ -490,6 +504,22 @@ if node "$PLUGIN_DIR/scripts/ui-check-tasks.mjs" >"$SYNTAX_TMP/ui-tasks.log" 2>&
 else
   bad "scripts/ui-check-tasks.mjs 未通过（跑 node scripts/ui-check-tasks.mjs 看详情）"
   tail -20 "$SYNTAX_TMP/ui-tasks.log" | sed 's/^/    /'
+fi
+
+if node "$PLUGIN_DIR/scripts/ui-check-boost.mjs" >"$SYNTAX_TMP/ui-boost.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/ui-boost.log")"
+else
+  bad "scripts/ui-check-boost.mjs 未通过（跑 node scripts/ui-check-boost.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/ui-boost.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 加速清理的护栏（路径合法 / 在用即跳过 / 目录表 / 诊断兜底）"
+if node "$PLUGIN_DIR/scripts/boost-check.mjs" >"$SYNTAX_TMP/boost.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/boost.log")"
+else
+  bad "scripts/boost-check.mjs 未通过（跑 node scripts/boost-check.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/boost.log" | sed 's/^/    /'
 fi
 
 echo ""

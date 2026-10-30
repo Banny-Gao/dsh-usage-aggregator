@@ -1,7 +1,8 @@
 # dsh-usage-aggregator · 架构设计
 
-> 一个 DSH 插件装下三件能力：**用量查询**、**安心筑品牌主题**、**插件更新**。
-> 三个功能在设置面板里共用**一个**入口，插件管理器里只占**一行**。
+> 一个 DSH 插件装下四件能力：**用量查询**、**安心筑品牌主题**、**插件更新**、
+> **电脑加速与清理**。
+> 四块能力在设置面板里共用**一个**入口，插件管理器里只占**一行**。
 
 ---
 
@@ -74,6 +75,54 @@ Host 侧是空座位（`export const name` + 空 `apply()`），**100% 的行为
 
 两条 HTTP 路由、1 个 Agent 工具（`plugin_update`，带 danger-full-access 闸门）。它**自己不碰 pnpm** —— 官方管理器才有 profile 写锁、失败回滚、HMR 重载与构建脚本审批。
 
+### 2.4 dsh-usage-aggregator 新增 —— 电脑加速与清理
+
+```
+点小火箭 → 体检（磁盘/内存/交换/负载/进程 + 本机实际装的工具链缓存）
+        → 勾选（默认全选）→ 交给 Agent → Agent 先说明再动手 → 结果回到对话
+```
+
+清单来自三个来源，合并成一份给用户勾选：
+
+| 来源 | 模块 | 有什么 | 默认勾选 |
+|---|---|---|---|
+| 工具链缓存 | `catalog.js` | 本机实际装的包管理器的缓存，用它官方的清理命令 | 全勾（删了会重下） |
+| DSH 自己 | `dshself.js` | 回收站旧快照、旧格式会话日志、孤儿子代理会话、过期会话、已归档会话、投影缓存残留、旧附件、续期用的浏览器配置 | 可重建/已删除的勾；**会删用户历史的不勾** |
+| 进程与窗口 | `processes.js` | 占内存的应用与单个进程、后台高占 CPU 的任务、浏览器里非聚焦的窗口、孤儿子进程 | 无损的勾（降优先级、清崩溃残留）；**会关程序/关窗口的不勾** |
+
+「默认全选」与「不影响用户数据」在结束进程、删历史这两件事上冲突。这里选后者：
+默认值写在每个条目上（`selectedByDefault`），面板把每一项的后果写在旁边。
+
+四段语义刻意不可切碎：
+
+1. **清单是运行时发现的，不是写死的**。插件发布后跑在**各个用户自己的机器**上，
+   装了什么工具、缓存在哪、有多大，每台都不同。所以每个适配器只声明三件事：
+   `detect`（证明工具装了）、`locate`（**问工具自己**缓存目录）、`clean`（官方清理
+   命令）。探测不到就不出现这个条目 —— 用户看不到自己机器上不存在的工具。
+   写死的清单在别人的机器上必然对不上（要么报「缓存不存在」，要么把别人的目录
+   当成自己的去删）。
+2. **体检是后台任务**。量一个 10 GB 的 store 要十几秒，串行下来整个体检要一分多钟。
+   所以体积测量**并行**跑，量完一个收一个；客户端轮询 `/boost/status`，条目一个
+   个冒出来。体检结果有 5 分钟 TTL，重复打开不重测。
+3. **「过期」有两种语义**，面板上要标清楚：`prune` 只删已经没人引用的部分
+   （`pnpm store prune` / `uv cache prune`），`full` 整个缓存清空
+   （`npm cache clean --force`）。两者都不影响任何已装好的东西。
+4. **执行前 Agent 先说明**。面板确认后把体检结论与勾选清单交给当前会话的 Agent
+   （走 DSH 自己的 prompt 管线：`ctx.sessions.scope(id).conversation.send(text)`
+   → Host `session/prompt` → `agent.followup(message)`），Agent 先说清楚要做什么，
+   再调 `system_boost` 的 `execute` 动作执行。会话不可用时面板直接执行兜底。
+
+**三道护栏**（对应「不影响系统稳定性、正在运行的任务及用户数据」）：
+
+| 护栏 | 落点 |
+|---|---|
+| 白名单 | 能清的路径只来自适配器（工具自己报出来的，或家目录下的写死路径）；客户端只传条目 id，路径在执行前**重新解析** |
+| 在用即跳过 | 删之前扫一遍所有运行中进程的命令行，凡出现要删的路径，对应子目录跳过不删 —— 实测 `~/.npm/_npx/<hash>` 正在跑 MCP server，`~/Library/Caches/pnpm/dlx/<hash>` 更是**正在运行的 DSH 自己** |
+| 路径合法 | 绝对路径、存在、不是根目录、不是家目录本身、至少两段、不含 `..`；违反就拒绝并如实报告 |
+
+不用 `sudo`、不碰源码、不碰工作区 `node_modules`。每次清理都写审计日志
+（`$DSH_HOME/dsh-usage-aggregator/boost.log`）。
+
 ---
 
 ## 3. 关键决策：单包，还是 monorepo？
@@ -128,7 +177,8 @@ dsh-usage-aggregator/
 │   │   └── features/
 │   │       ├── theme/           # ← 原 dsh-axzo-theme/src
 │   │       ├── usage/           # ← 原 dsh-usage-query/src
-│   │       └── expander/        # ← 原 dsh-plugin-expander/client
+│   │       ├── expander/        # ← 原 dsh-plugin-expander/client
+│   │       └── boost/           # 电脑加速与清理：小火箭浮层 + 设置页视图
 │   └── host/                    # ── Host 半边（Node）──
 │       ├── index.js             # 入口：name / inject / apply
 │       ├── shared/              # 共享内核：http.js / context.js
@@ -221,6 +271,7 @@ export function apply(ctx, featureConfig, shared) { … }
 ```
 /dsh-usage-aggregator/usage/…       用量查询（11 条）
 /dsh-usage-aggregator/expander/…    插件更新（2 条）
+/dsh-usage-aggregator/boost/…       电脑加速与清理（3 条）
 ```
 
 **为什么必须分段**：`dsh-host-webserver` 的 `register()` 以 `(kind, path)` 为键，**重复注册直接 throw** → 插件 entry 加载失败 → 整页 `Failed to load plugins`。而且路由匹配**只看 path，不看 HTTP 方法** —— 客户端用 GET/POST 区分读写只是约定。
@@ -267,6 +318,8 @@ config:
   expander:
     checkTimeoutMs: 20000
     gitTimeoutMs: 15000
+  boost:
+    analysis: { provider, model, maxOutputTokens }
 ```
 
 原三个插件的每一个配置项都**原样保留**（只是归了组），默认值也全部不变。
@@ -382,6 +435,12 @@ config:
 | 10 | 用量查询只 `require('react')` / 主题可选 `react-dom` | 缺 react-dom 会让背景 portal 整体崩掉 |
 | 11 | 脱敏投影 `maskProvider()` 不绕过 | 凭证明文发到浏览器 |
 | 12 | `withLock` / `effectiveAnalysis` / `applyResult` 三段语义 | 并发写坏 store / 面板选的模型不生效 / 反复烧模型调用 |
+| 13 | 加速清理的清单**只在运行时发现** | 写死的清单在别人机器上会把别人的目录当成自己的去删 |
+| 14 | 执行前**重新解析**路径 + 在用即跳过 | 客户端能指定删除目录；正在跑的 DSH / MCP server 被删掉 |
+| 15 | 加速清理只用工具的官方命令，绝不 `sudo`、不碰源码与 node_modules | 系统不稳定、用户的项目与依赖被动过 |
+| 16 | 进程类动作只碰**通过护栏**的 pid：DSH 自己的（进程树 + 命令行标记 + 祖先）、root 的、系统进程、前台应用一律不碰 | 插件把 DSH 自己、MCP 驱动的浏览器、用户正在用的应用杀了 |
+| 17 | 结束进程前复核 pid 现在的命令行，只发 SIGTERM | pid 被回收复用后误杀无关进程；强杀丢数据 |
+| 18 | 删会话时跳过**正在跑的**会话 | 正在被追加的日志被删掉，会话损坏 |
 
 ---
 

@@ -24,6 +24,7 @@
         # 所有插件路由的公共前缀。三个功能各自再挂一段：
         #   /dsh-usage-aggregator/usage/*      —— 用量查询
         #   /dsh-usage-aggregator/expander/*   —— 插件更新
+        #   /dsh-usage-aggregator/boost/*      —— 电脑加速与清理
         # 主题功能没有 Host 路由，也没有 Host 配置（它的可调项走 localStorage）。
         endpoint: /dsh-usage-aggregator
         # 只有本机（回环地址）能访问插件路由。除非你确实要远程访问，别打开。
@@ -64,3 +65,15 @@
           checkTimeoutMs: 20000
           # 查远端 git HEAD（git ls-remote）的超时上限，单位毫秒。
           gitTimeoutMs: 15000
+
+        # ── 电脑加速与清理 ───────────────────────────────────────────────
+        # 体检「这台机器为什么慢」时用来做因果分析的模型。
+        #   · 必须来自本 profile 已配置的 provider —— 插件自己没有密钥，也不该有；
+        #   · 没有可用模型时**不影响功能**：诊断退成规则版（只做事实陈述与按体积排序）。
+        # 下面这组与「用量查询」的 analysis 同源，共用同一个 provider 更省事。
+        boost:
+          analysis:
+            provider: axzo-one
+            model: auto/deepseek-flash
+            # 诊断只要一段结论加几条观察，输出很短。
+            maxOutputTokens: 2000

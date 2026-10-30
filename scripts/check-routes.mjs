@@ -64,6 +64,7 @@ try {
     allowRemote: false,
     usage: { autoRefresh: { enabled: false } },
     expander: {},
+    boost: {},
   });
 
   /** 收集到的路由：path → 来自哪个功能。 */
@@ -155,6 +156,8 @@ try {
       '/usage/chip', '/usage/raw',
     ],
     expander: ['/expander/state', '/expander/update'],
+    // 加速清理：体检是后台任务，所以是「启动 + 轮询状态」两条 GET，再加一条执行。
+    boost: ['/boost/scan', '/boost/status', '/boost/execute'],
   };
   for (const [featureId, suffixes] of Object.entries(EXPECTED)) {
     const actual = routes

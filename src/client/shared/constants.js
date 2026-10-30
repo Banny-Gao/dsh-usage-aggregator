@@ -6,9 +6,10 @@
 // 客户端 bundle 在浏览器里独立加载，读不到 Host 的 config，所以这个前缀只能
 // 两边各写一份 —— 但**只写这一处**：改前缀只改这个文件 + patch 一处。
 //
-// 三段路由：
+// 四段路由：
 //   /dsh-usage-aggregator/usage/*      —— 用量查询
 //   /dsh-usage-aggregator/expander/*   —— 插件更新
+//   /dsh-usage-aggregator/boost/*      —— 电脑加速与清理
 // 主题功能没有 Host 路由（它的可调项走 localStorage）。
 
 /** 所有插件路由的公共前缀。 */
@@ -19,3 +20,6 @@ export const USAGE_ENDPOINT = ENDPOINT_BASE + '/usage';
 
 /** 插件更新的路由前缀。 */
 export const EXPANDER_ENDPOINT = ENDPOINT_BASE + '/expander';
+
+/** 电脑加速与清理的路由前缀。 */
+export const BOOST_ENDPOINT = ENDPOINT_BASE + '/boost';

@@ -954,7 +954,7 @@ var dshUsageAggregator = (function(exports) {
 		wmHint: "有会话时把整套品牌（光晕+玻璃盘+字标+标语）铺成会话主区背景，不随内容滚动。",
 		washHint: "整个界面铺一层薄荷渐变光晕，玻璃质感的主要来源。强度可单独调。",
 		doneBadge: "该工作区有任务刚完成，点击清除标记",
-		attentionBadge: "该工作区任务被暂停或出错，点击清除标记",
+		attentionBadge: "该工作区有任务在等你处理（审批 / 提问），点击清除标记",
 		sbSection: "侧栏质感",
 		sbHint: "给侧栏加一层玻璃与磨砂纹理。数值调低更通透，调高更沉稳。",
 		sbGlassTitle: "玻璃面板",
@@ -1016,7 +1016,7 @@ var dshUsageAggregator = (function(exports) {
 		wmHint: "Paints the whole brand as the conversation backdrop; it does not scroll with content.",
 		washHint: "A mint gradient wash across the whole UI — the main source of the glassy feel. Strength is adjustable.",
 		doneBadge: "A task just finished here — click to clear the mark",
-		attentionBadge: "A task here was paused or errored — click to clear the mark",
+		attentionBadge: "A task here is waiting on you (approval / question) — click to clear the mark",
 		sbSection: "Sidebar finish",
 		sbHint: "Adds a glass layer and a frosted grain to the sidebar. Lower values read clearer, higher ones calmer.",
 		sbGlassTitle: "Glass panel",
@@ -1678,53 +1678,6 @@ var dshUsageAggregator = (function(exports) {
 		tag.textContent = buildGlobalCss(flags, brand);
 	}
 	// src/client/features/theme/tasks.js
-	/**
-	* DSH 的 sessions 服务给每条会话记录带了两个状态字段（cwd 不算状态）：
-	*   running    —— 这一轮任务还在跑；错误 / 暂停时也会翻 false
-	*   completed  —— 这一轮「真完成」才置 true（DSH 注释：「Finished while
-	*                 not selected and not yet opened — the sidebar's green
-	*                 "done" reminder」）；错误 / 暂停下 DSH 不动这字段
-	*   cwd        —— 它属于哪个工作区（用来对应到侧栏那一行）
-	*
-	* 触发条件必须用 `completed` 而不是 `running→!running`：
-	*   - 错误 / 暂停：DSH 把 running 翻 false 但 completed 不动，旧逻辑会被
-	*     误判成「完成」、侧栏行冒出完成徽标 —— 是这个 bug 的根因。
-	*   - 真完成：DSH 把 completed 翻 true → 记边沿。
-	*
-	* 边沿的两道守门（防页面刷新时把历史已完成的会话全刷成标记）：
-	*   1. `TASK.runningIds[id] === true` —— 必须亲眼见过这 id 在跑，
-	*      否则加载时已 completed 的会话会被全刷。
-	*   2. `TASK.completedIds[id] !== true` —— 必须是「刚翻 true」，
-	*      同一会话再跑再完成也能再次触发（running false→true 时把上次记的
-	*      completed 状态清掉，让下一次完成能再算边沿）。
-	*
-	* 顶部流光与侧栏行的「呼吸」用 running；完成徽标用 completed。两者分别听。
-	*
-	* 还需要一条「需要关注」徽标（暂停 / 错误）：DSH 把 running 翻 false 但
-	* completed 不动 —— 这两态没法直接区分（sessions.list 只给 running /
-	* completed 两字段），用「曾经 running、现在不是、还没 completed」的统一
-	* 信号标一个琥珀色徽标，先解决「错误悄无声息」的问题。等 DSH 把 phase
-	* 暴露给 SessionSummary 时再拆成两个独立的徽标。
-	*
-	* 与完成徽标刻意区分：完成是「事件」（这一轮 turn 真结束 → 记边沿 → 粘性 →
-	* 用户点掉才消），关注是「状态」。
-	*
-	* 实现：attentionKeys 不再做边沿累积，而是每拍从 nextAttentionIds 按
-	* workspace 派生；nextAttentionIds 的填充条件是
-	*   !running && !completed && (wasAttention || wasRunning)
-	* —— 边沿（wasRunning）+ 持久化（wasAttention）两者居一即可。这样：
-	*   - session 从 running 转入停 → wasRunning 边沿打上 → 徽标挂
-	*   - 之后多拍保持 !running → wasAttention 持久化 → 徽标继续挂
-	*   - session 恢复 running 或真完成 → 下一拍不进 nextAttentionIds → 徽标
-	*     自动摘掉
-	*   - 用户点徽标 / 点会话行 → clearEdgeStateFor 抹掉 wasAttention → 下
-	*     一拍除非又有新边沿，否则不重现
-	*
-	* 单看 !running && !completed 不够 —— DSH 的 completed=true 只对「用户没
-	* 打开过的 session 完成」打点（见 session.d.ts 注释），用户打开过的 session
-	* 正常结束也是 completed=false，会被错认为「需要关注」。这条守门
-	* (wasAttention || wasRunning) 就是把这种「长期 idle 不算关注」滤掉。
-	*/
 	var TASK = {
 		watching: false,
 		busy: false,
@@ -1732,8 +1685,9 @@ var dshUsageAggregator = (function(exports) {
 		markKeys: [],
 		attentionKeys: [],
 		runningIds: {},
-		completedIds: {},
-		attentionIds: {},
+		completionUnreadIds: {},
+		dismissedKeys: {},
+		statuses: null,
 		t: null,
 		observer: null,
 		queued: false
@@ -1752,6 +1706,44 @@ var dshUsageAggregator = (function(exports) {
 		var el = row.querySelector("[class*='_title']");
 		return el === null ? "" : normalizeKey(el.textContent);
 	}
+	/**
+	* 这条会话是不是子代理。
+	*
+	* 子代理是 Lead 另开的会话：parentId 指向 Lead、origin 为 'subagent'。
+	* 两种标记任一命中就算 —— 读不到 origin 的旧版本里 parentId 也够用。
+	*
+	* @param {object} rec 会话摘要。
+	* @returns {boolean} 是否子代理。
+	*/
+	function isSubagent(rec) {
+		if (rec === void 0 || rec === null) return false;
+		if (rec.origin === "subagent") return true;
+		return rec.parentId !== void 0 && rec.parentId !== null && rec.parentId !== "";
+	}
+	/**
+	* 官方 sessionStatus 里的一条状态。
+	*
+	* @param {object|undefined} st 状态。
+	* @returns {{running: boolean, pending: boolean, pendingKey: string, completedUnread: boolean}} 归一后的状态。
+	*/
+	function readStatus(st) {
+		if (st === void 0 || st === null) return {
+			running: false,
+			pending: false,
+			pendingKey: "",
+			completedUnread: false
+		};
+		var interaction = st.pendingInteraction;
+		var hasPending = interaction !== void 0 && interaction !== null;
+		var pendingKey = "";
+		if (hasPending) pendingKey = typeof interaction.key === "string" && interaction.key !== "" ? interaction.key : "pending";
+		return {
+			running: st.running === true,
+			pending: hasPending,
+			pendingKey,
+			completedUnread: st.completionUnread === true
+		};
+	}
 	function makeDoneBadge(key) {
 		var btn = document.createElement("button");
 		btn.type = "button";
@@ -1767,9 +1759,9 @@ var dshUsageAggregator = (function(exports) {
 		return btn;
 	}
 	/**
-	* 「需要关注」徽标：DSH 把 running 翻 false 但 completed 没动时的边沿产物。
+	* 「需要关注」徽标：会话在等你（审批 / 计划评审 / 提问）。
 	* 形状用叹号（比完成的对勾更警觉），颜色走琥珀，让用户一眼分清
-	* 「这事办完了」vs「这事没办完、我去看一眼」。
+	* 「这事办完了」vs「这事卡在你这儿了」。
 	*/
 	function makeAttentionBadge(key) {
 		var btn = document.createElement("button");
@@ -1797,11 +1789,6 @@ var dshUsageAggregator = (function(exports) {
 		if (section === null) return null;
 		return section.querySelector("[class*='_projectRow']");
 	}
-	/**
-	* 点会话行也算「我来看过这个工作区了」，把标记一并清掉。
-	* 用捕获阶段监听 document：React 的事件委托挂在根容器上，行自己的 onClick
-	* 有可能提前 stopPropagation，捕获阶段最稳。
-	*/
 	/** 从数组里去掉一个 key，返回新数组（不原地改）。 */
 	function removeKey(arr, key) {
 		var next = [];
@@ -1809,32 +1796,38 @@ var dshUsageAggregator = (function(exports) {
 		return next;
 	}
 	/**
-	* 清掉该 workspace 下所有 session id 的边沿状态（completedIds / attentionIds）。
-	* 不能直接 workspace → ids 反查，用 `TASK._lastById` 快照做反查。
-	* 两类徽标共用：用户主动清除某类徽标时，把对应边沿状态也作废 ——
-	* 否则同一会话再次「完成 / 出错」时 wasCompleted / wasAttention 还是 true、
-	* 边沿不会再次触发，「我看过」和「我处理完了」会被混作一件事。
+	* 清掉「完成」徽标。
+	*
+	* 只摘徽标，**不动边沿状态** —— 两个触发（running→停止、completionUnread
+	* false→true）都是真边沿：
+	*   · 摘掉之后，下一拍 wasRunning / wasCompletedUnread 仍是「边沿已经发生过」
+	*     的值 → 不会立刻重现；
+	*   · 会话**重新开跑**时，DSH 会清掉 completionUnread、runningIds 也回到 true，
+	*     下一轮跑完照样再报一次完成。
+	* 旧实现把「边沿」和「去重」混在同一份状态里，清徽标时必须连带作废，才不会
+	* 「我看过」和「我处理完了」被混作一件事；现在两者分开，就不用那种补偿了。
+	*
+	* @param {string} key 工作区标识。
+	* @returns {void}
 	*/
-	function clearEdgeStateFor(track, key) {
-		var trackState = track === "completed" ? TASK.completedIds : TASK.attentionIds;
-		for (var id in trackState) {
-			var rec = TASK._lastById === void 0 ? null : TASK._lastById[id];
-			if (rec === null) continue;
-			if (workspaceKeyOf(rec.cwd) === key) delete trackState[id];
-		}
-	}
 	function clearMarks(key) {
 		TASK.markKeys = removeKey(TASK.markKeys, key);
-		clearEdgeStateFor("completed", key);
 		paintTaskState();
 	}
 	/**
-	* 清除「需要关注」徽标。逻辑跟 `clearMarks` 对称 —— 边沿状态作废，
-	* 下一轮同会话出错能再次触发徽标。
+	* 清除「需要关注」徽标。
+	*
+	* 关注是**状态**：会话还在等你，条件没消失。点掉只是「这次先不提醒我」——
+	* 记住这次 pending 交互的 key，同一个交互不再冒出来；换了新交互（新 key）
+	* 照常提示。
+	*
+	* @param {string} key 工作区标识。
+	* @returns {void}
 	*/
 	function clearAttention(key) {
 		TASK.attentionKeys = removeKey(TASK.attentionKeys, key);
-		clearEdgeStateFor("attention", key);
+		var list = (TASK.attentionItems === void 0 ? {} : TASK.attentionItems)[key];
+		if (list !== void 0) for (var i = 0; i < list.length; i += 1) TASK.dismissedKeys[list[i].sessionId] = list[i].interactionKey;
 		paintTaskState();
 	}
 	/**
@@ -1891,9 +1884,89 @@ var dshUsageAggregator = (function(exports) {
 		else setTimeout(run, 60);
 	}
 	/**
+	* 重算全部工作区状态。
+	*
+	* 数据有两个来源：会话列表（拿 cwd → 工作区、以及会话集合）和官方
+	* sessionStatus 快照（拿 running / 在等你 / 完成了没看）。两者各自会变，
+	* 所以都汇到这一个函数里重算。
+	*
+	* @returns {void}
+	*/
+	function recomputeTaskState() {
+		var byId = TASK._lastById || {};
+		var statuses = TASK.statuses;
+		var running = {};
+		var runKeys = [];
+		var fresh = [];
+		var nextRunningIds = {};
+		var nextCompletionUnreadIds = {};
+		var attentionItems = {};
+		var liveAttention = [];
+		var id, rec, key, status, wasRunning, wasCompletedUnread, isRunning, isPending, isCompletedUnread, pendingKey;
+		for (id in byId) {
+			rec = byId[id];
+			if (rec === void 0 || rec === null || rec.blank) continue;
+			if (isSubagent(rec)) continue;
+			key = workspaceKeyOf(rec.cwd);
+			status = readStatus(statuses === null || statuses === void 0 ? void 0 : statuses.get(id));
+			if (statuses === null || statuses === void 0 || statuses.get(id) === void 0) status.running = rec.running === true;
+			wasRunning = TASK.runningIds[id] === true;
+			wasCompletedUnread = TASK.completionUnreadIds[id] === true;
+			isRunning = status.running;
+			isPending = status.pending;
+			isCompletedUnread = status.completedUnread;
+			pendingKey = status.pendingKey;
+			nextRunningIds[id] = isRunning;
+			nextCompletionUnreadIds[id] = isCompletedUnread;
+			if (isRunning) {
+				running[id] = true;
+				if (key !== "" && runKeys.indexOf(key) < 0) runKeys.push(key);
+			}
+			if (!isRunning && !isPending && key !== "" && (wasRunning && !isRunning || isCompletedUnread && !wasCompletedUnread)) fresh.push(key);
+			if (!isRunning && isPending) {
+				var dismissed = TASK.dismissedKeys[id];
+				if (dismissed === void 0 || dismissed !== pendingKey) {
+					if (attentionItems[key] === void 0) attentionItems[key] = [];
+					attentionItems[key].push({
+						sessionId: id,
+						interactionKey: pendingKey
+					});
+				}
+			}
+		}
+		var seenAttentionKey = Object.create(null);
+		for (var akey in attentionItems) {
+			if (akey === "" || seenAttentionKey[akey]) continue;
+			seenAttentionKey[akey] = true;
+			liveAttention.push(akey);
+		}
+		TASK.runningIds = nextRunningIds;
+		TASK.completionUnreadIds = nextCompletionUnreadIds;
+		TASK.attentionItems = attentionItems;
+		TASK.runKeys = runKeys;
+		TASK.attentionKeys = liveAttention;
+		TASK.busy = runKeys.length > 0 || Object.keys(running).length > 0;
+		TASK.watching = true;
+		for (var i = 0; i < fresh.length; i += 1) if (TASK.markKeys.indexOf(fresh[i]) < 0) TASK.markKeys.push(fresh[i]);
+		scheduleTaskPaint();
+	}
+	/**
+	* 喂进官方 sessionStatus 快照（由 task-status.js 的探针组件调用）。
+	*
+	* @param {Map<string, object>|null} statuses 状态快照。
+	* @returns {void}
+	*/
+	function setTaskStatuses(statuses) {
+		TASK.statuses = statuses === void 0 ? null : statuses;
+		recomputeTaskState();
+	}
+	/**
 	* 订阅会话列表。返回 disposer。
 	* 侧栏行是 React 动态渲染的，列表变化本身不保证行已经挂上，
 	* 所以额外用一个 rAF 节流的 MutationObserver 兜底重绘。
+	*
+	* @param {object} sessions sessions 服务。
+	* @returns {Function} disposer。
 	*/
 	function startTaskWatch(sessions) {
 		var list = sessions === void 0 || sessions === null ? null : sessions.list;
@@ -1905,50 +1978,8 @@ var dshUsageAggregator = (function(exports) {
 			} catch (err) {
 				return;
 			}
-			var byId = (snap === null || snap === void 0 ? {} : snap.byId) || {};
-			var running = {};
-			var runKeys = [];
-			var fresh = [];
-			var nextCompletedIds = {};
-			var nextAttentionIds = {};
-			var id, rec, key, isRunning, isCompleted, wasRunning, wasCompleted, wasAttention;
-			for (id in byId) {
-				rec = byId[id];
-				if (rec === void 0 || rec === null || rec.blank) continue;
-				key = workspaceKeyOf(rec.cwd);
-				isRunning = rec.running === true;
-				isCompleted = rec.completed === true;
-				wasRunning = TASK.runningIds[id] === true;
-				wasCompleted = TASK.completedIds[id] === true;
-				wasAttention = TASK.attentionIds[id] === true;
-				if (isRunning) {
-					running[id] = true;
-					if (key !== "" && runKeys.indexOf(key) < 0) runKeys.push(key);
-				}
-				if (isCompleted && !(isRunning && !wasRunning)) nextCompletedIds[id] = true;
-				if (!isRunning && !isCompleted && (wasAttention || wasRunning)) nextAttentionIds[id] = true;
-				if (isCompleted && wasRunning && !wasCompleted && key !== "") fresh.push(key);
-			}
-			TASK.runningIds = running;
-			TASK.runKeys = runKeys;
-			TASK.completedIds = nextCompletedIds;
-			TASK.attentionIds = nextAttentionIds;
-			TASK._lastById = byId;
-			TASK.busy = runKeys.length > 0 || Object.keys(running).length > 0;
-			TASK.watching = true;
-			for (var i = 0; i < fresh.length; i += 1) if (TASK.markKeys.indexOf(fresh[i]) < 0) TASK.markKeys.push(fresh[i]);
-			var liveAttention = [];
-			var seenAttentionKey = Object.create(null);
-			for (var aid in nextAttentionIds) {
-				var arec = TASK._lastById === void 0 ? null : TASK._lastById[aid];
-				if (arec === null || arec === void 0) continue;
-				var ak = workspaceKeyOf(arec.cwd);
-				if (ak === "" || seenAttentionKey[ak]) continue;
-				seenAttentionKey[ak] = true;
-				liveAttention.push(ak);
-			}
-			TASK.attentionKeys = liveAttention;
-			scheduleTaskPaint();
+			TASK._lastById = (snap === null || snap === void 0 ? {} : snap.byId) || {};
+			recomputeTaskState();
 		};
 		var unsubscribe;
 		try {
@@ -1988,8 +2019,10 @@ var dshUsageAggregator = (function(exports) {
 			TASK.markKeys = [];
 			TASK.attentionKeys = [];
 			TASK.runningIds = {};
-			TASK.completedIds = {};
-			TASK.attentionIds = {};
+			TASK.completionUnreadIds = {};
+			TASK.dismissedKeys = {};
+			TASK.attentionItems = {};
+			TASK.statuses = null;
 			TASK._lastById = null;
 			if (typeof document !== "undefined" && document.body !== null) {
 				document.body.removeAttribute("data-axzo-busy");
@@ -2000,6 +2033,36 @@ var dshUsageAggregator = (function(exports) {
 			var attnBadges = document.querySelectorAll(".dsh-axzo-attention");
 			for (var j = 0; j < attnBadges.length; j += 1) attnBadges[j].remove();
 		};
+	}
+	// src/client/features/theme/task-status.js
+	/**
+	* 探针组件：读官方 sessionStatus 快照，喂给任务徽标。
+	*
+	* @param {{useSessionStatus: Function}} props 槽位标准 props。
+	* @returns {null} 不渲染任何东西。
+	*/
+	function TaskStatusProbe(props) {
+		const statuses = props.useSessionStatus(function(all) {
+			return all;
+		});
+		useEffect(function() {
+			setTaskStatuses(statuses);
+		}, [statuses]);
+		return null;
+	}
+	/**
+	* 槽位渲染入口。
+	*
+	* 只有宿主真的提供了 useSessionStatus（老版本 DSH 可能没有）才挂探针 ——
+	* 挂上去却拿不到函数会在渲染时炸。
+	*
+	* @param {object} props 槽位 props。
+	* @returns {object|null} React 元素。
+	*/
+	function renderTaskStatusProbe(props) {
+		if (props === void 0 || props === null) return null;
+		if (typeof props.useSessionStatus !== "function") return null;
+		return h(TaskStatusProbe, props);
 	}
 	// src/client/features/theme/tokens.js
 	/**
@@ -2373,6 +2436,13 @@ var dshUsageAggregator = (function(exports) {
 				id: "axzo-sidebar",
 				order: 901
 			}, SidebarDecorHost);
+		});
+		ctx.slots.inject("sidebar.footer.action", function() {
+			return ctx.slots.register({
+				name: "sidebar.footer.action",
+				id: "axzo-task-status",
+				order: 902
+			}, renderTaskStatusProbe);
 		});
 		ctx.effect(function() {
 			var lastFlags = null;
@@ -3719,7 +3789,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-10-30 15:15:20";
+		return "2026-10-30 15:39:19";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -5372,7 +5442,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-10-30 15:15:20";
+	var BUILD_AT = "2026-10-30 15:39:19";
 	/**
 	* 声明要等的服务。
 	*

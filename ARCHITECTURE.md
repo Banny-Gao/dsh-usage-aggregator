@@ -44,7 +44,7 @@ Host 侧是空座位（`export const name` + 空 `apply()`），**100% 的行为
 | 玻璃首屏舞台 | `conversation.hero.brand.mark`，priority −1 | 关闭时**真的注销槽位**（单值槽只渲染 priority 最低的那个） |
 | 会话主区品牌背景 | `sidebar.footer.action`（id `axzo-backdrop`） | `react-dom.createPortal` 挂进会话区容器 |
 | 侧栏玻璃质感 | `sidebar.footer.action`（id `axzo-sidebar`） | 运行时探测侧栏列并打 `data-axzo-sidebar` 属性 |
-| 任务状态徽标 | `body[data-axzo-taskwatch]` / `[data-axzo-run]` | 完成=事件（边沿、粘性）、关注=状态（每拍派生） |
+| 任务状态徽标 | `sidebar.footer.action`（id `axzo-task-status`）+ `body[data-axzo-taskwatch]` / `[data-axzo-run]` | 数据源 = 官方 **sessionStatus** 快照（`running` / `pendingInteraction` / `completionUnread`）；完成=事件（边沿、粘性）、关注=状态（每拍派生）；**子代理不计入** |
 | 全域氛围光 / 顶部流光 | `body::before` / `body::after` | z-index 2.1e9 |
 | 设置面板 | `settings.section`（id `axzo-theme`，order 93） | 6 套预设 + HSL 三滑杆 + 5 个视觉开关 + 品牌自定义 |
 

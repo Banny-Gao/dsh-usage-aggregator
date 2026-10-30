@@ -36,6 +36,7 @@ import { Panel } from './panel.js';
 import { getPrefs, subscribePrefs } from './prefs.js';
 import { h } from '../../runtime.js';
 import { applyGlobalStyle } from './styles.js';
+import { renderTaskStatusProbe } from './task-status.js';
 import { TASK, startTaskWatch } from './tasks.js';
 import { releaseBrandTokens, setBrandTokens } from './tokens.js';
 
@@ -189,6 +190,15 @@ export function apply(ctx, t) {
   // 打到侧栏根节点上（侧栏根的类名带构建哈希，只能运行时认）。
   ctx.slots.inject("sidebar.footer.action", function () {
     return ctx.slots.register({ name: "sidebar.footer.action", id: "axzo-sidebar", order: 901 }, SidebarDecorHost);
+  });
+
+  // 任务状态的探针：把官方 sessionStatus 快照喂给任务徽标（见 task-status.js）。
+  // 挂在同一个「始终挂载」的槽位上 —— 徽标要靠它才知道「完成」还是「在等你」。
+  ctx.slots.inject("sidebar.footer.action", function () {
+    return ctx.slots.register(
+      { name: "sidebar.footer.action", id: "axzo-task-status", order: 902 },
+      renderTaskStatusProbe
+    );
   });
 
   // 3. 全局样式（表面染色之外的氛围光 / 舞台 / 流光）

@@ -82,6 +82,7 @@ check_file "scripts/smoke.mjs"
 check_file "scripts/smoke-renewal.mjs"
 check_file "scripts/ui-check.mjs"
 check_file "scripts/ui-check-expander.mjs"
+check_file "scripts/ui-check-tasks.mjs"
 check_file "scripts/render-check.mjs"
 check_file "scripts/release.mjs"
 check_file "scripts/verify.sh"
@@ -482,6 +483,13 @@ if node "$PLUGIN_DIR/scripts/ui-check-expander.mjs" >"$SYNTAX_TMP/ui-exp.log" 2>
 else
   bad "scripts/ui-check-expander.mjs 未通过（跑 node scripts/ui-check-expander.mjs 看详情）"
   tail -20 "$SYNTAX_TMP/ui-exp.log" | sed 's/^/    /'
+fi
+
+if node "$PLUGIN_DIR/scripts/ui-check-tasks.mjs" >"$SYNTAX_TMP/ui-tasks.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/ui-tasks.log")"
+else
+  bad "scripts/ui-check-tasks.mjs 未通过（跑 node scripts/ui-check-tasks.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/ui-tasks.log" | sed 's/^/    /'
 fi
 
 echo ""

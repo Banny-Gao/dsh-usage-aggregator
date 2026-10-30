@@ -126,11 +126,42 @@ export const HubView = (props) => h(Panel, props);
 | `conversation.hero.brand.mark` | `HeroBrandMark` | priority `-1` | ✅ 保留（可开关，关闭时真正让出槽位） |
 | `sidebar.footer.action` | `BackdropHost` | id `axzo-backdrop`、order `900` | ✅ 保留 |
 | `sidebar.footer.action` | `SidebarDecorHost` | id `axzo-sidebar`、order `901` | ✅ 保留 |
+| `sidebar.footer.action` | `TaskStatusProbe` | id `axzo-task-status`、order `902` | 🆕 **新增** —— 见 §5.1 |
 | `settings.section` | `Panel` | id `axzo-theme`、order `93` | ❌ **删除** —— 聚合页统一注册 |
 
 - `sessions` 继续用 `ctx.inject(['sessions'], cb)` **可选注入**，绝没有进硬 inject 数组。
 - `TASK.t = translator` 保留 —— 任务徽标的中英文案靠它。
 - `ctx.theme` 缺失时仍然 `console.warn`（旧行为）。
+
+### 5.1 任务徽标的数据源改了（**修 bug**）
+
+旧实现从会话列表里读 `rec.completed` —— **那个字段在当前的 `SessionSummary`
+里根本不存在**（现在的字段是 `running` / `blank` / `origin` / `parentId` /
+`cwd` / `updatedAt` / `title` / `projectionValues`）。后果：
+
+- `isCompleted` 恒为 false → 绿色「完成」徽标**永远不会出现**；
+- 旧逻辑的「停下来了但没 completed」→ 每一拍都命中 → **凡是停下来的会话都挂
+  上琥珀色叹号**。这就是「任务完成了却一直显示 warning」的根因。
+
+现在读的是官方 `@deepseek-ai/dsh-client-ui-session` 的 **sessionStatus** 快照
+（宿主 UI 自己就是用它画侧栏状态点的）：
+
+| 字段 | 含义 | 主题怎么用 |
+|---|---|---|
+| `running` | 这一轮还在跑吗 | 工作区行「呼吸」 |
+| `pendingInteraction` | 在等你（审批 / 计划评审 / 提问） | **琥珀「需要关注」** |
+| `completionUnread` | 跑完了、而你还没去看 | **绿色「完成」**（边沿触发） |
+
+根 hook 没有非 React 的公开读法（只以标准 props `useSessionStatus` 发给槽位
+组件），所以新增 `task-status.js` 探针组件挂在 `sidebar.footer.action` 上，把
+快照喂给徽标。
+
+**另一个修掉的 bug：子代理不进统计。** 一个会话的主代理（Lead）是这条会话
+本身，它的子代理是另开的会话（`parentId` 指向 Lead、`origin === 'subagent'`）。
+旧实现把子代理的完成也算进工作区行 —— 现在这两种标记任一命中就整个跳过。
+
+判定逻辑的状态机（两个触发都是真边沿）由 `scripts/ui-check-tasks.mjs` 逐条
+覆盖（10 项）。
 
 ---
 

@@ -83,6 +83,21 @@
 
 ### 顺带修掉的既有隐患
 
+- **任务徽标恒为 warning**：主题的侧栏工作区徽标读的是会话摘要里的 `completed`
+  字段 —— **那个字段在当前的 DSH `SessionSummary` 里根本不存在**。所以
+  `isCompleted` 恒为 false：绿色「完成」徽标永远不会出现，而「停下来但没
+  completed」每一拍都命中 → 凡是停下来的会话都挂上琥珀色叹号。现在改读官方
+  `@deepseek-ai/dsh-client-ui-session` 的 **sessionStatus** 快照
+  （`running` / `pendingInteraction` / `completionUnread`，宿主 UI 自己就是用它
+  画侧栏状态点的）：正常完成 → 绿色对勾，在等你处理（审批 / 提问）→ 琥珀叹号。
+  根 hook 没有非 React 的公开读法，新增 `task-status.js` 探针组件挂在
+  `sidebar.footer.action` 上把快照喂给徽标。
+- **子代理的状态混进统计**：一个会话的主代理（Lead）是这条会话本身，它的
+  子代理是另开的会话（`parentId` 指向 Lead、`origin === 'subagent'`）。旧实现
+  把子代理的完成也算进工作区行 —— 现在这两种标记任一命中就整个跳过。
+  新增 `scripts/ui-check-tasks.mjs`：10 项断言覆盖「正常完成 / 当前会话完成 /
+  在等你 / 子代理不计入 / 加载不刷屏 / 点掉不重现 / 再跑再完成能再报」。
+
 - **页签标签兜底成 key**：页签标签原本放在各功能自己的 locale 命名空间下
   （`hubTab` 键）。同一个命名空间同时只能被一个包注册 —— 新旧插件并存时命名空间
   归旧包，功能就探不到自己的字典，翻译服务把 key 本身当答案返回，页签上出现

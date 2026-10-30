@@ -65,6 +65,7 @@
     "smoke:renewal": "node scripts/smoke-renewal.mjs",
     "ui-check": "node scripts/ui-check.mjs",
     "ui-check:expander": "node scripts/ui-check-expander.mjs",
+    "ui-check:tasks": "node scripts/ui-check-tasks.mjs",
     "render-check": "node scripts/render-check.mjs",
     "release": "node scripts/release.mjs"
   },

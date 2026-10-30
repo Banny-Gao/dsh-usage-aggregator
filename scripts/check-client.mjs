@@ -85,10 +85,12 @@ const EXPECTED_SLOTS = {
   'conversation.hero.brand.mark': { priority: -1 },
 };
 
-/** 期望在 sidebar.footer.action 上注册**两次**的项：id → order。 */
+/** 期望在 sidebar.footer.action 上注册的项：id → order。 */
 const EXPECTED_FOOTER_ACTIONS = [
   { id: 'axzo-backdrop', order: 900 },
   { id: 'axzo-sidebar', order: 901 },
+  // 任务状态探针：把官方 sessionStatus 快照喂给侧栏工作区的任务徽标。
+  { id: 'axzo-task-status', order: 902 },
 ];
 
 /**
@@ -385,7 +387,7 @@ const sections = byName('settings.section');
 if (sections.length === 1) ok('settings.section 只注册一次（聚合设置页）');
 else if (sections.length > 1) bad(`settings.section 注册了 ${sections.length} 次`);
 
-// sidebar.footer.action 必须注册两次（背景宿主 + 侧栏质感宿主），顺序固定。
+// sidebar.footer.action 必须注册三次（背景宿主 + 侧栏质感宿主 + 任务状态探针），顺序固定。
 const footers = byName('sidebar.footer.action');
 if (footers.length === EXPECTED_FOOTER_ACTIONS.length) {
   let matched = true;
@@ -397,7 +399,7 @@ if (footers.length === EXPECTED_FOOTER_ACTIONS.length) {
       matched = false;
     }
   }
-  if (matched) ok('sidebar.footer.action 注册两次（axzo-backdrop@900 / axzo-sidebar@901）');
+  if (matched) ok('sidebar.footer.action 注册三次（axzo-backdrop@900 / axzo-sidebar@901 / axzo-task-status@902）');
 } else {
   bad(`sidebar.footer.action 注册了 ${footers.length} 次，必须是 ${EXPECTED_FOOTER_ACTIONS.length} 次`);
 }

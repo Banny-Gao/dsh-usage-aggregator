@@ -52,8 +52,12 @@ export const zh = {
   analysisByRules: '按固定规则排序（没有可用的模型）',
 
   // 结果
-  done: '已交给 Agent，清理结果会回到对话里。',
-  doneDirect: '当前会话不可用，已由面板直接执行。',
+  done: '已交给 Agent，去对话里看它的说明与执行结果。',
+  doneDirect: '已由面板直接执行。',
+  executingDirect: '面板直接执行（{reason}）。接下来会执行清单里勾选的这几项，每一项做什么都写在清单上。',
+  progress: '正在执行 {done}/{total}：{label}',
+  handoffTimeout: '交接超时，Agent 那边没有回音',
+  handoffNoSession: '当前会话不可用',
   failed: '执行失败：{error}',
   reclaimed: '回收了约 {size}',
 
@@ -105,8 +109,12 @@ export const en = {
   analysisByModel: 'analysed by the model',
   analysisByRules: 'ranked by fixed rules (no model available)',
 
-  done: 'Handed to the Agent — results will come back into the conversation.',
-  doneDirect: 'No live session available, so the panel ran it directly.',
+  done: 'Handed to the Agent — see its explanation and results in the conversation.',
+  doneDirect: 'The panel ran it directly.',
+  executingDirect: 'Running it here instead ({reason}). The ticked items are about to run — each one says what it does.',
+  progress: 'Running {done}/{total}: {label}',
+  handoffTimeout: 'the handoff timed out — the Agent never answered',
+  handoffNoSession: 'no usable session',
   failed: 'Failed: {error}',
   reclaimed: 'reclaimed about {size}',
 

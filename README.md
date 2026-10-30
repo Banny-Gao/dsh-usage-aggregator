@@ -51,13 +51,13 @@ docs/adr/            架构决策记录
 | `plugin_update` | `check`（只读）· `update` |
 | `system_boost` | `scan`（体检，只读）· `execute`（清理勾选的缓存） |
 
-**HTTP 路由**（16 条，全部在 `/dsh-usage-aggregator/` 之下）：
+**HTTP 路由**（17 条，全部在 `/dsh-usage-aggregator/` 之下）：
 
 | 前缀 | 条数 | 用途 |
 |---|---|---|
 | `/usage` | 11 | 查询 / 接入 / 续期 / 重分析 / 移除 / 字段顺序 / 模型 / 芯片 / 原始响应 |
 | `/expander` | 2 | `state`（已装清单与更新状态）· `update`（执行更新） |
-| `/boost` | 3 | `scan`（开始体检）· `status`（轮询体检进度）· `execute`（清理勾选的条目） |
+| `/boost` | 4 | `scan`（开始体检）· `status`（轮询体检进度）· `execute`（起清理任务）· `execute-status`（轮询清理进度） |
 
 **配置**：写在 profile 的 `cordis.patch.yml` 里，**只对 Host 半边生效**。
 

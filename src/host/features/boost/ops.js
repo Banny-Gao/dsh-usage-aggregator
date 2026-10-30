@@ -72,6 +72,8 @@ export function createOps(options) {
   const sizes = new Map();
   /** 上一次体检的清单（执行时按 id 找回动作）。 */
   let lastItems = [];
+  /** 最近一次后台执行任务。null = 还没执行过。 */
+  let executeJob = null;
   let jobCounter = 0;
 
   /**
@@ -417,12 +419,15 @@ export function createOps(options) {
   }
 
   /**
-   * 执行用户勾选的条目。
+   * 执行用户勾选的条目（同步，等全部做完）。
+   *
+   * Agent 工具走这条：工具本来就要等结果，直接等最省事。
    *
    * @param {string[]} itemIds 条目 id。
    * @returns {Promise<object>} 执行结果。
    */
-  async function execute(itemIds) {
+  async function execute(itemIds, hooks) {
+    const onItem = hooks !== undefined && typeof hooks.onItem === 'function' ? hooks.onItem : null;
     const ids = Array.isArray(itemIds)
       ? itemIds.filter((id) => typeof id === 'string' && id.trim() !== '')
       : [];
@@ -441,7 +446,7 @@ export function createOps(options) {
     for (const id of ids) {
       const item = byId.get(id);
       if (item === undefined) {
-        results.push({
+        const skipped = {
           id,
           label: id,
           group: 'unknown',
@@ -450,7 +455,9 @@ export function createOps(options) {
           reason: '这台机器上找不到对应的项目，已跳过',
           reclaimedBytes: 0,
           durationMs: 0,
-        });
+        };
+        results.push(skipped);
+        if (onItem !== null) onItem(skipped);
         continue;
       }
       targets.push({
@@ -461,12 +468,64 @@ export function createOps(options) {
     if (targets.length === 0) {
       return { ok: false, error: '勾选的项目在这台机器上都不存在', results };
     }
-    const outcome = await executor.execute(targets);
+    const outcome = await executor.execute(targets, onItem);
     return {
       ok: outcome.results.every((item) => item.ok === true || item.skipped === true),
       results: [...results, ...outcome.results],
       reclaimedBytes: outcome.reclaimedBytes,
     };
+  }
+
+  /**
+   * 执行用户勾选的条目（后台任务，逐项出结果）。
+   *
+   * 清理一条 npm 缓存可能要一分钟，整批下来好几分钟 —— 同步返回的话浏览器就
+   * 干等着，用户不知道跑到哪了。所以这里起一个后台任务：立刻返回任务号，
+   * 客户端轮询看「跑到第几项、这一项在做什么」。
+   *
+   * @param {string[]} itemIds 条目 id。
+   * @returns {object} 任务快照。
+   */
+  function executeAsync(itemIds) {
+    const ids = Array.isArray(itemIds)
+      ? itemIds.filter((id) => typeof id === 'string' && id.trim() !== '')
+      : [];
+    jobCounter += 1;
+    const current = {
+      id: `boost-exec-${jobCounter}`,
+      running: true,
+      startedAt: Date.now(),
+      finishedAt: 0,
+      total: ids.length,
+      done: 0,
+      currentLabel: '',
+      items: [],
+      results: [],
+      reclaimedBytes: 0,
+      error: '',
+    };
+    executeJob = current;
+
+    const run = async () => {
+      try {
+        const outcome = await execute(ids, {
+          onItem: (result) => {
+            current.results.push(result);
+            current.done = current.results.length;
+            current.currentLabel = result.label;
+            if (result.reclaimedBytes) current.reclaimedBytes += result.reclaimedBytes;
+          },
+        });
+        current.error = outcome.ok ? '' : (outcome.error ?? '');
+      } catch (error) {
+        current.error = `${error?.message ?? String(error)}`;
+      } finally {
+        current.running = false;
+        current.finishedAt = Date.now();
+      }
+    };
+    run();
+    return current;
   }
 
   return {
@@ -475,5 +534,9 @@ export function createOps(options) {
       return job;
     },
     execute,
+    executeAsync,
+    executeStatus() {
+      return executeJob;
+    },
   };
 }

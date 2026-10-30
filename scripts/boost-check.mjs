@@ -377,6 +377,8 @@ await check('status 路由返回当前任务', async () => {
     scan: () => ({}),
     status: () => ({ id: 'boost-1', running: false, items: [{ id: 'npm' }], analysis: null }),
     execute: async () => ({ ok: true }),
+    executeAsync: () => ({ id: 'boost-exec-1', running: true }),
+    executeStatus: () => null,
   };
   const routes = buildRoutes(createRouteSpecs(ops, '/dsh-usage-aggregator/boost'), { allowRemote: false });
   const status = routes.find((route) => route.path.endsWith('/status'));
@@ -391,7 +393,8 @@ await check('execute 路由：勾了才执行，没勾返回 400', async () => {
   const ops = {
     scan: () => ({}),
     status: () => null,
-    execute: async (ids) => { called = ids; return { ok: true, results: [], reclaimedBytes: 0 }; },
+    executeAsync: (ids) => { called = ids; return { id: 'boost-exec-1', running: true, total: ids.length, done: 0 }; },
+    executeStatus: () => ({ id: 'boost-exec-1', running: true, total: 2, done: 0 }),
   };
   const routes = buildRoutes(createRouteSpecs(ops, '/dsh-usage-aggregator/boost'), { allowRemote: false });
   const execute = routes.find((route) => route.path.endsWith('/execute'));
@@ -405,6 +408,7 @@ await check('execute 路由：勾了才执行，没勾返回 400', async () => {
   await execute.handler(fakeReq('POST', '/x', { items: ['npm', 'pnpm'] }), ok.res);
   assert.equal(ok.status, 200);
   assert.deepEqual(called, ['npm', 'pnpm']);
+  assert.equal(ok.body.id, 'boost-exec-1', '执行应当起后台任务并返回任务号');
 });
 
 await check('execute 路由：客户端传不认识的条目也不执行它', async () => {
@@ -412,7 +416,8 @@ await check('execute 路由：客户端传不认识的条目也不执行它', as
   const ops = {
     scan: () => ({}),
     status: () => null,
-    execute: async (ids) => { called = ids; return { ok: true, results: [], reclaimedBytes: 0 }; },
+    executeAsync: (ids) => { called = ids; return { id: 'boost-exec-1', running: true, total: ids.length, done: 0 }; },
+    executeStatus: () => null,
   };
   const routes = buildRoutes(createRouteSpecs(ops, '/dsh-usage-aggregator/boost'), { allowRemote: false });
   const execute = routes.find((route) => route.path.endsWith('/execute'));

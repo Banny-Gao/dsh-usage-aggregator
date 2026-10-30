@@ -25,7 +25,18 @@ import { pathToFileURL } from 'node:url';
 
 import { installRuntime } from '../src/client/runtime.js';
 import * as boost from '../src/client/features/boost/index.js';
-import { buildHandoffText, currentSessionId, formatBytes } from '../src/client/features/boost/view.js';
+import {
+  api,
+  buildHandoffText,
+  currentSessionId,
+  formatBytes,
+  HANDOFF_TIMEOUT_MS,
+} from '../src/client/features/boost/view.js';
+
+// 交接那段要用 window.setTimeout —— Node 里没有 window，补一个最小的。
+if (typeof globalThis.window === 'undefined') {
+  globalThis.window = { setTimeout, clearTimeout, setInterval, clearInterval };
+}
 
 const PLUGIN_DIR = new URL('..', import.meta.url).pathname;
 
@@ -107,6 +118,31 @@ const t = (key, vars) => {
   return vars === undefined ? text : text.replace(/\{(\w+)\}/g, (match, name) => (vars[name] === undefined ? match : String(vars[name])));
 };
 const html = (element) => ReactDOMServer.renderToStaticMarkup(element);
+
+/**
+ * 跑一次交接，拿到它返回的状态。
+ *
+ * @param {{runtime: object, sessionId: string}} options 选项。
+ * @returns {Promise<object>} 交接状态。
+ */
+async function renderHandoff(options) {
+  let captured = null;
+  function Probe() {
+    const state = boost.__ui.useHandoff({
+      t: t,
+      job: { items: [{ id: 'dsh-projcache', label: 'x', sizeBytes: 1, count: 1, semantics: 'prune', commandText: 'y', note: '' }], analysis: null },
+      selected: ['dsh-projcache'],
+      runtime: options.runtime,
+      sessionId: options.sessionId,
+    });
+    captured = state;
+    return null;
+  }
+  html(React.createElement(Probe));
+  captured.run();
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  return captured;
+}
 
 /* 真机上跑出来的体检结果（夹具）。 */
 const FIXTURE_PATH = join(PLUGIN_DIR, 'src', 'host', 'features', 'boost', 'fixtures', 'scan.json');
@@ -245,6 +281,75 @@ check('交接单：勾选为空时不列出任何条目', () => {
   const text = buildHandoffText(t, fixture, []);
   for (const item of items) {
     assert.ok(!text.includes(`[${item.id}]`), `不该出现未勾选的条目 ${item.id}`);
+  }
+});
+
+check('交接：会话取不到时改由面板直接执行', async () => {
+  const original = api.execute;
+  const originalStatus = api.executeStatus;
+  const calls = [];
+  api.execute = (ids) => {
+    calls.push(ids);
+    return Promise.resolve({ id: 'boost-exec-1', running: true, total: ids.length, done: 0 });
+  };
+  api.executeStatus = () => Promise.resolve({
+    id: 'boost-exec-1', running: false, total: 1, done: 1, currentLabel: 'x', reclaimedBytes: 1024, results: [], error: '',
+  });
+  try {
+    const runtime = { sessions: { scope: () => { throw new Error('取不到 scope'); } } };
+    const result = await renderHandoff({ runtime, sessionId: 'session-x' });
+    assert.equal(calls.length, 1, '没有落到面板直接执行');
+    assert.deepEqual(calls[0], ['dsh-projcache']);
+    assert.equal(result.phase, 'done');
+  } finally {
+    api.execute = original;
+    api.executeStatus = originalStatus;
+  }
+});
+
+check('交接：Agent 那边不回音，超时后改由面板直接执行', async () => {
+  const original = api.execute;
+  const originalStatus = api.executeStatus;
+  const calls = [];
+  api.execute = (ids) => {
+    calls.push(ids);
+    return Promise.resolve({ id: 'boost-exec-1', running: true, total: ids.length, done: 0 });
+  };
+  api.executeStatus = () => Promise.resolve({
+    id: 'boost-exec-1', running: false, total: 1, done: 1, currentLabel: 'x', reclaimedBytes: 0, results: [], error: '',
+  });
+  try {
+    // send 永不结算 —— 模拟 RPC 卡住。
+    const runtime = { sessions: { scope: () => ({ conversation: { send: () => new Promise(() => {}) } }) } };
+    const result = await renderHandoff({ runtime, sessionId: 'session-x' });
+    assert.equal(calls.length, 1, '超时后没有落到面板直接执行');
+    assert.equal(result.phase, 'done');
+  } finally {
+    api.execute = original;
+    api.executeStatus = originalStatus;
+  }
+});
+
+check('交接：Agent 收下了就不重复执行', async () => {
+  const original = api.execute;
+  const originalStatus = api.executeStatus;
+  const calls = [];
+  api.execute = (ids) => {
+    calls.push(ids);
+    return Promise.resolve({ id: 'boost-exec-1', running: true, total: ids.length, done: 0 });
+  };
+  api.executeStatus = () => Promise.resolve({
+    id: 'boost-exec-1', running: false, total: 1, done: 1, currentLabel: 'x', reclaimedBytes: 0, results: [], error: '',
+  });
+  try {
+    const runtime = { sessions: { scope: () => ({ conversation: { send: () => Promise.resolve() } }) } };
+    const result = await renderHandoff({ runtime, sessionId: 'session-x' });
+    await new Promise((resolve) => setTimeout(resolve, HANDOFF_TIMEOUT_MS + 200));
+    assert.equal(calls.length, 0, 'Agent 已经收下了，面板又执行了一遍');
+    assert.equal(result.phase, 'done');
+  } finally {
+    api.execute = original;
+    api.executeStatus = originalStatus;
   }
 });
 

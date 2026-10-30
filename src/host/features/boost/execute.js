@@ -157,7 +157,8 @@ export function createExecutor(options) {
    * @param {Array<object>} items 条目。
    * @returns {Promise<{results: Array<object>, reclaimedBytes: number}>} 结果。
    */
-  async function execute(items) {
+  async function execute(items, onItem) {
+    const notify = typeof onItem === 'function' ? onItem : null;
     const commandLines = await listRunningCommandLines();
     const results = [];
     let reclaimedBytes = 0;
@@ -189,6 +190,7 @@ export function createExecutor(options) {
 
       record.durationMs = Date.now() - startedAt;
       results.push(record);
+      if (notify !== null) notify(record);
       await appendAudit(logPath, {
         action: record.ok ? 'cleaned' : record.skipped ? 'skipped' : 'failed',
         id: item.id,

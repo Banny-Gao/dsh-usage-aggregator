@@ -3791,7 +3791,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-10-30 18:10:56";
+		return "2026-10-30 19:16:38";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -5332,8 +5332,12 @@ var dshUsageAggregator = (function(exports) {
 		warnings: "注意",
 		analysisByModel: "由模型分析",
 		analysisByRules: "按固定规则排序（没有可用的模型）",
-		done: "已交给 Agent，清理结果会回到对话里。",
-		doneDirect: "当前会话不可用，已由面板直接执行。",
+		done: "已交给 Agent，去对话里看它的说明与执行结果。",
+		doneDirect: "已由面板直接执行。",
+		executingDirect: "面板直接执行（{reason}）。接下来会执行清单里勾选的这几项，每一项做什么都写在清单上。",
+		progress: "正在执行 {done}/{total}：{label}",
+		handoffTimeout: "交接超时，Agent 那边没有回音",
+		handoffNoSession: "当前会话不可用",
 		failed: "执行失败：{error}",
 		reclaimed: "回收了约 {size}",
 		handoffTitle: "交给 Agent 的内容",
@@ -5376,8 +5380,12 @@ var dshUsageAggregator = (function(exports) {
 		warnings: "Cautions",
 		analysisByModel: "analysed by the model",
 		analysisByRules: "ranked by fixed rules (no model available)",
-		done: "Handed to the Agent — results will come back into the conversation.",
-		doneDirect: "No live session available, so the panel ran it directly.",
+		done: "Handed to the Agent — see its explanation and results in the conversation.",
+		doneDirect: "The panel ran it directly.",
+		executingDirect: "Running it here instead ({reason}). The ticked items are about to run — each one says what it does.",
+		progress: "Running {done}/{total}: {label}",
+		handoffTimeout: "the handoff timed out — the Agent never answered",
+		handoffNoSession: "no usable session",
 		failed: "Failed: {error}",
 		reclaimed: "reclaimed about {size}",
 		handoffTitle: "What the Agent receives",
@@ -5389,7 +5397,8 @@ var dshUsageAggregator = (function(exports) {
 	var api = {
 		scan: (refresh) => callApi("GET", `${BOOST_ENDPOINT}/scan${refresh === true ? "?refresh=1" : ""}`),
 		status: () => callApi("GET", `${BOOST_ENDPOINT}/status`),
-		execute: (items) => callApi("POST", `${BOOST_ENDPOINT}/execute`, { items })
+		execute: (items) => callApi("POST", `${BOOST_ENDPOINT}/execute`, { items }),
+		executeStatus: () => callApi("GET", `${BOOST_ENDPOINT}/execute-status`)
 	};
 	/**
 	* 字节数 → 人话。
@@ -5558,9 +5567,12 @@ var dshUsageAggregator = (function(exports) {
 		});
 		lines.push("");
 		lines.push("请先用一两句话说明将要做什么，然后调用 system_boost 工具的 execute 动作执行（items 传上面的条目 id）。");
+		lines.push("执行清理需要 danger-full-access 权限；如果当前会话的权限不够，直接说明并停手，不要反复重试。");
 		lines.push("只执行清单里的项目，不要自作主张清理别的东西；某一项失败就如实报告，不要反复重试。");
 		return lines.join("\n");
 	}
+	/** 交给 Agent 的交接最多等这么久（毫秒）。超了就面板直接执行。 */
+	var HANDOFF_TIMEOUT_MS = 1e4;
 	/**
 	* 「交给 Agent 执行」的那一下。
 	*
@@ -5583,47 +5595,120 @@ var dshUsageAggregator = (function(exports) {
 		const [phase, setPhase] = useState("idle");
 		const [message, setMessage] = useState("");
 		const [tone, setTone] = useState("");
+		const [progress, setProgress] = useState(null);
 		return {
 			phase,
 			message,
 			tone,
+			progress,
 			run: useCallback(function() {
 				if (selected.length === 0) return;
 				setPhase("running");
 				setMessage("");
 				setTone("");
 				/**
-				* 兜底：当前会话不可用，面板直接执行。
+				* 兜底：交给 Agent 这条路走不通，面板自己执行。
 				*
+				* @param {string} reason 为什么改走面板（给用户看的）。
 				* @returns {void}
 				*/
-				function runDirectly() {
-					api.execute(selected).then(function(result) {
-						setPhase("done");
-						setTone("is-ok");
-						const reclaimed = result && result.reclaimedBytes ? result.reclaimedBytes : 0;
-						setMessage(`${t("doneDirect")} ${t("reclaimed", { size: formatBytes(reclaimed) })}`);
+				function runDirectly(reason) {
+					if (reason !== "") console.warn("[小火箭] 交给 Agent 没走通，改由面板直接执行：", reason);
+					setMessage(t("executingDirect", { reason }));
+					setProgress({
+						done: 0,
+						total: selected.length,
+						label: ""
+					});
+					api.execute(selected).then(function() {
+						pollExecute();
 					}).catch(function(failure) {
 						setPhase("idle");
 						setTone("is-error");
 						setMessage(t("failed", { error: String(failure && failure.message ? failure.message : failure) }));
 					});
 				}
+				/**
+				* 轮询执行任务的进度。
+				*
+				* @returns {void}
+				*/
+				function pollExecute() {
+					window.setTimeout(function() {
+						api.executeStatus().then(function(state) {
+							if (state === null || state === void 0) {
+								setPhase("done");
+								setTone("is-ok");
+								setMessage(t("doneDirect"));
+								return;
+							}
+							setProgress({
+								done: state.done ?? 0,
+								total: state.total ?? 0,
+								label: state.currentLabel ?? ""
+							});
+							if (state.running === true) {
+								pollExecute();
+								return;
+							}
+							setPhase("done");
+							setTone(state.error === "" ? "is-ok" : "is-error");
+							setMessage(`${t("doneDirect")} ${t("reclaimed", { size: formatBytes(state.reclaimedBytes ?? 0) })}` + (state.error === "" ? "" : ` ${state.error}`));
+						}).catch(function(failure) {
+							setPhase("idle");
+							setTone("is-error");
+							setMessage(t("failed", { error: String(failure && failure.message ? failure.message : failure) }));
+						});
+					}, 800);
+				}
+				let settled = false;
+				const timer = window.setTimeout(function() {
+					if (settled) return;
+					settled = true;
+					runDirectly(t("handoffTimeout"));
+				}, HANDOFF_TIMEOUT_MS);
+				/**
+				* 交到 Agent 手里了。
+				*
+				* @returns {void}
+				*/
+				function done() {
+					if (settled) return;
+					settled = true;
+					window.clearTimeout(timer);
+					setPhase("done");
+					setTone("is-ok");
+					setMessage(t("done"));
+				}
+				/**
+				* 交接没成（抛错、没会话、RPC 卡住）。
+				*
+				* @param {string} reason 原因。
+				* @returns {void}
+				*/
+				function failed(reason) {
+					if (settled) return;
+					settled = true;
+					window.clearTimeout(timer);
+					runDirectly(reason);
+				}
 				const text = buildHandoffText(t, job, selected);
-				const service = runtime === void 0 || runtime === null ? null : runtime.sessions;
-				const scope = sessionId !== null && service !== null && typeof service.scope === "function" ? service.scope(sessionId) : void 0;
-				const conversation = scope === void 0 || scope === null ? void 0 : scope.conversation;
-				if (conversation !== void 0 && conversation !== null && typeof conversation.send === "function") {
-					conversation.send(text).then(function() {
-						setPhase("done");
-						setTone("is-ok");
-						setMessage(t("done"));
-					}).catch(function() {
-						runDirectly();
-					});
+				let conversation;
+				try {
+					const service = runtime === void 0 || runtime === null ? null : runtime.sessions;
+					const scope = sessionId !== null && service !== null && typeof service.scope === "function" ? service.scope(sessionId) : void 0;
+					conversation = scope === void 0 || scope === null ? void 0 : scope.conversation;
+				} catch (error) {
+					failed(String(error && error.message ? error.message : error));
 					return;
 				}
-				runDirectly();
+				if (conversation === void 0 || conversation === null || typeof conversation.send !== "function") {
+					failed(t("handoffNoSession"));
+					return;
+				}
+				conversation.send(text).then(done).catch(function(failure) {
+					failed(String(failure && failure.message ? failure.message : failure));
+				});
 			}, [
 				selected,
 				t,
@@ -5809,6 +5894,10 @@ var dshUsageAggregator = (function(exports) {
 		".dsh-boost-diag-list{margin:0;padding-left:16px;font-size:12px;color:var(--dsw-alias-label-secondary);}",
 		".dsh-boost-diag-warn{font-size:12px;color:var(--dsw-alias-state-warn-primary);}",
 		".dsh-boost-list{display:flex;flex-direction:column;gap:6px;}",
+		".dsh-boost-progress{margin-top:8px;}",
+		".dsh-boost-progress-bar{height:4px;border-radius:2px;background:var(--dsw-alias-bg-layer-3,#e9ecf0);overflow:hidden;}",
+		".dsh-boost-progress-fill{height:100%;background:var(--dsw-alias-brand-primary,#2f6fed);transition:width .3s ease;}",
+		".dsh-boost-progress-text{margin-top:4px;font-size:12px;color:var(--dsw-alias-label-secondary,#6b7280);}",
 		".dsh-boost-group{margin-top:10px;}",
 		".dsh-boost-group:first-child{margin-top:0;}",
 		".dsh-boost-group-title{font-size:12px;font-weight:600;color:var(--dsw-alias-label-secondary);letter-spacing:.04em;padding:6px 2px 2px;}",
@@ -5901,7 +5990,14 @@ var dshUsageAggregator = (function(exports) {
 			selected,
 			toggle,
 			t
-		}), handoff.message !== "" ? h("p", { className: "dsh-boost-msg " + handoff.tone }, handoff.message) : null);
+		}), handoff.message !== "" ? h("p", { className: "dsh-boost-msg " + handoff.tone }, handoff.message) : null, handoff.progress !== null && handoff.phase === "running" ? h("div", { className: "dsh-boost-progress" }, h("div", { className: "dsh-boost-progress-bar" }, h("div", {
+			className: "dsh-boost-progress-fill",
+			style: { width: handoff.progress.total > 0 ? `${Math.round(handoff.progress.done / handoff.progress.total * 100)}%` : "0%" }
+		})), h("div", { className: "dsh-boost-progress-text" }, t("progress", {
+			done: handoff.progress.done,
+			total: handoff.progress.total,
+			label: handoff.progress.label
+		}))) : null);
 	}
 	// src/client/features/boost/rocket.js
 	/**
@@ -6190,7 +6286,14 @@ var dshUsageAggregator = (function(exports) {
 			className: "dsh-boost-btn is-primary",
 			disabled: scanning === true || handoff.phase === "running" || selected.length === 0,
 			onClick: handoff.run
-		}, handoff.phase === "running" ? t("running") : t("run")))), handoff.message !== "" ? h("div", { className: "dsh-boost-foot" }, h("p", { className: "dsh-boost-msg " + handoff.tone }, handoff.message)) : null) : null, h("button", {
+		}, handoff.phase === "running" ? t("running") : t("run")))), handoff.message !== "" ? h("div", { className: "dsh-boost-foot" }, h("p", { className: "dsh-boost-msg " + handoff.tone }, handoff.message), handoff.progress !== null && handoff.phase === "running" ? h("div", { className: "dsh-boost-progress" }, h("div", { className: "dsh-boost-progress-bar" }, h("div", {
+			className: "dsh-boost-progress-fill",
+			style: { width: handoff.progress.total > 0 ? `${Math.round(handoff.progress.done / handoff.progress.total * 100)}%` : "0%" }
+		})), h("div", { className: "dsh-boost-progress-text" }, t("progress", {
+			done: handoff.progress.done,
+			total: handoff.progress.total,
+			label: handoff.progress.label
+		}))) : null) : null) : null, h("button", {
 			ref: buttonRef,
 			type: "button",
 			className: "dsh-boost-launch" + (launching ? " is-launching" : "") + (landing ? " is-landing" : ""),
@@ -6278,6 +6381,7 @@ var dshUsageAggregator = (function(exports) {
 		BoostPanel,
 		DiagnosisBlock,
 		ItemList,
+		useHandoff,
 		zh: zh$1,
 		en: en$1
 	};
@@ -6435,7 +6539,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-10-30 18:10:56";
+	var BUILD_AT = "2026-10-30 19:16:38";
 	/**
 	* 声明要等的服务。
 	*

@@ -19,6 +19,7 @@
 import { h } from '../../runtime.js';
 import { NS, en, zh } from './i18n.js';
 import { BoostPanel } from './panel.js';
+import { useHandoff } from './view.js';
 import { DiagnosisBlock, ItemList } from './parts.js';
 import { BOOST_RUNTIME } from './ref.js';
 import { BoostWidget } from './widget.js';
@@ -97,6 +98,7 @@ export const __ui = {
   BoostPanel: BoostPanel,
   DiagnosisBlock: DiagnosisBlock,
   ItemList: ItemList,
+  useHandoff: useHandoff,
   zh: zh,
   en: en,
 };

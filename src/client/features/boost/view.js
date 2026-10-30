@@ -15,7 +15,9 @@ import { BOOST_ENDPOINT } from '../../shared/constants.js';
 export const api = {
   scan: (refresh) => callApi('GET', `${BOOST_ENDPOINT}/scan${refresh === true ? '?refresh=1' : ''}`),
   status: () => callApi('GET', `${BOOST_ENDPOINT}/status`),
+  // 执行是后台任务：这里立刻返回任务号，进度靠 executeStatus 轮询。
   execute: (items) => callApi('POST', `${BOOST_ENDPOINT}/execute`, { items }),
+  executeStatus: () => callApi('GET', `${BOOST_ENDPOINT}/execute-status`),
 };
 
 /**
@@ -191,9 +193,13 @@ export function buildHandoffText(t, job, selected) {
   });
   lines.push('');
   lines.push('请先用一两句话说明将要做什么，然后调用 system_boost 工具的 execute 动作执行（items 传上面的条目 id）。');
+  lines.push('执行清理需要 danger-full-access 权限；如果当前会话的权限不够，直接说明并停手，不要反复重试。');
   lines.push('只执行清单里的项目，不要自作主张清理别的东西；某一项失败就如实报告，不要反复重试。');
   return lines.join('\n');
 }
+
+/** 交给 Agent 的交接最多等这么久（毫秒）。超了就面板直接执行。 */
+export const HANDOFF_TIMEOUT_MS = 10000;
 
 /**
  * 「交给 Agent 执行」的那一下。
@@ -217,6 +223,7 @@ export function useHandoff(options) {
   const [phase, setPhase] = useState('idle');
   const [message, setMessage] = useState('');
   const [tone, setTone] = useState('');
+  const [progress, setProgress] = useState(null);
 
   const run = useCallback(function () {
     if (selected.length === 0) return;
@@ -225,16 +232,20 @@ export function useHandoff(options) {
     setTone('');
 
     /**
-     * 兜底：当前会话不可用，面板直接执行。
+     * 兜底：交给 Agent 这条路走不通，面板自己执行。
      *
+     * @param {string} reason 为什么改走面板（给用户看的）。
      * @returns {void}
      */
-    function runDirectly() {
-      api.execute(selected).then(function (result) {
-        setPhase('done');
-        setTone('is-ok');
-        const reclaimed = result && result.reclaimedBytes ? result.reclaimedBytes : 0;
-        setMessage(`${t('doneDirect')} ${t('reclaimed', { size: formatBytes(reclaimed) })}`);
+    function runDirectly(reason) {
+      if (reason !== '') {
+        console.warn('[小火箭] 交给 Agent 没走通，改由面板直接执行：', reason);
+      }
+      setMessage(t('executingDirect', { reason }));
+      setProgress({ done: 0, total: selected.length, label: '' });
+      api.execute(selected).then(function () {
+        // 执行是后台任务：轮询看跑到第几项了。
+        pollExecute();
       }).catch(function (failure) {
         setPhase('idle');
         setTone('is-error');
@@ -242,24 +253,98 @@ export function useHandoff(options) {
       });
     }
 
+    /**
+     * 轮询执行任务的进度。
+     *
+     * @returns {void}
+     */
+    function pollExecute() {
+      window.setTimeout(function () {
+        api.executeStatus().then(function (state) {
+          if (state === null || state === undefined) {
+            setPhase('done');
+            setTone('is-ok');
+            setMessage(t('doneDirect'));
+            return;
+          }
+          setProgress({ done: state.done ?? 0, total: state.total ?? 0, label: state.currentLabel ?? '' });
+          if (state.running === true) {
+            pollExecute();
+            return;
+          }
+          setPhase('done');
+          setTone(state.error === '' ? 'is-ok' : 'is-error');
+          setMessage(
+            `${t('doneDirect')} ${t('reclaimed', { size: formatBytes(state.reclaimedBytes ?? 0) })}`
+            + (state.error === '' ? '' : ` ${state.error}`),
+          );
+        }).catch(function (failure) {
+          setPhase('idle');
+          setTone('is-error');
+          setMessage(t('failed', { error: String(failure && failure.message ? failure.message : failure) }));
+        });
+      }, 800);
+    }
+
+    // 只结算一次：交接成功、超时、失败，三者里谁先到算谁的。
+    let settled = false;
+    const timer = window.setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      runDirectly(t('handoffTimeout'));
+    }, HANDOFF_TIMEOUT_MS);
+
+    /**
+     * 交到 Agent 手里了。
+     *
+     * @returns {void}
+     */
+    function done() {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      setPhase('done');
+      setTone('is-ok');
+      setMessage(t('done'));
+    }
+
+    /**
+     * 交接没成（抛错、没会话、RPC 卡住）。
+     *
+     * @param {string} reason 原因。
+     * @returns {void}
+     */
+    function failed(reason) {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      runDirectly(reason);
+    }
+
     const text = buildHandoffText(t, job, selected);
-    const service = runtime === undefined || runtime === null ? null : runtime.sessions;
-    const scope = sessionId !== null && service !== null && typeof service.scope === 'function'
-      ? service.scope(sessionId)
-      : undefined;
-    const conversation = scope === undefined || scope === null ? undefined : scope.conversation;
-    if (conversation !== undefined && conversation !== null && typeof conversation.send === 'function') {
-      conversation.send(text).then(function () {
-        setPhase('done');
-        setTone('is-ok');
-        setMessage(t('done'));
-      }).catch(function () {
-        runDirectly();
-      });
+
+    // 取会话这一步本身也可能抛（服务不在、scope 取不到）—— 一律当成交接失败。
+    let conversation;
+    try {
+      const service = runtime === undefined || runtime === null ? null : runtime.sessions;
+      const scope = sessionId !== null && service !== null && typeof service.scope === 'function'
+        ? service.scope(sessionId)
+        : undefined;
+      conversation = scope === undefined || scope === null ? undefined : scope.conversation;
+    } catch (error) {
+      failed(String(error && error.message ? error.message : error));
       return;
     }
-    runDirectly();
+
+    if (conversation === undefined || conversation === null || typeof conversation.send !== 'function') {
+      failed(t('handoffNoSession'));
+      return;
+    }
+
+    conversation.send(text).then(done).catch(function (failure) {
+      failed(String(failure && failure.message ? failure.message : failure));
+    });
   }, [selected, t, job, runtime, sessionId]);
 
-  return { phase, message, tone, run };
+  return { phase, message, tone, progress, run };
 }

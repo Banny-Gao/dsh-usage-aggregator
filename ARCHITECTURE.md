@@ -271,7 +271,7 @@ export function apply(ctx, featureConfig, shared) { … }
 ```
 /dsh-usage-aggregator/usage/…       用量查询（11 条）
 /dsh-usage-aggregator/expander/…    插件更新（2 条）
-/dsh-usage-aggregator/boost/…       电脑加速与清理（3 条）
+/dsh-usage-aggregator/boost/…       电脑加速与清理（4 条）
 ```
 
 **为什么必须分段**：`dsh-host-webserver` 的 `register()` 以 `(kind, path)` 为键，**重复注册直接 throw** → 插件 entry 加载失败 → 整页 `Failed to load plugins`。而且路由匹配**只看 path，不看 HTTP 方法** —— 客户端用 GET/POST 区分读写只是约定。

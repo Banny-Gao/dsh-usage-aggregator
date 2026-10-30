@@ -86,6 +86,24 @@ export function BoostPanel(props) {
     h(ItemList, { items: items, selected: selected, toggle: toggle, t: t }),
     handoff.message !== ''
       ? h('p', { className: 'dsh-boost-msg ' + handoff.tone }, handoff.message)
+      : null,
+    handoff.progress !== null && handoff.phase === 'running'
+      ? h('div', { className: 'dsh-boost-progress' },
+        h('div', { className: 'dsh-boost-progress-bar' },
+          h('div', {
+            className: 'dsh-boost-progress-fill',
+            style: {
+              width: handoff.progress.total > 0
+                ? `${Math.round((handoff.progress.done / handoff.progress.total) * 100)}%`
+                : '0%',
+            },
+          })),
+        h('div', { className: 'dsh-boost-progress-text' },
+          t('progress', {
+            done: handoff.progress.done,
+            total: handoff.progress.total,
+            label: handoff.progress.label,
+          })))
       : null
   );
 }

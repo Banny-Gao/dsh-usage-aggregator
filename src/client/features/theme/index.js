@@ -21,7 +21,7 @@
 //   · 43 个主题 token 名 + 17 个 --dsh-axzo-* CSS 变量名
 //   · 槽位 id / priority / order
 //   · overrideTokens 的 source：dsh-axzo-theme
-//   逐条对照见同目录 MIGRATION.md。
+//   逐条对照见 ARCHITECTURE.md §2.1（槽位表）与 §13（不变量清单）。
 //
 // ⚠️ 模块顶层不要调用 h(...)：共享 runtime 的 React 要等聚合入口的 factory 里
 //   installRuntime(require) 之后才就绪。顶层只声明函数与常量。

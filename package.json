@@ -2,7 +2,7 @@
   "name": "dsh-usage-aggregator",
   "version": "0.1.0",
   "private": true,
-  "description": "DSH 聚合插件：一个插件装下三件能力 —— 用量查询（粘贴一次接口请求即得额度/余量/次数卡片）、安心筑品牌主题（43 个主题 token + 玻璃首屏 + 会话区品牌背景）、插件更新（检测并安装已装插件的新版本）。设置面板只占一个入口，新增功能不再多一个插件行。 · DSH aggregate plugin: usage query (paste one request, get quota/balance/usage cards), Axzo brand theme (43 theme tokens, glass hero stage, conversation backdrop) and plugin updates — all in one plugin with a single Settings entry.",
+  "description": "DSH 聚合插件：把多件能力收进一个插件 —— 插件管理器只占一行、设置面板只占一个入口，功能持续增补。 · One DSH plugin that bundles multiple capabilities behind a single Plugin Manager row and a single Settings entry, and keeps growing.",
   "keywords": [
     "dsh",
     "dsh-plugin",

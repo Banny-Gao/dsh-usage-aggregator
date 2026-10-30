@@ -113,5 +113,4 @@
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) —— 模块划分、模块交互方式、monorepo 选型结论、
   不变量清单、扩展指南。
-- [docs/migration-checklist.md](docs/migration-checklist.md) —— 逐项能力对照与审计。
 - [docs/adr/](docs/adr/) —— 四条架构决策记录。

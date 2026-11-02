@@ -189,6 +189,44 @@ await check('执行器：目录不存在时如实报告「已跳过」', async (
 
 console.log('→ 目录表');
 
+await check('自动体检：该扫的时候扫，不该扫的时候不扫', async () => {
+  const { shouldAutoScan } = await import('../src/host/features/boost/ops.js');
+  const now = 1_700_000_000_000;
+  const base = { idle: true, running: false, lastFinishedAt: 0, now, intervalMs: 12 * 60 * 60 * 1000 };
+  assert.equal(shouldAutoScan(base), true, '从来没扫过 → 该扫');
+  assert.equal(shouldAutoScan({ ...base, idle: false }), false, '机器正忙 → 不该扫');
+  assert.equal(shouldAutoScan({ ...base, running: true }), false, '上一次还在跑 → 不该扫');
+  assert.equal(
+    shouldAutoScan({ ...base, lastFinishedAt: now - 11 * 60 * 60 * 1000 }),
+    false,
+    '11 小时前扫过 → 还没到 12 小时，不该扫',
+  );
+  assert.equal(
+    shouldAutoScan({ ...base, lastFinishedAt: now - 13 * 60 * 60 * 1000 }),
+    true,
+    '13 小时前扫过 → 该扫',
+  );
+});
+
+await check('自动体检：定时器到点会触发，停掉就不动了', async () => {
+  const { createOps } = await import('../src/host/features/boost/ops.js');
+  const ops = createOps({
+    home: process.env.HOME,
+    env: process.env,
+    platform: process.platform,
+    llm: () => null,
+    analysis: { provider: '', model: '' },
+  });
+  let hits = 0;
+  const stop = ops.startAutoScan({ tickMs: 20, trigger: () => { hits += 1; }, idle: () => true });
+  await new Promise((resolve) => setTimeout(resolve, 120));
+  stop();
+  assert.ok(hits > 0, '到点没有触发');
+  const seen = hits;
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  assert.equal(hits, seen, '停了之后还在触发');
+});
+
 await check('每个适配器都声明齐了（探测 / 定位或路径 / 清理动作）', () => {
   const ids = new Set();
   for (const adapter of ADAPTERS) {

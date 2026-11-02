@@ -15,7 +15,7 @@
 import { ADAPTERS, adapterSupported, detectTool, findOrphanStoreVersions, formatCommand, locateCacheDir } from './catalog.js';
 import { analyzeSystem, humanBytes } from './analyze.js';
 import { createExecutor } from './execute.js';
-import { measureBytes, probeSystem } from './probe.js';
+import { isMachineIdle, measureBytes, probeSystem } from './probe.js';
 import { listDshItems } from './dshself.js';
 import {
   aggregateByApp,
@@ -27,8 +27,34 @@ import {
   sampleProcesses,
 } from './processes.js';
 
-/** 体检结果的保鲜期（毫秒）。五分钟内重复打开直接复用。 */
-const SCAN_TTL_MS = 5 * 60 * 1000;
+/**
+ * 体检结果的保鲜期（毫秒）。
+ *
+ * 体检要读几十 GB 的目录，是 I/O 密集的活儿。等后台自动体检把结果备好之后，
+ * 点小火箭应该是**秒开** —— 所以保鲜期跟自动体检的节奏对齐（12 小时），
+ * 期间重复打开直接复用缓存，不重新量。
+ */
+const SCAN_TTL_MS = 12 * 60 * 60 * 1000;
+
+/** 后台自动体检的间隔（毫秒）—— 12 小时一次，即每天两次。 */
+export const AUTO_SCAN_INTERVAL_MS = 12 * 60 * 60 * 1000;
+
+/** 后台自动体检多久看一眼（毫秒）。看的是「该不该扫」，本身很便宜。 */
+export const AUTO_SCAN_TICK_MS = 5 * 60 * 1000;
+
+/**
+ * 现在该不该自动体检一次。
+ *
+ * 三道门：机器闲、上一次没在跑、上一次的结果够旧了。
+ *
+ * @param {{idle: boolean, running: boolean, lastFinishedAt: number, now: number, intervalMs: number}} state 判定输入。
+ * @returns {boolean} 该不该扫。
+ */
+export function shouldAutoScan(state) {
+  if (state.idle !== true) return false;
+  if (state.running === true) return false;
+  return state.now - state.lastFinishedAt >= state.intervalMs;
+}
 
 /** 多大内存的应用才值得列出来（字节）。 */
 const BIG_APP_BYTES = 300 * 1024 * 1024;
@@ -528,11 +554,50 @@ export function createOps(options) {
     return current;
   }
 
+  /**
+   * 后台自动体检：机器空闲时，每 12 小时自己查一次（每天两次）。
+   *
+   * 为什么要有：小火箭是「点开就看」的东西，但体检本身要读几十 GB 的目录，
+   * 点开才扫就得等半分钟到一分多钟。挪到后台之后，点开是秒开，代价是平时
+   * 机器闲的时候自己扫一遍。
+   *
+   * 什么时候不扫：机器正忙（1 分钟负载超过阈值）、上一次体检还在跑、上一次
+   * 结果还不满 12 小时。
+   *
+   * @param {{tickMs?: number, trigger?: Function, idle?: Function}} [params] 参数（tickMs / trigger / idle 供自检用）。
+   * @returns {Function} 停掉它的函数。
+   */
+  function startAutoScan(params) {
+    const options = params !== undefined && params !== null ? params : {};
+    const tickMs = typeof options.tickMs === 'number' ? options.tickMs : AUTO_SCAN_TICK_MS;
+    const trigger = typeof options.trigger === 'function'
+      ? options.trigger
+      : function () { scan({ force: true }); };
+    const idle = typeof options.idle === 'function' ? options.idle : isMachineIdle;
+    const timer = setInterval(function () {
+      const current = job;
+      const finishedAt = current === null ? 0 : (current.finishedAt > 0 ? current.finishedAt : current.startedAt);
+      const due = shouldAutoScan({
+        idle: idle(),
+        running: current !== null && current.running === true,
+        lastFinishedAt: finishedAt,
+        now: Date.now(),
+        intervalMs: AUTO_SCAN_INTERVAL_MS,
+      });
+      if (!due) return;
+      trigger();
+    }, tickMs);
+    // 别让这个定时器把进程吊着。
+    if (typeof timer.unref === 'function') timer.unref();
+    return function () { clearInterval(timer); };
+  }
+
   return {
     scan,
     status() {
       return job;
     },
+    startAutoScan,
     execute,
     executeAsync,
     executeStatus() {

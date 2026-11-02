@@ -79,6 +79,10 @@ export function apply(ctx, featureConfig = {}, shared) {
     },
   });
 
+  // 后台自动体检：机器空闲时，每 12 小时自己查一次（每天两次）。
+  // 这样点小火箭是秒开 —— 体检那几十 GB 的目录在用户等之前就读完了。
+  ctx.effect(() => ops.startAutoScan(), 'dsh-usage-aggregator: boost auto scan');
+
   // 浏览器入口。webServer 由 web 组合提供；没有它（例如纯 CLI 组合）时
   // 这块整体不生效，工具仍然可用。
   ctx.inject(['webServer'], (host) => {

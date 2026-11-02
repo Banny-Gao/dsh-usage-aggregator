@@ -61,6 +61,7 @@ export const CSS = [
 
   // 清单
   '.dsh-boost-list{display:flex;flex-direction:column;gap:6px;}',
+  '.dsh-boost-age{margin:2px 0 0;font-size:12px;color:var(--dsw-alias-label-secondary,#6b7280);}',
   '.dsh-boost-progress{margin-top:8px;}',
   '.dsh-boost-progress-bar{height:4px;border-radius:2px;background:var(--dsw-alias-bg-layer-3,#e9ecf0);overflow:hidden;}',
   '.dsh-boost-progress-fill{height:100%;background:var(--dsw-alias-brand-primary,#2f6fed);transition:width .3s ease;}',

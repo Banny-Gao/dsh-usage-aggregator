@@ -105,6 +105,26 @@ export function useBoostJob(t, initialJob) {
 }
 
 /**
+ * 这次体检是什么时候做的（人话）。
+ *
+ * 体检现在由后台自动跑（机器空闲时每 12 小时一次），所以面板上得说清楚
+ * 这份结果是多久前的 —— 用户看到「12 小时前」才知道它可能已经过时。
+ *
+ * @param {Function} t 翻译函数。
+ * @param {object|null} job 体检任务。
+ * @returns {string} 人话时间；没有体检记录时返回空串。
+ */
+export function scanAgeLabel(t, job) {
+  const at = job !== null && job !== undefined ? job.finishedAt : 0;
+  if (typeof at !== 'number' || at <= 0) return '';
+  const ms = Date.now() - at;
+  if (ms < 60 * 1000) return t('ageNow');
+  if (ms < 60 * 60 * 1000) return t('ageMinutes', { n: Math.floor(ms / (60 * 1000)) });
+  if (ms < 24 * 60 * 60 * 1000) return t('ageHours', { n: Math.floor(ms / (60 * 60 * 1000)) });
+  return t('ageDays', { n: Math.floor(ms / (24 * 60 * 60 * 1000)) });
+}
+
+/**
  * 勾选状态。
  *
  * 默认值由条目自己决定（`selectedByDefault`）：
@@ -216,10 +236,11 @@ export const HANDOFF_TIMEOUT_MS = 10000;
  * @param {string[]} options.selected 勾选的条目 id。
  * @param {{sessions: object|null}} options.runtime 运行时引用（含客户端 sessions 服务）。
  * @param {string|null} options.sessionId 用户当前正在看的会话。
- * @returns {{phase: string, message: string, tone: string, run: Function}} 状态。
+ * @param {Function} [options.onFinished] 执行完了的回调（外面据此重扫一次清单）。
+ * @returns {{phase: string, message: string, tone: string, progress: object|null, run: Function}} 状态。
  */
 export function useHandoff(options) {
-  const { t, job, selected, runtime, sessionId } = options;
+  const { t, job, selected, runtime, sessionId, onFinished } = options;
   const [phase, setPhase] = useState('idle');
   const [message, setMessage] = useState('');
   const [tone, setTone] = useState('');
@@ -278,6 +299,8 @@ export function useHandoff(options) {
             `${t('doneDirect')} ${t('reclaimed', { size: formatBytes(state.reclaimedBytes ?? 0) })}`
             + (state.error === '' ? '' : ` ${state.error}`),
           );
+          // 清过的条目得从清单里消失 —— 重扫一次，面板上的内容区才是当下的实况。
+          if (typeof onFinished === 'function') onFinished();
         }).catch(function (failure) {
           setPhase('idle');
           setTone('is-error');
@@ -344,7 +367,7 @@ export function useHandoff(options) {
     conversation.send(text).then(done).catch(function (failure) {
       failed(String(failure && failure.message ? failure.message : failure));
     });
-  }, [selected, t, job, runtime, sessionId]);
+  }, [selected, t, job, runtime, sessionId, onFinished]);
 
   return { phase, message, tone, progress, run };
 }

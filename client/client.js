@@ -3791,7 +3791,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-10-30 19:16:38";
+		return "2026-11-02 10:04:33";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -5336,6 +5336,11 @@ var dshUsageAggregator = (function(exports) {
 		doneDirect: "已由面板直接执行。",
 		executingDirect: "面板直接执行（{reason}）。接下来会执行清单里勾选的这几项，每一项做什么都写在清单上。",
 		progress: "正在执行 {done}/{total}：{label}",
+		ageNow: "刚刚体检过",
+		ageMinutes: "{n} 分钟前体检的",
+		ageHours: "{n} 小时前体检的",
+		ageDays: "{n} 天前体检的",
+		scannedAt: "（{age}）",
 		handoffTimeout: "交接超时，Agent 那边没有回音",
 		handoffNoSession: "当前会话不可用",
 		failed: "执行失败：{error}",
@@ -5384,6 +5389,11 @@ var dshUsageAggregator = (function(exports) {
 		doneDirect: "The panel ran it directly.",
 		executingDirect: "Running it here instead ({reason}). The ticked items are about to run — each one says what it does.",
 		progress: "Running {done}/{total}: {label}",
+		ageNow: "checked just now",
+		ageMinutes: "checked {n} min ago",
+		ageHours: "checked {n} h ago",
+		ageDays: "checked {n} d ago",
+		scannedAt: "({age})",
 		handoffTimeout: "the handoff timed out — the Agent never answered",
 		handoffNoSession: "no usable session",
 		failed: "Failed: {error}",
@@ -5488,6 +5498,25 @@ var dshUsageAggregator = (function(exports) {
 		};
 	}
 	/**
+	* 这次体检是什么时候做的（人话）。
+	*
+	* 体检现在由后台自动跑（机器空闲时每 12 小时一次），所以面板上得说清楚
+	* 这份结果是多久前的 —— 用户看到「12 小时前」才知道它可能已经过时。
+	*
+	* @param {Function} t 翻译函数。
+	* @param {object|null} job 体检任务。
+	* @returns {string} 人话时间；没有体检记录时返回空串。
+	*/
+	function scanAgeLabel(t, job) {
+		const at = job !== null && job !== void 0 ? job.finishedAt : 0;
+		if (typeof at !== "number" || at <= 0) return "";
+		const ms = Date.now() - at;
+		if (ms < 6e4) return t("ageNow");
+		if (ms < 36e5) return t("ageMinutes", { n: Math.floor(ms / 6e4) });
+		if (ms < 864e5) return t("ageHours", { n: Math.floor(ms / 36e5) });
+		return t("ageDays", { n: Math.floor(ms / 864e5) });
+	}
+	/**
 	* 勾选状态。
 	*
 	* 默认值由条目自己决定（`selectedByDefault`）：
@@ -5588,10 +5617,11 @@ var dshUsageAggregator = (function(exports) {
 	* @param {string[]} options.selected 勾选的条目 id。
 	* @param {{sessions: object|null}} options.runtime 运行时引用（含客户端 sessions 服务）。
 	* @param {string|null} options.sessionId 用户当前正在看的会话。
-	* @returns {{phase: string, message: string, tone: string, run: Function}} 状态。
+	* @param {Function} [options.onFinished] 执行完了的回调（外面据此重扫一次清单）。
+	* @returns {{phase: string, message: string, tone: string, progress: object|null, run: Function}} 状态。
 	*/
 	function useHandoff(options) {
-		const { t, job, selected, runtime, sessionId } = options;
+		const { t, job, selected, runtime, sessionId, onFinished } = options;
 		const [phase, setPhase] = useState("idle");
 		const [message, setMessage] = useState("");
 		const [tone, setTone] = useState("");
@@ -5654,6 +5684,7 @@ var dshUsageAggregator = (function(exports) {
 							setPhase("done");
 							setTone(state.error === "" ? "is-ok" : "is-error");
 							setMessage(`${t("doneDirect")} ${t("reclaimed", { size: formatBytes(state.reclaimedBytes ?? 0) })}` + (state.error === "" ? "" : ` ${state.error}`));
+							if (typeof onFinished === "function") onFinished();
 						}).catch(function(failure) {
 							setPhase("idle");
 							setTone("is-error");
@@ -5714,7 +5745,8 @@ var dshUsageAggregator = (function(exports) {
 				t,
 				job,
 				runtime,
-				sessionId
+				sessionId,
+				onFinished
 			])
 		};
 	}
@@ -5894,6 +5926,7 @@ var dshUsageAggregator = (function(exports) {
 		".dsh-boost-diag-list{margin:0;padding-left:16px;font-size:12px;color:var(--dsw-alias-label-secondary);}",
 		".dsh-boost-diag-warn{font-size:12px;color:var(--dsw-alias-state-warn-primary);}",
 		".dsh-boost-list{display:flex;flex-direction:column;gap:6px;}",
+		".dsh-boost-age{margin:2px 0 0;font-size:12px;color:var(--dsw-alias-label-secondary,#6b7280);}",
 		".dsh-boost-progress{margin-top:8px;}",
 		".dsh-boost-progress-bar{height:4px;border-radius:2px;background:var(--dsw-alias-bg-layer-3,#e9ecf0);overflow:hidden;}",
 		".dsh-boost-progress-fill{height:100%;background:var(--dsw-alias-brand-primary,#2f6fed);transition:width .3s ease;}",
@@ -5955,7 +5988,10 @@ var dshUsageAggregator = (function(exports) {
 			job,
 			selected,
 			runtime: BOOST_RUNTIME,
-			sessionId: BOOST_RUNTIME.sessionId
+			sessionId: BOOST_RUNTIME.sessionId,
+			onFinished: function() {
+				start(true);
+			}
 		});
 		useEffect(function() {
 			start(false);
@@ -5964,7 +6000,8 @@ var dshUsageAggregator = (function(exports) {
 			return sum + (item.sizeBytes ?? 0);
 		}, 0);
 		const analysis = job?.analysis ?? null;
-		return h("div", { className: "dsh-boost-hub" }, h(Styles$1, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
+		const ageLabel = scanAgeLabel(t, job);
+		return h("div", { className: "dsh-boost-hub" }, h(Styles$1, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null, h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
 			type: "button",
 			className: "dsh-boost-btn is-quiet",
 			onClick: function() {
@@ -6233,12 +6270,16 @@ var dshUsageAggregator = (function(exports) {
 			job,
 			selected,
 			runtime,
-			sessionId
+			sessionId,
+			onFinished: function() {
+				start(true);
+			}
 		});
 		const totalBytes = items.reduce(function(sum, item) {
 			return sum + (item.sizeBytes ?? 0);
 		}, 0);
 		const analysis = job?.analysis ?? null;
+		const ageLabel = scanAgeLabel(t, job);
 		const high = pos !== null && pos.y < 320;
 		const style = pos === null ? void 0 : {
 			left: `${pos.x}px`,
@@ -6253,7 +6294,7 @@ var dshUsageAggregator = (function(exports) {
 			className: "dsh-boost-panel",
 			role: "dialog",
 			"aria-label": t("title")
-		}, h("div", { className: "dsh-boost-head" }, h("div", null, h("h2", { className: "dsh-boost-title" }, t("title")), h("p", { className: "dsh-boost-sub" }, t("subtitle"))), h("button", {
+		}, h("div", { className: "dsh-boost-head" }, h("div", null, h("h2", { className: "dsh-boost-title" }, t("title")), h("p", { className: "dsh-boost-sub" }, t("subtitle")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null), h("button", {
 			type: "button",
 			className: "dsh-boost-close",
 			"aria-label": t("close"),
@@ -6539,7 +6580,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-10-30 19:16:38";
+	var BUILD_AT = "2026-11-02 10:04:33";
 	/**
 	* 声明要等的服务。
 	*

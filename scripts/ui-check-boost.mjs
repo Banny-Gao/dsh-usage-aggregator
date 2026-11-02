@@ -31,6 +31,7 @@ import {
   currentSessionId,
   formatBytes,
   HANDOFF_TIMEOUT_MS,
+  scanAgeLabel,
 } from '../src/client/features/boost/view.js';
 
 // 交接那段要用 window.setTimeout —— Node 里没有 window，补一个最小的。
@@ -134,6 +135,7 @@ async function renderHandoff(options) {
       selected: ['dsh-projcache'],
       runtime: options.runtime,
       sessionId: options.sessionId,
+      onFinished: options.onFinished,
     });
     captured = state;
     return null;
@@ -351,6 +353,35 @@ check('交接：Agent 收下了就不重复执行', async () => {
     api.execute = original;
     api.executeStatus = originalStatus;
   }
+});
+
+check('执行完了会叫外面重扫一次（清单里清掉的条目得消失）', async () => {
+  const original = api.execute;
+  const originalStatus = api.executeStatus;
+  api.execute = (ids) => Promise.resolve({ id: 'boost-exec-1', running: true, total: ids.length, done: 0 });
+  api.executeStatus = () => Promise.resolve({
+    id: 'boost-exec-1', running: false, total: 1, done: 1, currentLabel: 'x', reclaimedBytes: 2048, results: [], error: '',
+  });
+  try {
+    let finished = 0;
+    const runtime = { sessions: { scope: () => { throw new Error('没有会话'); } } };
+    await renderHandoff({ runtime, sessionId: 'session-x', onFinished: () => { finished += 1; } });
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    assert.equal(finished, 1, '执行完了没有触发重扫');
+  } finally {
+    api.execute = original;
+    api.executeStatus = originalStatus;
+  }
+});
+
+check('体检时间说人话', () => {
+  const now = Date.now();
+  assert.equal(scanAgeLabel(t, { finishedAt: now - 10 * 1000 }), t('ageNow'));
+  assert.equal(scanAgeLabel(t, { finishedAt: now - 5 * 60 * 1000 }), t('ageMinutes', { n: 5 }));
+  assert.equal(scanAgeLabel(t, { finishedAt: now - 3 * 60 * 60 * 1000 }), t('ageHours', { n: 3 }));
+  assert.equal(scanAgeLabel(t, { finishedAt: now - 2 * 24 * 60 * 60 * 1000 }), t('ageDays', { n: 2 }));
+  assert.equal(scanAgeLabel(t, null), '');
+  assert.equal(scanAgeLabel(t, { finishedAt: 0 }), '');
 });
 
 check('当前会话：认 mainView 保留的那个，子代理不算', () => {

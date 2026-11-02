@@ -12,7 +12,7 @@
 // 都走这个槽，它天生就是「浮在所有列之上」的一层。
 
 import { h, useCallback, useEffect, useRef, useState } from '../../runtime.js';
-import { currentSessionId, formatBytes, useBoostJob, useHandoff, useSelection } from './view.js';
+import { currentSessionId, formatBytes, scanAgeLabel, useBoostJob, useHandoff, useSelection } from './view.js';
 import { DiagnosisBlock, ItemList } from './parts.js';
 import { BOOST_RUNTIME } from './ref.js';
 import { RocketIcon } from './rocket.js';
@@ -209,10 +209,19 @@ export function BoostWidget(props) {
   }, [open, launch]);
 
   // 交给 Agent 执行；没有可用会话时由面板直接执行兜底。
-  const handoff = useHandoff({ t, job, selected, runtime, sessionId });
+  // 执行完了重扫一次：清掉的条目得从清单里消失，面板内容区才是当下的实况。
+  const handoff = useHandoff({
+    t,
+    job,
+    selected,
+    runtime,
+    sessionId,
+    onFinished: function () { start(true); },
+  });
 
   const totalBytes = items.reduce(function (sum, item) { return sum + (item.sizeBytes ?? 0); }, 0);
   const analysis = job?.analysis ?? null;
+  const ageLabel = scanAgeLabel(t, job);
   const high = pos !== null && pos.y < 320;
 
   const style = pos === null
@@ -233,7 +242,10 @@ export function BoostWidget(props) {
       h('div', { className: 'dsh-boost-head' },
         h('div', null,
           h('h2', { className: 'dsh-boost-title' }, t('title')),
-          h('p', { className: 'dsh-boost-sub' }, t('subtitle'))
+          h('p', { className: 'dsh-boost-sub' }, t('subtitle')),
+          ageLabel !== ''
+            ? h('p', { className: 'dsh-boost-age' }, t('scannedAt', { age: ageLabel }))
+            : null
         ),
         h('button', {
           type: 'button',

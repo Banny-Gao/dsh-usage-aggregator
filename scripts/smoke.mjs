@@ -84,7 +84,15 @@ async function checkAsync(name, fn) {
 
 /* ─────────────────── 夹具：一条真实的 minimax 用量响应 ─────────────────── */
 
-const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTM1MjQ1ODEsInVzZXIiOnsiaWQiOiI0ODQwMjc5NzQ4ODIyNjMwNDYiLCJuYW1lIjoiIiwiYXZhdGFyIjoiIiwiZGV2aWNlSUQiOiIiLCJpc0Fub255bW91cyI6ZmFsc2V9fQ.3GkM0r4Qngddt9RM5dUOlzMnuFAIhcuzcBMZKU64seU';
+// 夹具里的 token 带一个 exp（真实抓包就是这样）。写死它等于在测试里埋一颗
+// 时间炸弹：过了那个时刻，依赖「登录态还没过期」的断言会全线变红（该夹具
+// 原本在 2026-11-01 过期）。这里按当下时间现造一枚，断言用同一个常量。
+const TOKEN_EXP = Math.floor(Date.now() / 1000) + 365 * 24 * 3600;
+const TOKEN_PAYLOAD = Buffer.from(JSON.stringify({
+  exp: TOKEN_EXP,
+  user: { id: '484027974882263046', name: '', avatar: '', deviceID: '', isAnonymous: false },
+})).toString('base64url');
+const TOKEN = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${TOKEN_PAYLOAD}.3GkM0r4Qngddt9RM5dUOlzMnuFAIhcuzcBMZKU64seU`;
 
 const CURL = `curl --url 'https://www.minimax.cn/backend/account/token_plan/remains_percent' \\
   -H 'accept: application/json, text/plain, */*' \\
@@ -206,7 +214,7 @@ check('URL 打码只留结构', () => {
 check('凭证过期时间从 JWT 里读出来（离线可算）', () => {
   const info = inspectCredential(parseRequestText(CURL).request);
   assert.equal(info.found, true);
-  assert.equal(info.exp, 1793524581);
+  assert.equal(info.exp, TOKEN_EXP);
   assert.equal(info.subject, '484027974882263046');
 });
 
@@ -724,7 +732,7 @@ check('脱敏后的记录里**不含任何请求头取值**', () => {
   assert.ok(!text.includes('2021855341230170230'), 'group id 泄漏到了客户端投影里');
   assert.ok(masked.headerNames.includes('x-group-id'));
   assert.equal(masked.endpoint, 'GET https://www.minimax.cn/backend/account/token_plan/remains_percent');
-  assert.equal(masked.credential.exp, 1793524581);
+  assert.equal(masked.credential.exp, TOKEN_EXP);
   assert.equal(masked.queryable, true);
 });
 
@@ -1019,9 +1027,12 @@ await checkAsync('自动查询定时器真的会自己发起请求（假 setInte
   const logs = [];
   console.log = (...args) => { logs.push(args.join(' ')); };
   console.error = (...args) => { logs.push(args.join(' ')); };
-  let tick = null;
+  // 插件里有不止一个定时器（自动查询一轮 60 秒，体检后台自动扫一轮 5 分钟）。
+  // 假 setInterval 只记最后一个的话，后来注册的那个会把要测的那个顶掉 ——
+  // 按间隔认，才知道哪个是自动查询的。
+  const timers = [];
   const realDshHome = process.env.DSH_HOME;
-  globalThis.setInterval = (fn) => { tick = fn; return 1; };
+  globalThis.setInterval = (fn, ms) => { timers.push({ fn, ms }); return 1; };
   let upstreamCalls = 0;
   globalThis.fetch = async () => {
     upstreamCalls += 1;
@@ -1069,6 +1080,8 @@ await checkAsync('自动查询定时器真的会自己发起请求（假 setInte
       usage: { autoRefresh: { enabled: true, intervalSeconds: 300 } },
       expander: {},
     });
+    const usageTimer = timers.find((entry) => entry.ms === 60000);
+    const tick = usageTimer === undefined ? null : usageTimer.fn;
     assert.ok(typeof tick === 'function', '装载后应当注册了定时器');
     assert.ok(logs.some((line) => line.includes('自动查询已开启')), '装载时应当留一条「自动查询已开启」日志');
     assert.equal(upstreamCalls, callsAfterImport, '刚装载不该立刻打上游');
@@ -1086,15 +1099,15 @@ await checkAsync('自动查询定时器真的会自己发起请求（假 setInte
     assert.equal(upstreamCalls, callsAfterImport + 1, '按一拍后应当真的发了一次上游请求');
     assert.ok(logs.some((line) => line.includes('自动查询：1/1 成功')), '应当留下一条可 grep 的「自动查询 N/M」日志');
 
-    // 卸载：effect 返回的 cleanup 要清掉定时器，否则插件重载会叠一层
-    const cleanup = cleanups[cleanups.length - 1];
-    if (typeof cleanup === 'function') {
-      const before = upstreamCalls;
-      cleanup();
-      if (tick !== null) tick();
-      await new Promise((resolve) => setTimeout(resolve, 60));
-      assert.equal(upstreamCalls, before, '卸载后定时器不应再触发');
+    // 卸载：插件卸载时所有 effect 的 cleanup 都会跑 —— 少了任何一个，
+    // 插件重载就会叠一层定时器。
+    const before = upstreamCalls;
+    for (const cleanup of cleanups) {
+      if (typeof cleanup === 'function') cleanup();
     }
+    if (tick !== null) tick();
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    assert.equal(upstreamCalls, before, '卸载后定时器不应再触发');
   } finally {
     globalThis.setInterval = realSetInterval;
     globalThis.fetch = realFetch;

@@ -9,7 +9,7 @@
 // 而设置页是「配置」的地方，用户在这里能慢慢看、能重新体检。
 
 import { h, useEffect } from '../../runtime.js';
-import { formatBytes, useBoostJob, useHandoff, useSelection } from './view.js';
+import { formatBytes, scanAgeLabel, useBoostJob, useHandoff, useSelection } from './view.js';
 import { DiagnosisBlock, ItemList } from './parts.js';
 import { BOOST_RUNTIME } from './ref.js';
 import { Styles } from './styles.js';
@@ -31,6 +31,8 @@ export function BoostPanel(props) {
     selected,
     runtime: BOOST_RUNTIME,
     sessionId: BOOST_RUNTIME.sessionId,
+    // 执行完了重扫一次：清掉的条目得从清单里消失。
+    onFinished: function () { start(true); },
   });
 
   // 打开这一页就体检一次（结果有五分钟缓存，重复打开不重测）。
@@ -40,12 +42,16 @@ export function BoostPanel(props) {
 
   const totalBytes = items.reduce(function (sum, item) { return sum + (item.sizeBytes ?? 0); }, 0);
   const analysis = job?.analysis ?? null;
+  const ageLabel = scanAgeLabel(t, job);
 
   return h(
     'div',
     { className: 'dsh-boost-hub' },
     h(Styles, null),
     h('p', { className: 'dsh-boost-sub' }, t('hubIntro')),
+    ageLabel !== ''
+      ? h('p', { className: 'dsh-boost-age' }, t('scannedAt', { age: ageLabel }))
+      : null,
     h('div', { className: 'dsh-boost-hub-row' },
       h('span', { className: 'dsh-boost-msg' },
         items.length === 0 ? t('totalUnknown') : t('total', { size: formatBytes(totalBytes) })),

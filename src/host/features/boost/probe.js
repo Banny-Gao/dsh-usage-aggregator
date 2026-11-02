@@ -184,6 +184,26 @@ async function readDshHome(home, env) {
   return { home: dshHome, parts };
 }
 
+/** 判定「机器空闲」的 1 分钟负载阈值。 */
+export const IDLE_LOAD_THRESHOLD = 2;
+
+/**
+ * 这台机器现在闲不闲。
+ *
+ * 体检要读几十 GB 的目录，是 I/O 密集的活儿 —— 抢在用户正忙着的时候跑会让
+ * 机器更卡。判据用负载：1 分钟负载低于阈值就算闲。
+ *
+ * @param {number} [threshold] 负载阈值。
+ * @returns {boolean} 是否空闲。
+ */
+export function isMachineIdle(threshold = IDLE_LOAD_THRESHOLD) {
+  try {
+    return loadavg()[0] < threshold;
+  } catch {
+    return true;
+  }
+}
+
 /**
  * 采集一次机器事实。
  *

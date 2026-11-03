@@ -21,10 +21,11 @@
     - id: dsh-usage-aggregator
       name: 'dsh-usage-aggregator'
       config:
-        # 所有插件路由的公共前缀。三个功能各自再挂一段：
-        #   /dsh-usage-aggregator/usage/*      —— 用量查询
-        #   /dsh-usage-aggregator/expander/*   —— 插件更新
-        #   /dsh-usage-aggregator/boost/*      —— 电脑加速与清理
+        # 所有插件路由的公共前缀。四个功能各自再挂一段：
+        #   /dsh-usage-aggregator/usage/*        —— 用量查询
+        #   /dsh-usage-aggregator/expander/*     —— 插件更新
+        #   /dsh-usage-aggregator/boost/*        —— 电脑加速与清理
+        #   /dsh-usage-aggregator/autocomplete/*  —— AI 自动补全
         # 主题功能没有 Host 路由，也没有 Host 配置（它的可调项走 localStorage）。
         endpoint: /dsh-usage-aggregator
         # 只有本机（回环地址）能访问插件路由。除非你确实要远程访问，别打开。
@@ -77,3 +78,36 @@
             model: auto/deepseek-flash
             # 诊断只要一段结论加几条观察，输出很短。
             maxOutputTokens: 2000
+
+        # ── AI 自动补全 ───────────────────────────────────────────────────
+        # 补全的候选由这个模型分析产生：对话上下文 + 用户正在打的字 → 几条候选。
+        #   · 必须来自本 profile 已配置的 provider —— 插件自己没有密钥，也不该有；
+        #   · 没有可用模型时**不影响功能**：候选退成空列表，输入框里什么都不显示；
+        #   · 每次触发都要花一次模型调用，所以下面的阈值取保守值。
+        autocomplete:
+          analysis:
+            provider: axzo-one
+            model: auto/deepseek-flash
+            # 候选很短（三五条、每条几十字），额度给小一点 —— 输出越少，来得越快。
+            maxOutputTokens: 600
+          # 默认设置。用户在设置页改过的值会覆盖它们（存在
+          # $DSH_HOME/dsh-usage-aggregator/autocomplete.json）。
+          defaults:
+            # 总开关。
+            enabled: true
+            # 推荐条数（1–5）。
+            maxSuggestions: 3
+            # 少于这么多字不触发（省一次模型调用）。
+            minChars: 2
+            # 输入停顿多久（毫秒）才去问模型。
+            debounceMs: 500
+            # 带入最近几条对话给模型参考（0 = 不带）。
+            contextMessages: 4
+            # 只分析输入框里的前 N 个字符。
+            maxInputChars: 2000
+            # 草稿里有换行时是否也补全。
+            allowMultiline: true
+            # 行内灰字（跟在光标后面的待补全片段）。
+            inlineHint: true
+            # 输入框为空时给「你可能想问」的几条候选。
+            placeholderHint: true

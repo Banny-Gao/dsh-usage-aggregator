@@ -21,12 +21,13 @@ export const NS = 'dsh-usage-aggregator';
 export const zh = {
   // 设置面板左侧导航里的入口名。
   tab: 'AxzoAggregator',
-  // 三个页签的标签。键名 = 功能 meta.hubTabKey。
+  // 五个页签的标签。键名 = 功能 meta.hubTabKey。
   tabTheme: 'Theme',
   tabUsage: '流量',
   tabExpander: '插件更新',
   tabBoost: '加速',
-  hint: '四块能力在同一个插件里。左侧切换，下方是当前功能的设置。',
+  tabAutocomplete: 'AI 补全',
+  hint: '五块能力在同一个插件里。左侧切换，下方是当前功能的设置。',
   empty: '没有可用的功能。',
   buildAt: '客户端构建于 {at}',
 };
@@ -37,7 +38,8 @@ export const en = {
   tabUsage: 'Traffic',
   tabExpander: 'Plugin Updates',
   tabBoost: 'Boost',
-  hint: 'Four capabilities in one plugin. Switch below to configure each one.',
+  tabAutocomplete: 'AI Complete',
+  hint: 'Five capabilities in one plugin. Switch below to configure each one.',
   empty: 'No capability available.',
   buildAt: 'Client built at {at}',
 };

@@ -1,8 +1,8 @@
 # dsh-usage-aggregator · 架构设计
 
-> 一个 DSH 插件装下四件能力：**用量查询**、**安心筑品牌主题**、**插件更新**、
-> **电脑加速与清理**。
-> 四块能力在设置面板里共用**一个**入口，插件管理器里只占**一行**。
+> 一个 DSH 插件装下五件能力：**用量查询**、**安心筑品牌主题**、**插件更新**、
+> **电脑加速与清理**、**AI 自动补全**。
+> 五块能力在设置面板里共用**一个**入口，插件管理器里只占**一行**。
 
 ---
 
@@ -135,6 +135,47 @@ Host 侧是空座位（`export const name` + 空 `apply()`），**100% 的行为
 不用 `sudo`、不碰源码、不碰工作区 `node_modules`。每次清理都写审计日志
 （`$DSH_HOME/dsh-usage-aggregator/boost.log`）。
 
+### 2.5 dsh-usage-aggregator 新增 —— AI 自动补全
+
+```
+在会话输入框里打字 → 停顿 0.5 秒 → Host 把「最近几条对话 + 草稿」交给模型
+                    → 候选（最多 5 条）→ 输入框上方的提示条 + 行内灰字 + 下拉列表
+                    → 按 Tab 采纳第一条（或在下拉里选另一条）
+```
+
+**为什么落在会话输入框**：这是「写一句话」这个动作最该被帮一把的地方 ——
+用户正在输入框里写字，正好是「他下一句想说什么」最清楚的时刻。别的落点
+（面板里的输入框）没有这个上下文。
+
+**落点全是官方的槽位**（`CLIENT_SLOT_API` 里那 103 个槽位，本功能只碰两个）：
+
+| 槽位 | 种类 | 放什么 |
+|---|---|---|
+| `conversation.input.dock` | list（会话级） | 输入框**上方**的提示条：第一条建议、「Tab 补全」、「更多」（展开下拉） |
+| `conversation.input.overlay` | list（会话级） | 输入框卡片内的**下拉列表**与**行内灰字**（官方 `/`、`@` 菜单走的就是这一层） |
+
+**三条不越界的规矩**：
+
+1. **不改别人的节点与样式**。官方 placeholder 由 `ui-conversation` 拥有
+   （`[data-composer-placeholder]`），插件不去改它 —— 所以「空输入时的占位提示」
+   做成提示条上的一行字，不去顶掉官方的 placeholder。
+2. **不直接改编辑器**。草稿由官方的 Lexical 编辑器持有，插件只通过标准动作
+   `inputActions.captureInsertion()` + `insertText(text, span)` 写回。行内灰字是
+   **画在自己那一层**上的叠加（量光标位置定位），编辑器里一个节点都不插 ——
+   插了会被编辑器下一次更新抹掉，还会跟它打架。
+3. **Tab 只在合适的时候接管**。有候选、官方 `/`、`@` 菜单没开、没有 IME 组合、
+   输入机在 `plain` 状态，才拦 Tab；Shift+Tab 永不接管（留给焦点遍历）。
+
+**候选怎么变成「插进输入框的那一段」**：模型给的是**一句完整的话**
+（「帮我分析这段代码的性能瓶颈」），而用户已经打了半句（「帮我分析」）。按下 Tab
+时先求「草稿结尾」与「候选开头」的最长重叠，把重叠之后的那一段插进去 ——
+直接插整句会变成「帮我分析帮我分析这段代码的性能瓶颈」。没有重叠就**不自动插**
+（候选与用户写的不是同一条句子，硬插只会得到一句怪话），改由用户点选候选时整句替换。
+
+**钱要花在刀刃上**：每次触发都要花一次模型调用，所以有四道闸 —— 最少触发字数、
+触发延迟（防抖）、Host 侧 5 分钟缓存（同一段草稿不重复问）、同一会话里掐掉
+过期的请求。模型不可用时安静退成「没有建议」，绝不弹错误打断用户打字。
+
 ---
 
 ## 3. 关键决策：单包，还是 monorepo？
@@ -190,14 +231,17 @@ dsh-usage-aggregator/
 │   │       ├── theme/           # ← 原 dsh-axzo-theme/src
 │   │       ├── usage/           # ← 原 dsh-usage-query/src
 │   │       ├── expander/        # ← 原 dsh-plugin-expander/client
-│   │       └── boost/           # 电脑加速与清理：小火箭浮层 + 设置页视图
+│   │       ├── boost/           # 电脑加速与清理：小火箭浮层 + 设置页视图
+│   │       └── autocomplete/    # AI 自动补全：输入框提示条 + 下拉 + 行内灰字
 │   └── host/                    # ── Host 半边（Node）──
 │       ├── index.js             # 入口：name / inject / apply
-│       ├── shared/              # 共享内核：http.js / context.js
+│       ├── shared/              # 共享内核：http.js / context.js / llm.js
 │       └── features/
 │           ├── theme/           # 空座位（纯客户端功能）
 │           ├── usage/           # ← 原 dsh-usage-query/lib
-│           └── expander/        # ← 原 dsh-plugin-expander/lib
+│           ├── expander/        # ← 原 dsh-plugin-expander/lib
+│           ├── boost/           # 电脑加速与清理的 Host 半边
+│           └── autocomplete/    # AI 自动补全的 Host 半边：分析 / 设置 / 路由
 ├── client/
 │   └── client.js                # 构建产物（唯一对外的客户端文件）
 ├── vite.config.mjs             # 构建链配置（必须在仓库根 —— Vite 只自动发现根配置）
@@ -281,12 +325,17 @@ export function apply(ctx, featureConfig, shared) { … }
 ### 6.1 路径划分
 
 ```
-/dsh-usage-aggregator/usage/…       用量查询（11 条）
-/dsh-usage-aggregator/expander/…    插件更新（2 条）
-/dsh-usage-aggregator/boost/…       电脑加速与清理（4 条）
+/dsh-usage-aggregator/usage/…          用量查询（11 条）
+/dsh-usage-aggregator/expander/…       插件更新（2 条）
+/dsh-usage-aggregator/boost/…          电脑加速与清理（4 条）
+/dsh-usage-aggregator/autocomplete/…   AI 自动补全（4 条）
 ```
 
 **为什么必须分段**：`dsh-host-webserver` 的 `register()` 以 `(kind, path)` 为键，**重复注册直接 throw** → 插件 entry 加载失败 → 整页 `Failed to load plugins`。而且路由匹配**只看 path，不看 HTTP 方法** —— 客户端用 GET/POST 区分读写只是约定。
+
+> 推论（踩过才知道）：**同一个路径不能挂两条路由**，哪怕一条 GET 一条 POST。
+> 所以「读设置」与「存设置」分成 `/autocomplete/settings` 与
+> `/autocomplete/settings/save` 两条。`scripts/check-routes.mjs` 断言这一点。
 
 ### 6.2 三处常量必须同步
 
@@ -332,17 +381,21 @@ config:
     gitTimeoutMs: 15000
   boost:
     analysis: { provider, model, maxOutputTokens }
+  autocomplete:
+    analysis: { provider, model, maxOutputTokens }
+    defaults: { enabled, maxSuggestions, minChars, debounceMs, contextMessages,
+                maxInputChars, allowMultiline, inlineHint, placeholderHint }
 ```
 
 原三个插件的每一个配置项都**原样保留**（只是归了组），默认值也全部不变。
 
-> 配置是**启动期只读**的（`apply(ctx, config)` 的第二个参数），运行时可改的只有落盘 store 里的 `settings`（分析模型、芯片选中项）。
+> 配置是**启动期只读**的（`apply(ctx, config)` 的第二个参数），运行时可改的只有落盘 store 里的 `settings`（分析模型、芯片选中项、补全的各项设置）。
 
 ---
 
 ## 8. i18n
 
-**三个命名空间保持独立**：`settings.axzoTheme` / `usage-query` / `pluginExpander`，外加聚合页自己的 `dsh-usage-aggregator`。
+**五个命名空间保持独立**：`settings.axzoTheme` / `usage-query` / `pluginExpander` / `pcBoost` / `pcAutocomplete`，外加聚合页自己的 `dsh-usage-aggregator`。
 
 > 绝不能把三份字典合并进同一个命名空间：三者都有 `tab` / `title` / `reset` / `loading` 这类 key，合并即互相覆盖 —— 表现是「一个功能的界面显示另一个功能的文案」。
 
@@ -362,6 +415,7 @@ config:
 | 用量接口记录（请求 / 模板 / 字段顺序 / 芯片选择） | `$DSH_HOME/dsh-usage-query/store.json`（0600） | **保持目录名不变** —— 改了用户已配置的接口、模板、字段顺序全部消失，且面板只显示「还没有接入任何接口」，没有任何提示 |
 | 续期用的 Chrome profile | `$DSH_HOME/dsh-usage-query/profiles/<id>/` | 同上 —— 改名会丢钉钉会话，必须重新扫码 |
 | 插件更新 | 无（60s 内存缓存） | — |
+| 补全的设置（推荐条数 / 分析模型 / 阈值 / 开关） | `$DSH_HOME/dsh-usage-aggregator/autocomplete.json`（0600） | 新功能，没有历史包袱；放在 Host 侧而不是 localStorage —— 换台机器就该重来，而且浏览器本地存的东西没有备份 |
 
 > 聚合包的名字换了，但**用户数据目录不跟着换**。这是刻意的：数据路径是历史包袱，也是用户的既得资产。
 
@@ -453,6 +507,10 @@ config:
 | 16 | 进程类动作只碰**通过护栏**的 pid：DSH 自己的（进程树 + 命令行标记 + 祖先）、root 的、系统进程、前台应用一律不碰 | 插件把 DSH 自己、MCP 驱动的浏览器、用户正在用的应用杀了 |
 | 17 | 结束进程前复核 pid 现在的命令行，只发 SIGTERM | pid 被回收复用后误杀无关进程；强杀丢数据 |
 | 18 | 删会话时跳过**正在跑的**会话 | 正在被追加的日志被删掉，会话损坏 |
+| 19 | 补全只通过 `inputActions` 写草稿，**不碰编辑器的 DOM** | 编辑器（Lexical）持有草稿，直接改 DOM 会被它下一次更新抹掉，还跟它打架 |
+| 20 | 补全**不改官方 placeholder、不改别人的节点与样式** | 顶掉别人的 placeholder 会让「无可用会话」「父会话离线」这些官方状态说错话 |
+| 21 | 补全的模型调用有闸（最少字数 / 防抖 / 缓存 / 掐旧请求） | 每敲几个字就问一次模型：又慢又烧钱 |
+| 22 | 补全失败**安静退成「没有建议」** | 在用户打字时弹错误，是最打断人的失败方式 |
 
 ---
 
@@ -465,3 +523,5 @@ config:
 | 统一用更严的同源守卫 | 迁移前只有插件更新那侧有；统一后对同源客户端无影响 |
 | `overrideTokens` 的 source 沿用旧标识 | 见不变量 5 |
 | 数据目录不跟着包名走 | 见 §9 |
+| 补全的占位提示做在**提示条**上，不替换官方 placeholder | 官方的 placeholder 归 `ui-conversation` 所有；插件改它就等于改别人的界面（而且那些「无可用会话」的官方状态会一起被顶掉） |
+| 补全默认开着，但阈值保守 | 功能默认关闭等于白做；每次触发都要花模型调用，阈值不保守就是拿用户的钱烧 |

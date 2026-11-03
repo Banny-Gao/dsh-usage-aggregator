@@ -84,6 +84,22 @@ check_file "src/host/features/boost/analyze.js"
 check_file "src/host/features/boost/ops.js"
 check_file "src/host/features/boost/tool.js"
 check_file "src/host/features/boost/fixtures/scan.json"
+check_file "src/host/features/autocomplete/index.js"
+check_file "src/host/features/autocomplete/ops.js"
+check_file "src/host/features/autocomplete/analyze.js"
+check_file "src/host/features/autocomplete/settings.js"
+check_file "src/host/features/autocomplete/store.js"
+check_file "src/host/features/autocomplete/server.js"
+check_file "src/client/features/autocomplete/index.js"
+check_file "src/client/features/autocomplete/overlay.js"
+check_file "src/client/features/autocomplete/dock.js"
+check_file "src/client/features/autocomplete/panel.js"
+check_file "src/client/features/autocomplete/engine.js"
+check_file "src/client/features/autocomplete/store.js"
+check_file "src/client/features/autocomplete/complete.js"
+check_file "src/client/features/autocomplete/api.js"
+check_file "src/client/features/autocomplete/i18n.js"
+check_file "src/client/features/autocomplete/styles.js"
 check_file "scripts/check-host.mjs"
 check_file "scripts/check-client.mjs"
 check_file "scripts/smoke.mjs"
@@ -93,6 +109,8 @@ check_file "scripts/ui-check-expander.mjs"
 check_file "scripts/ui-check-tasks.mjs"
 check_file "scripts/ui-check-boost.mjs"
 check_file "scripts/boost-check.mjs"
+check_file "scripts/ui-check-autocomplete.mjs"
+check_file "scripts/autocomplete-check.mjs"
 check_file "scripts/render-check.mjs"
 check_file "scripts/release.mjs"
 check_file "scripts/verify.sh"
@@ -330,6 +348,7 @@ const specs = [
   ['usage', path.join(dir, 'src/client/features/usage/constants.js'), 'usage-query'],
   ['expander', path.join(dir, 'src/client/features/expander/index.js'), 'pluginExpander'],
   ['boost', path.join(dir, 'src/client/features/boost/i18n.js'), 'pcBoost'],
+  ['autocomplete', path.join(dir, 'src/client/features/autocomplete/i18n.js'), 'pcAutocomplete'],
 ]
 const found = []
 for (const [name, file, want] of specs) {
@@ -339,13 +358,13 @@ for (const [name, file, want] of specs) {
   check(name + ' 的命名空间是 ' + want, value === want, String(value))
   if (value !== null) found.push(value)
 }
-check('三个命名空间互不相同', new Set(found).size === found.length, found.join(', '))
+check('各命名空间互不相同', new Set(found).size === found.length, found.join(', '))
 // 页签标签由**聚合页自己**拥有（src/client/hub/i18n.js）：
 //   · 各功能通过 meta.hubTabKey 指向 hub 字典里的键；
 //   · 功能的字典里**不再有** hubTab —— 同一个命名空间同时只能被一个包注册，
 //     标签放在功能自己的命名空间下时，新旧插件并存会探不到，页签上显示裸的 key。
 const hubDict = read(path.join(dir, 'src/client/hub/i18n.js'))
-for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost']) {
+for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost', 'tabAutocomplete']) {
   check('聚合页字典有 ' + key, new RegExp(key + "\\s*:\\s*['\"][^'\"]+['\"]").test(hubDict))
 }
 const tabSpecs = [
@@ -353,6 +372,7 @@ const tabSpecs = [
   ['usage', path.join(dir, 'src/client/features/usage/index.js'), path.join(dir, 'src/client/features/usage/i18n.js'), 'tabUsage'],
   ['expander', path.join(dir, 'src/client/features/expander/index.js'), path.join(dir, 'src/client/features/expander/index.js'), 'tabExpander'],
   ['boost', path.join(dir, 'src/client/features/boost/index.js'), path.join(dir, 'src/client/features/boost/i18n.js'), 'tabBoost'],
+  ['autocomplete', path.join(dir, 'src/client/features/autocomplete/index.js'), path.join(dir, 'src/client/features/autocomplete/i18n.js'), 'tabAutocomplete'],
 ]
 for (const [name, metaFile, dictFile, want] of tabSpecs) {
   const metaSrc = read(metaFile)
@@ -520,6 +540,22 @@ if node "$PLUGIN_DIR/scripts/boost-check.mjs" >"$SYNTAX_TMP/boost.log" 2>&1; the
 else
   bad "scripts/boost-check.mjs 未通过（跑 node scripts/boost-check.mjs 看详情）"
   tail -20 "$SYNTAX_TMP/boost.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ AI 自动补全（重叠求插入片段 / 设置边界 / 缓存 / 路由）"
+if node "$PLUGIN_DIR/scripts/autocomplete-check.mjs" >"$SYNTAX_TMP/autocomplete.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/autocomplete.log")"
+else
+  bad "scripts/autocomplete-check.mjs 未通过（跑 node scripts/autocomplete-check.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/autocomplete.log" | sed 's/^/    /'
+fi
+
+if node "$PLUGIN_DIR/scripts/ui-check-autocomplete.mjs" >"$SYNTAX_TMP/ui-autocomplete.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/ui-autocomplete.log")"
+else
+  bad "scripts/ui-check-autocomplete.mjs 未通过（跑 node scripts/ui-check-autocomplete.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/ui-autocomplete.log" | sed 's/^/    /'
 fi
 
 echo ""

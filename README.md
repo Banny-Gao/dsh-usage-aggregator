@@ -2,7 +2,7 @@
 
 ## 定位
 
-一个 DSH 插件，装下多件能力（当前四项）：
+一个 DSH 插件，装下多件能力（当前五项）：
 
 | 能力 | 做什么 |
 |---|---|
@@ -10,8 +10,9 @@
 | **安心筑品牌主题** | 侧栏 logo、43 个主题 token、玻璃首屏、会话区品牌背景、任务状态徽标 |
 | **插件更新** | 检测并安装 profile 里已装插件的新版本（官方「插件」页只管官方 bundle） |
 | **电脑加速与清理** | 右下角一枚可拖动的「小火箭」：体检这台机器为什么慢，列出**本机实际装了**的包管理器缓存、DSH 自己的冗余数据、占内存/占 CPU 的进程与浏览器里非活跃的窗口，让你勾选，交给 Agent 执行。体检在**后台自动做**（机器空闲时每天两次），点开即见结果；执行完自动重扫，清掉的条目从清单里消失 |
+| **AI 自动补全** | 在**会话输入框**里自动补全：打字停顿后由本地模型结合对话上下文给出候选，按 **Tab** 采纳第一条，提示条上的「更多」展开下拉列表换一条。行内还有一段灰字，标出将要补上的内容 |
 
-**插件管理器里占一行，设置面板里占一个入口**（`AxzoAggregator`，内含四个页签）。
+**插件管理器里占一行，设置面板里占一个入口**（`AxzoAggregator`，内含五个页签）。
 这是本包存在的理由：此前三个插件各占一行、各占一个设置入口。
 
 ## 结构
@@ -21,14 +22,14 @@
 
 ```
 src/client/          客户端半边
-  index.js           装配层：注册 4 个 locale 命名空间 → 建 4 个 translator → 依次 apply
-  hub/               聚合设置页：一个 settings.section + 四个页签
+  index.js           装配层：注册 5 个 locale 命名空间 → 建 5 个 translator → 依次 apply
+  hub/               聚合设置页：一个 settings.section + 五个页签
   shared/            i18n / api / constants
-  features/          theme · usage · expander · boost（互不 import）
+  features/          theme · usage · expander · boost · autocomplete（互不 import）
 src/host/            Host 半边
   index.js           装配层：遍历功能，交给各功能的 apply
   shared/            http（统一的路由与安全网关）· context（配置与端点）· llm（收模型正文）
-  features/          theme（空座位）· usage · expander · boost
+  features/          theme（空座位）· usage · expander · boost · autocomplete
 client/client.js     构建产物（DSH 加载它）
 vite.config.mjs      构建链（必须在仓库根）
 scripts/             验证套件
@@ -51,13 +52,14 @@ docs/adr/            架构决策记录
 | `plugin_update` | `check`（只读）· `update` |
 | `system_boost` | `scan`（体检，只读）· `execute`（清理勾选的缓存） |
 
-**HTTP 路由**（17 条，全部在 `/dsh-usage-aggregator/` 之下）：
+**HTTP 路由**（21 条，全部在 `/dsh-usage-aggregator/` 之下）：
 
 | 前缀 | 条数 | 用途 |
 |---|---|---|
 | `/usage` | 11 | 查询 / 接入 / 续期 / 重分析 / 移除 / 字段顺序 / 模型 / 芯片 / 原始响应 |
 | `/expander` | 2 | `state`（已装清单与更新状态）· `update`（执行更新） |
 | `/boost` | 4 | `scan`（开始体检）· `status`（轮询体检进度）· `execute`（起清理任务）· `execute-status`（轮询清理进度） |
+| `/autocomplete` | 4 | `settings`（读设置）· `settings/save`（存设置）· `models`（可选模型）· `suggest`（要候选） |
 
 **配置**：写在 profile 的 `cordis.patch.yml` 里，**只对 Host 半边生效**。
 
@@ -126,13 +128,25 @@ Agent 会先说明要做什么再动手；会话不可用时面板直接执行�
 帮我看看这台电脑为什么这么慢，把能清的缓存列出来
 ```
 
+**在输入框里自动补全**：在会话输入框里打字，停顿一下（默认 0.7 秒）：
+
+- 输入框上方出现一条提示：**AI · 建议的第一句 · Tab 补全 · 更多**；
+- 光标后面跟着一段**灰字**，标出将要补上的内容；
+- 按 **Tab** 采纳（官方 `/`、`@` 菜单开着时让路，Shift+Tab 永不接管）；
+- 点提示条上的「更多」展开**下拉列表**，↑↓ 选、Enter 采纳。
+
+空输入框时也给候选：结合**最近的对话**，猜你接下来想问什么。
+可选项在设置页的「AI 补全」页签里：推荐条数、分析模型、最少触发字数、
+触发延迟、上下文条数、最长输入、多行输入要不要补全、行内灰字、空输入提示。
+
 ## 关系
 
 - **DSH**：作为普通插件装进 profile。客户端半边是浏览器里的 IIFE 产物，Host 半边是 Node 里的 cordis 插件；两者都靠 `cordis.patch.yml` 的一行 insert 接入。
 - **取代** `dsh-axzo-theme` / `dsh-usage-query` / `dsh-plugin-expander` 三个插件。功能、数据路径、locale 命名空间、工具名、槽位 id 全部原样保留 —— 已接入的接口与主题设置接着用。
 - **依赖 DSH 官方能力**：已装清单走官方 `pluginManager.listBundles()`，安装动作走官方 `removeBundle` + `installBundle`（继承 profile 写锁、失败回滚、HMR 重载、构建脚本审批）。本包不自己碰 pnpm。
-- **数据落本机**：用量凭证在 `$DSH_HOME/dsh-usage-query/store.json`（0600），**永不发往浏览器**；主题偏好在 `localStorage` 的 `dsh-axzo-theme:*`。
+- **数据落本机**：用量凭证在 `$DSH_HOME/dsh-usage-query/store.json`（0600），**永不发往浏览器**；主题偏好在 `localStorage` 的 `dsh-axzo-theme:*`；补全的设置在 `$DSH_HOME/dsh-usage-aggregator/autocomplete.json`（0600）。
 - **安全边界**：路由默认只接受回环地址 + 同源，POST 要求 `application/json`。`plugin_update` 的 update 动作、`system_boost` 的 execute 动作都要求 danger-full-access。
+- **补全只碰输入框，不碰别人的东西**：候选由本 profile 已配置的模型分析（对话上下文 + 输入框里的字），不落盘、不外传；写回草稿走官方 `inputActions`，官方 placeholder 与编辑器 DOM 一律不改（行内灰字是**画在自己那一层**的叠加）。模型不可用时安静退成「没有建议」，绝不弹错误打断打字。
 - **清理分三类，代价不同的默认状态也不同**：**工具链缓存**（在运行时按本机实际装的工具现场发现：探测工具 → 问工具要自己的缓存目录 → 用工具官方的清理命令）默认全勾；**DSH 自己的数据**（回收站、旧格式日志、孤儿子代理会话、过期会话、已归档会话、投影缓存残留、旧附件、续期用的浏览器配置）里可重建/已删除的默认勾，**会删用户历史的不勾**；**进程与窗口**（占内存的应用与单个进程、高占 CPU 的任务、浏览器里非聚焦的窗口）里无损的（降优先级、结束崩掉的残留进程）默认勾，**会关程序/关窗口的不勾**。
 - **安全边界**：不用 sudo、不碰源码、不碰工作区 node_modules、不动系统目录；正在被运行中的进程占用的目录会自动跳过；结束进程前会复核 pid 现在的命令行（pid 会被回收复用）；DSH 自己的进程、系统进程、root 的进程、用户当前正在前台用的应用一律不碰。
 

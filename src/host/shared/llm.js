@@ -53,14 +53,29 @@ async function streamOnce(llm, options) {
     system: options.system ?? DEFAULT_SYSTEM_PROMPT,
     messages: options.messages,
     ...options.maxTokens === undefined ? {} : { maxTokens: options.maxTokens },
+    // 思考档位：调用方可以指定（补全这种「要快」的场景会挑最省力的那档）。
+    // 不传 = 用模型自己的默认档。传了模型不支持的档位，llm 服务会当场报错。
+    ...options.reasoningEffort === undefined ? {} : { reasoningEffort: options.reasoningEffort },
     ...options.signal === undefined ? {} : { signal: options.signal },
   });
   for await (const chunk of stream) {
     if (chunk.type === 'text-delta') deltas.push(chunk.text);
     else if (chunk.type === 'block-end' && chunk.block !== null && chunk.block !== undefined && chunk.block.type === 'text') blocks.push(chunk.block.text);
     else if (chunk.type === 'reasoning-delta') reasoning.push(chunk.text);
-    else if (chunk.type === 'finish' && chunk.reason.kind === 'error' || chunk.reason.kind === 'aborted') failure = chunk.reason.failure;
-    else if (chunk.type === 'finish' && chunk.reason.kind === 'max-tokens') failure = { message: 'max-tokens：输出被 maxOutputTokens 截断' };
+    // ⚠️ 这里必须把 finish 整个圈起来再读 reason.kind。
+    //   原来写成 `type==='finish' && reason.kind==='error' || reason.kind==='aborted'`，
+    //   而 `&&` 比 `||` 紧 —— 后半截没被 type 护住，于是**任何**非 finish 的块
+    //   （pi-ai 适配器在 finish 之前先吐的 usage 块就是这种）都会去读
+    //   `chunk.reason.kind`，而 chunk.reason 是 undefined → 当场抛
+    //   「Cannot read properties of undefined (reading 'kind')」。
+    //   后果：每一次模型调用都当场死掉，用量查询的分析一直在走规则兜底。
+    else if (chunk.type === 'finish') {
+      const reason = chunk.reason;
+      if (reason !== null && reason !== undefined) {
+        if (reason.kind === 'error' || reason.kind === 'aborted') failure = reason.failure;
+        else if (reason.kind === 'max-tokens') failure = { message: 'max-tokens：输出被 maxOutputTokens 截断' };
+      }
+    }
   }
   if (failure !== null && failure !== undefined) {
     throw new Error(`模型调用失败：${failure.message}${failure.status === undefined ? '' : `（HTTP ${failure.status}）`}`);

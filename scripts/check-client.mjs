@@ -66,11 +66,11 @@ const EXPECTED_DSW_COUNT = 26;
 const EXPECTED_AXZO_COUNT = 17;
 
 /**
- * 期望的三个**功能**locale 命名空间（保持各功能原值不变，改名会让新旧并存）。
+ * 期望的五个**功能**locale 命名空间（保持各功能原值不变，改名会让新旧并存）。
  * 聚合页自己还有一个命名空间（src/client/hub/i18n.js 的 NS），它放设置入口的
  * 标签，不需要 hubTab —— 见 HUB_NAMESPACE。
  */
-const EXPECTED_NAMESPACES = ['settings.axzoTheme', 'usage-query', 'pluginExpander', 'pcBoost'];
+const EXPECTED_NAMESPACES = ['settings.axzoTheme', 'usage-query', 'pluginExpander', 'pcBoost', 'pcAutocomplete'];
 
 /** 聚合页自己的命名空间（设置入口的标签在这里）。 */
 const HUB_NAMESPACE = 'dsh-usage-aggregator';
@@ -85,6 +85,9 @@ const EXPECTED_SLOTS = {
   'conversation.hero.brand.mark': { priority: -1 },
   // 小火箭浮层：挂在 root scope 的浮层槽上。
   'shell.overlay': { id: 'axzo-boost' },
+  // AI 自动补全：输入框上方的提示条 + 输入框卡片里的下拉列表与行内灰字。
+  'conversation.input.dock': { id: 'axzo-autocomplete-bar' },
+  'conversation.input.overlay': { id: 'axzo-autocomplete' },
 };
 
 /** 期望在 sidebar.footer.action 上注册的项：id → order。 */
@@ -492,7 +495,7 @@ const hubDict = dictionaries.get(HUB_NAMESPACE);
 if (hubDict === undefined) {
   bad(`聚合页的命名空间 '${HUB_NAMESPACE}' 没注册 —— 设置入口与页签标签没有出处`);
 } else {
-  for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander']) {
+  for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost', 'tabAutocomplete']) {
     const zhText = hubDict.zh ? hubDict.zh[key] : undefined;
     const enText = hubDict.en ? hubDict.en[key] : undefined;
     if (typeof zhText !== 'string' || zhText === '') bad(`聚合页 zh 字典缺 '${key}'`);
@@ -502,7 +505,7 @@ if (hubDict === undefined) {
 }
 
 const unexpected = [...dictionaries.keys()].filter((ns) => !EXPECTED_NAMESPACES.includes(ns) && ns !== HUB_NAMESPACE);
-if (unexpected.length === 0) ok(`命名空间总数正确（3 个功能 + 1 个聚合页）`);
+if (unexpected.length === 0) ok(`命名空间总数正确（5 个功能 + 1 个聚合页）`);
 else bad(`出现了多余的 locale 命名空间：${unexpected.join(', ')}`);
 
 /* ─────────────────── 报告 ─────────────────── */

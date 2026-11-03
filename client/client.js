@@ -118,7 +118,7 @@ var dshUsageAggregator = (function(exports) {
 	* locale 命名空间。**保持不变**：改名会让新旧命名空间并存（locale 服务按命名
 	* 空间存字典，旧的不注销就一直占着）。
 	*/
-	var NS$4 = "settings.axzoTheme";
+	var NS$5 = "settings.axzoTheme";
 	var STYLE_ID$2 = "dsh-axzo-theme-style";
 	var PANEL_STYLE_ID = "dsh-axzo-theme-panel-style";
 	/** localStorage key —— **保持不变**：改了用户已保存的主色 / 开关 / 品牌名全丢。 */
@@ -901,7 +901,7 @@ var dshUsageAggregator = (function(exports) {
 		};
 	}
 	// src/client/features/theme/i18n.js
-	var zh$4 = {
+	var zh$5 = {
 		tab: "AxzoTheme",
 		sectionPreset: "预设色板",
 		sectionColor: "主色微调",
@@ -963,7 +963,7 @@ var dshUsageAggregator = (function(exports) {
 		sbGrainLabel: "磨砂纹理",
 		fontLabel: "字体"
 	};
-	var en$4 = {
+	var en$5 = {
 		tab: "AxzoTheme",
 		sectionPreset: "Presets",
 		sectionColor: "Fine-tune",
@@ -1039,7 +1039,7 @@ var dshUsageAggregator = (function(exports) {
 	* 旧调用点全都只传 key，行为不变。
 	*/
 	function makeTranslator(locale) {
-		return makeTranslator$1(locale, NS$4, zh$4);
+		return makeTranslator$1(locale, NS$5, zh$5);
 	}
 	// src/client/features/theme/panel.js
 	function sliderTrack(field, primary) {
@@ -2293,10 +2293,10 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/theme/index.js
 	var theme_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$3,
-		apply: () => apply$4,
-		dictionaries: () => dictionaries$3,
-		meta: () => meta$3
+		HubView: () => HubView$4,
+		apply: () => apply$5,
+		dictionaries: () => dictionaries$4,
+		meta: () => meta$4
 	});
 	/**
 	* 功能标识。
@@ -2309,9 +2309,9 @@ var dshUsageAggregator = (function(exports) {
 	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
 	* 页签上会显示裸的 key 名。
 	*/
-	var meta$3 = {
+	var meta$4 = {
 		id: "theme",
-		namespace: NS$4,
+		namespace: NS$5,
 		hubOrder: 10,
 		hubTabKey: "tabTheme"
 	};
@@ -2319,9 +2319,9 @@ var dshUsageAggregator = (function(exports) {
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
 	*/
-	var dictionaries$3 = {
-		zh: zh$4,
-		en: en$4
+	var dictionaries$4 = {
+		zh: zh$5,
+		en: en$5
 	};
 	/**
 	* 命名空间是否已被注册。
@@ -2355,7 +2355,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {(key: string, vars?: object) => string} t 本功能命名空间的 translator。
 	*/
-	function apply$4(ctx, t) {
+	function apply$5(ctx, t) {
 		ctx.effect(function() {
 			startOsPrefs();
 			return function() {
@@ -2466,7 +2466,7 @@ var dshUsageAggregator = (function(exports) {
 			if (namespaceRegistered(ctx.locale, "settings.axzoTheme")) return void 0;
 			var dispose = null;
 			try {
-				dispose = ctx.locale.register(NS$4, dictionaries$3);
+				dispose = ctx.locale.register(NS$5, dictionaries$4);
 			} catch (err) {
 				console.warn("[" + PLUGIN_ID$1 + "] locale register failed", err);
 			}
@@ -2485,7 +2485,7 @@ var dshUsageAggregator = (function(exports) {
 	* 聚合页用 h(View, { t, ctx }) 渲染，而原 Panel 收到的正是 { t, ctx } ——
 	* 原样透传即可。
 	*/
-	var HubView$3 = (props) => h(Panel$1, props);
+	var HubView$4 = (props) => h(Panel$1, props);
 	// src/client/features/usage/constants.js
 	/**
 	* locale 命名空间。
@@ -2493,7 +2493,7 @@ var dshUsageAggregator = (function(exports) {
 	* ⚠️ 保持 'usage-query' 不变 —— 改名会让「已注册的旧命名空间」与「新命名空间」并存，
 	* 字典被注册两次，切换语言时会出现两套文案。
 	*/
-	var NS$3 = "usage-query";
+	var NS$4 = "usage-query";
 	/**
 	* 样式元素的 data 属性值。
 	*
@@ -2508,7 +2508,7 @@ var dshUsageAggregator = (function(exports) {
 	*/
 	var PANEL_ID = "usage-query";
 	// src/client/features/usage/i18n.js
-	var zh$3 = {
+	var zh$4 = {
 		tab: "用量查询",
 		title: "用量查询",
 		emptyTitle: "还没有接入任何接口",
@@ -2618,7 +2618,7 @@ var dshUsageAggregator = (function(exports) {
 		chipUnpin: "取消顶部显示",
 		autoSoon: "即将"
 	};
-	var en$3 = {
+	var en$4 = {
 		tab: "Usage",
 		title: "Usage query",
 		emptyTitle: "No provider yet",
@@ -2771,6 +2771,8 @@ var dshUsageAggregator = (function(exports) {
 	var EXPANDER_ENDPOINT = ENDPOINT_BASE + "/expander";
 	/** 电脑加速与清理的路由前缀。 */
 	var BOOST_ENDPOINT = ENDPOINT_BASE + "/boost";
+	/** AI 自动补全的路由前缀。 */
+	var AUTOCOMPLETE_ENDPOINT = ENDPOINT_BASE + "/autocomplete";
 	// src/client/features/usage/api.js
 	/**
 	* 用量查询的全部接口。
@@ -2789,7 +2791,7 @@ var dshUsageAggregator = (function(exports) {
 	* | setAnalysisModel | POST /usage/analysis-model |
 	* | raw | GET  /usage/raw?id=… |
 	*/
-	var api$2 = {
+	var api$3 = {
 		state: function() {
 			return callApi("GET", USAGE_ENDPOINT);
 		},
@@ -3242,7 +3244,7 @@ var dshUsageAggregator = (function(exports) {
 			setStatus(t("fieldOrderSaving"));
 			setTone("idle");
 			setRows(next);
-			api$2.setFieldOrder(provider.id, next.map(function(row) {
+			api$3.setFieldOrder(provider.id, next.map(function(row) {
 				return row.path;
 			})).then(function() {
 				setStatus(t("fieldOrderSaved"));
@@ -3260,7 +3262,7 @@ var dshUsageAggregator = (function(exports) {
 		var reset = function() {
 			setStatus(t("fieldOrderSaving"));
 			setTone("idle");
-			api$2.setFieldOrder(provider.id, []).then(function() {
+			api$3.setFieldOrder(provider.id, []).then(function() {
 				setStatus(t("fieldOrderSaved"));
 				setTone("ok");
 				return props.onChanged();
@@ -3381,7 +3383,7 @@ var dshUsageAggregator = (function(exports) {
 			});
 		})();
 		var loadRaw = function() {
-			api$2.raw(provider.id).then(function(result) {
+			api$3.raw(provider.id).then(function(result) {
 				setRawText(typeof result.text === "string" ? result.text : JSON.stringify(result.data, null, 2));
 			}).catch(function(error) {
 				setRawError(String(error.message || error));
@@ -3552,7 +3554,7 @@ var dshUsageAggregator = (function(exports) {
 				data: image.data,
 				mediaType: image.mediaType
 			};
-			api$2.importRequest(payload).then(function(result) {
+			api$3.importRequest(payload).then(function(result) {
 				setBusy(false);
 				setPhase("");
 				setText("");
@@ -3639,7 +3641,7 @@ var dshUsageAggregator = (function(exports) {
 		var wrapRef = useRef(null);
 		var panelRef = useRef(null);
 		var load = function() {
-			return api$2.models().then(function(next) {
+			return api$3.models().then(function(next) {
 				setData(next);
 			}).catch(function(failure) {
 				setError(String(failure.message || failure));
@@ -3686,7 +3688,7 @@ var dshUsageAggregator = (function(exports) {
 		var apply = function(providerId, modelId) {
 			setBusy(true);
 			setError("");
-			api$2.setAnalysisModel(providerId, modelId).then(function(result) {
+			api$3.setAnalysisModel(providerId, modelId).then(function(result) {
 				setBusy(false);
 				setOpen(false);
 				setData(function(prev) {
@@ -3791,7 +3793,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-11-02 10:04:33";
+		return "2026-11-03 18:34:18";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -3809,7 +3811,7 @@ var dshUsageAggregator = (function(exports) {
 		var [busy, setBusy] = useState(false);
 		var [message, setMessage] = useState("");
 		var load = function() {
-			return api$2.state().then(function(next) {
+			return api$3.state().then(function(next) {
 				setState(next);
 				setError("");
 				setSelectedId(function(current) {
@@ -3856,7 +3858,7 @@ var dshUsageAggregator = (function(exports) {
 			setBusy(true);
 			setMessage("");
 			Promise.all(queryable.map(function(item) {
-				return api$2.refresh(item.id).catch(function() {
+				return api$3.refresh(item.id).catch(function() {
 					return null;
 				});
 			})).then(function() {
@@ -3917,16 +3919,16 @@ var dshUsageAggregator = (function(exports) {
 			busy,
 			onReload: load,
 			onRefresh: function(id) {
-				run(api$2.refresh(id));
+				run(api$3.refresh(id));
 			},
 			onRenew: function(id) {
-				run(api$2.renew(id, true), t("renewDone"));
+				run(api$3.renew(id, true), t("renewDone"));
 			},
 			onReanalyze: function(id, image) {
-				run(api$2.reanalyze(id, image === void 0 ? void 0 : image));
+				run(api$3.reanalyze(id, image === void 0 ? void 0 : image));
 			},
 			onRemove: function(id) {
-				run(api$2.remove(id));
+				run(api$3.remove(id));
 			},
 			onUpdate: function(provider) {
 				setPreset({
@@ -3938,7 +3940,7 @@ var dshUsageAggregator = (function(exports) {
 		}), h("p", { className: "duq-foot" }, "数据与登录态只存在本机（$DSH_HOME/dsh-usage-query/store.json，仅本人可读）。" + (state === null || state.autoRefresh === void 0 || state.autoRefresh.enabled === false ? "" : "自动查询 " + intervalText(state.autoRefresh.intervalSeconds, t) + "一轮。") + (BUILD_AT$1 === "" ? "" : "　客户端构建于 " + BUILD_AT$1 + "。")));
 	}
 	// src/client/features/usage/styles.js
-	var CSS$3 = [
+	var CSS$4 = [
 		".duq-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary,#111827);}",
 		".duq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".duq-headtext{flex:1 1 auto;min-width:0;}",
@@ -4119,10 +4121,10 @@ var dshUsageAggregator = (function(exports) {
 	* 设置页带一份，会话头芯片就会在「设置没打开」时以裸 DOM 出现。同一份 CSS
 	* 重复出现是幂等的，用 data 属性标记而不是 id，避免重复 id。
 	*/
-	function Styles$3() {
+	function Styles$4() {
 		return h("style", {
 			"data-dsh-usage-query": STYLE_ID$1,
-			dangerouslySetInnerHTML: { __html: CSS$3 }
+			dangerouslySetInnerHTML: { __html: CSS$4 }
 		});
 	}
 	/**
@@ -4132,7 +4134,7 @@ var dshUsageAggregator = (function(exports) {
 	* 一处打开时，另一处也得有样式可用。
 	*/
 	function PanelShell(props) {
-		return h(React.Fragment, null, h(Styles$3, null), h(Panel, props));
+		return h(React.Fragment, null, h(Styles$4, null), h(Panel, props));
 	}
 	// src/client/features/usage/hover.js
 	/**
@@ -4446,7 +4448,7 @@ var dshUsageAggregator = (function(exports) {
 		});
 		var load = function() {
 			loadedAt.current = Date.now();
-			return api$2.state().then(function(next) {
+			return api$3.state().then(function(next) {
 				setState(next);
 			}).catch(function() {});
 		};
@@ -4567,7 +4569,7 @@ var dshUsageAggregator = (function(exports) {
 		var chipName = first !== null && providers.length > 1 && chipProvider !== null ? clipText(chipProvider.label, 12) : "";
 		var pickChip = function(id) {
 			var next = chipId === id ? "" : id;
-			api$2.setChip(next).then(load).catch(function() {
+			api$3.setChip(next).then(load).catch(function() {
 				return load();
 			});
 		};
@@ -4579,7 +4581,7 @@ var dshUsageAggregator = (function(exports) {
 			setNote("");
 			setPinned(true);
 			livenessRef.current.setPinned(true);
-			api$2.refresh(id).then(function() {
+			api$3.refresh(id).then(function() {
 				return load();
 			}).catch(function(error) {
 				setNote(failText(error));
@@ -4593,7 +4595,7 @@ var dshUsageAggregator = (function(exports) {
 			setNote("");
 			setPinned(true);
 			livenessRef.current.setPinned(true);
-			api$2.renew(id, true).then(function(result) {
+			api$3.renew(id, true).then(function(result) {
 				if (result !== null && result.provider !== void 0) setState(function(prev) {
 					if (prev === null) return prev;
 					return {
@@ -4621,7 +4623,7 @@ var dshUsageAggregator = (function(exports) {
 			setPinned(true);
 			livenessRef.current.setPinned(true);
 			Promise.all(queryable.map(function(item) {
-				return api$2.refresh(item.id).catch(function() {
+				return api$3.refresh(item.id).catch(function() {
 					return null;
 				});
 			})).then(function() {
@@ -4633,7 +4635,7 @@ var dshUsageAggregator = (function(exports) {
 			className: "duq-quick",
 			ref: containerRef,
 			onMouseEnter: openNow
-		}, h(Styles$3, null), h("button", {
+		}, h(Styles$4, null), h("button", {
 			type: "button",
 			className: "duq-quick-trigger" + (open ? " is-open" : "") + (first === null ? " is-idle" : ""),
 			title: chipProvider === null ? t("quickTitle") : t("quickTitle") + "：" + chipProvider.label + " · " + (first.detail === "" ? chipValue : first.detail),
@@ -4675,11 +4677,11 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/usage/index.js
 	var usage_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$2,
-		__ui: () => __ui$2,
-		apply: () => apply$3,
-		dictionaries: () => dictionaries$2,
-		meta: () => meta$2
+		HubView: () => HubView$3,
+		__ui: () => __ui$3,
+		apply: () => apply$4,
+		dictionaries: () => dictionaries$3,
+		meta: () => meta$3
 	});
 	/**
 	* 功能元信息。
@@ -4690,16 +4692,16 @@ var dshUsageAggregator = (function(exports) {
 	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
 	* 页签上会显示裸的 key 名。
 	*/
-	var meta$2 = {
+	var meta$3 = {
 		id: "usage",
 		namespace: "usage-query",
 		hubOrder: 20,
 		hubTabKey: "tabUsage"
 	};
 	/** 完整字典。 */
-	var dictionaries$2 = {
-		zh: zh$3,
-		en: en$3
+	var dictionaries$3 = {
+		zh: zh$4,
+		en: en$4
 	};
 	/**
 	* 装配本功能。
@@ -4714,14 +4716,14 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator。
 	*/
-	function apply$3(ctx, t) {
+	function apply$4(ctx, t) {
 		ctx.slots.inject("conversation.session.header.utilities", function() {
 			return ctx.slots.register({
 				name: "conversation.session.header.utilities",
 				id: PANEL_ID,
 				order: 30,
 				label: t("tab"),
-				locale: NS$3,
+				locale: NS$4,
 				inject: function() {
 					return { t };
 				}
@@ -4740,7 +4742,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function, ctx: object}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function HubView$2(props) {
+	function HubView$3(props) {
 		return h(PanelShell, {
 			t: props.t,
 			ctx: props.ctx
@@ -4751,7 +4753,7 @@ var dshUsageAggregator = (function(exports) {
 	* 浏览器的环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类
 	* 只在页面上才暴露的问题。运行时不受影响（聚合入口只认 apply / meta / …）。
 	*/
-	var __ui$2 = {
+	var __ui$3 = {
 		Panel,
 		PanelShell,
 		ProviderDetail,
@@ -4773,16 +4775,16 @@ var dshUsageAggregator = (function(exports) {
 		isInsideUnion,
 		createHoverLiveness,
 		UsageIcon,
-		zh: zh$3,
-		en: en$3
+		zh: zh$4,
+		en: en$4
 	};
 	// src/client/features/expander/index.js
 	var expander_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$1,
-		__ui: () => __ui$1,
-		apply: () => apply$2,
-		dictionaries: () => dictionaries$1,
-		meta: () => meta$1
+		HubView: () => HubView$2,
+		__ui: () => __ui$2,
+		apply: () => apply$3,
+		dictionaries: () => dictionaries$2,
+		meta: () => meta$2
 	});
 	/**
 	* locale 命名空间。
@@ -4790,10 +4792,10 @@ var dshUsageAggregator = (function(exports) {
 	* ⚠️ 保持 'pluginExpander' 不变：改名会让新旧命名空间并存
 	* （locale 服务按命名空间存字典，旧的不注销就一直占着）。
 	*/
-	var NS$2 = "pluginExpander";
+	var NS$3 = "pluginExpander";
 	/** <style> 元素的 data-* 标记值。 */
 	var STYLE_ID = "dsh-plugin-expander-style";
-	var zh$2 = {
+	var zh$3 = {
 		tab: "更新",
 		title: "插件更新",
 		intro: "检测当前 profile 已装插件的新版本：npm 包查注册表，git 包比远端仓库的 HEAD。更新走 DSH 官方插件管理器的「卸载 + 安装」两步，完成后立即生效。",
@@ -4829,7 +4831,7 @@ var dshUsageAggregator = (function(exports) {
 		current: "当前：{name}",
 		updateAllRunning: "正在更新 {count} 个插件…"
 	};
-	var en$2 = {
+	var en$3 = {
 		tab: "Updates",
 		title: "Plugin updates",
 		intro: "Checks the plugins installed in this profile for newer releases: npm packages against the registry, git packages against the remote HEAD. Updates reuse the DSH plugin manager's remove-then-install flow and take effect immediately.",
@@ -4875,9 +4877,9 @@ var dshUsageAggregator = (function(exports) {
 	* hubDefault true —— 本页签是聚合页**默认选中**的那一个：打开设置就先看插件更新
 	* （这页要做的是自动检测），而不是先落在主题上。
 	*/
-	var meta$1 = {
+	var meta$2 = {
 		id: "expander",
-		namespace: NS$2,
+		namespace: NS$3,
 		hubOrder: 30,
 		hubTabKey: "tabExpander",
 		hubDefault: true
@@ -4886,9 +4888,9 @@ var dshUsageAggregator = (function(exports) {
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
 	*/
-	var dictionaries$1 = {
-		zh: zh$2,
-		en: en$2
+	var dictionaries$2 = {
+		zh: zh$3,
+		en: en$3
 	};
 	/**
 	* 兜底翻译：直接用内置字典（zh 是基准；en 缺 key 时也回落到这里）。
@@ -4898,12 +4900,12 @@ var dshUsageAggregator = (function(exports) {
 	* @returns {string} 文案。
 	*/
 	function fallbackTranslate(key, vars) {
-		const text = zh$2[key] !== void 0 ? zh$2[key] : key;
+		const text = zh$3[key] !== void 0 ? zh$3[key] : key;
 		return vars === void 0 ? text : text.replace(/\{(\w+)\}/g, function(match, name) {
 			return vars[name] === void 0 ? match : String(vars[name]);
 		});
 	}
-	var api$1 = {
+	var api$2 = {
 		state: function(refresh) {
 			return callApi("GET", EXPANDER_ENDPOINT + "/state" + (refresh === true ? "?refresh=1" : ""));
 		},
@@ -4911,7 +4913,7 @@ var dshUsageAggregator = (function(exports) {
 			return callApi("POST", EXPANDER_ENDPOINT + "/update", payload);
 		}
 	};
-	var CSS$2 = [
+	var CSS$3 = [
 		".dpe-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
 		".dpe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".dpe-headtext{flex:1 1 auto;min-width:0;}",
@@ -4963,10 +4965,10 @@ var dshUsageAggregator = (function(exports) {
 	*
 	* @returns {object} React 元素。
 	*/
-	function Styles$2() {
+	function Styles$3() {
 		return h("style", {
 			"data-dsh-plugin-expander": STYLE_ID,
-			dangerouslySetInnerHTML: { __html: CSS$2 }
+			dangerouslySetInnerHTML: { __html: CSS$3 }
 		});
 	}
 	/**
@@ -5082,7 +5084,7 @@ var dshUsageAggregator = (function(exports) {
 		* @returns {Promise<void>} 完成。
 		*/
 		const load = useCallback(function(refresh) {
-			return api$1.state(refresh === true).then(function(next) {
+			return api$2.state(refresh === true).then(function(next) {
 				setState(next);
 				setError("");
 			}).catch(function(failure) {
@@ -5119,7 +5121,7 @@ var dshUsageAggregator = (function(exports) {
 			setPhase("updating");
 			setError("");
 			setMessage("");
-			api$1.update(payload).catch(function(failure) {
+			api$2.update(payload).catch(function(failure) {
 				expectedRef.current = 0;
 				startedAtRef.current = 0;
 				setPhase("idle");
@@ -5185,7 +5187,7 @@ var dshUsageAggregator = (function(exports) {
 				});
 			});
 		}, [load]);
-		return h("div", { className: "dpe-root" }, h(Styles$2, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
+		return h("div", { className: "dpe-root" }, h(Styles$3, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
 			type: "button",
 			className: "dpe-btn is-quiet",
 			disabled: busy === true,
@@ -5245,8 +5247,8 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator（聚合入口传进来）。
 	*/
-	function apply$2(ctx, t) {
-		const translator = typeof t === "function" ? t : makeTranslator$1(ctx.locale, NS$2, zh$2);
+	function apply$3(ctx, t) {
+		const translator = typeof t === "function" ? t : makeTranslator$1(ctx.locale, NS$3, zh$3);
 		ctx.slots.inject("plugins.tab", function() {
 			return ctx.slots.register({
 				name: "plugins.tab",
@@ -5255,7 +5257,7 @@ var dshUsageAggregator = (function(exports) {
 				label: function() {
 					return translator("tab");
 				},
-				locale: NS$2,
+				locale: NS$3,
 				inject: function() {
 					return { t: translator };
 				}
@@ -5274,29 +5276,29 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function, ctx: object}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function HubView$1(props) {
+	function HubView$2(props) {
 		const t = typeof props.t === "function" ? props.t : fallbackTranslate;
-		return h(React.Fragment, null, h(Styles$2, null), h(UpdatesTab, { t }));
+		return h(React.Fragment, null, h(Styles$3, null), h(UpdatesTab, { t }));
 	}
 	/**
 	* 离线渲染自检用（scripts/render-check.mjs）：把组件暴露出来，好在没有浏览器的
 	* 环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在页面上
 	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
 	*/
-	var __ui$1 = {
+	var __ui$2 = {
 		UpdatesTab,
 		PackageRow,
-		Styles: Styles$2,
+		Styles: Styles$3,
 		statusText,
 		kindText,
 		fallbackTranslate,
-		zh: zh$2,
-		en: en$2
+		zh: zh$3,
+		en: en$3
 	};
 	// src/client/features/boost/i18n.js
 	/** locale 命名空间。新功能，没有历史包袱，取一个不会与别的包撞的名字。 */
-	var NS$1 = "pcBoost";
-	var zh$1 = {
+	var NS$2 = "pcBoost";
+	var zh$2 = {
 		entry: "小火箭",
 		entryTitle: "电脑加速与清理",
 		title: "电脑加速与清理",
@@ -5349,7 +5351,7 @@ var dshUsageAggregator = (function(exports) {
 		tab: "加速",
 		hubIntro: "右下角的小火箭是同一份体检结果：这里能看到完整清单与结论。"
 	};
-	var en$1 = {
+	var en$2 = {
 		entry: "Rocket",
 		entryTitle: "Speed up & clean up",
 		title: "Speed up & clean up",
@@ -5404,7 +5406,7 @@ var dshUsageAggregator = (function(exports) {
 	};
 	// src/client/features/boost/view.js
 	/** 与 Host 侧同一套路径（src/client/shared/constants.js）。 */
-	var api = {
+	var api$1 = {
 		scan: (refresh) => callApi("GET", `${BOOST_ENDPOINT}/scan${refresh === true ? "?refresh=1" : ""}`),
 		status: () => callApi("GET", `${BOOST_ENDPOINT}/status`),
 		execute: (items) => callApi("POST", `${BOOST_ENDPOINT}/execute`, { items }),
@@ -5470,7 +5472,7 @@ var dshUsageAggregator = (function(exports) {
 		const [error, setError] = useState("");
 		const start = useCallback(function(refresh) {
 			setError("");
-			return api.scan(refresh === true).then(function(next) {
+			return api$1.scan(refresh === true).then(function(next) {
 				setJob(next);
 				return next;
 			}).catch(function(failure) {
@@ -5482,7 +5484,7 @@ var dshUsageAggregator = (function(exports) {
 		useEffect(function() {
 			if (!running) return void 0;
 			const timer = window.setInterval(function() {
-				api.status().then(function(next) {
+				api$1.status().then(function(next) {
 					if (next !== null && next !== void 0) setJob(next);
 				}).catch(function() {});
 			}, 1e3);
@@ -5650,7 +5652,7 @@ var dshUsageAggregator = (function(exports) {
 						total: selected.length,
 						label: ""
 					});
-					api.execute(selected).then(function() {
+					api$1.execute(selected).then(function() {
 						pollExecute();
 					}).catch(function(failure) {
 						setPhase("idle");
@@ -5665,7 +5667,7 @@ var dshUsageAggregator = (function(exports) {
 				*/
 				function pollExecute() {
 					window.setTimeout(function() {
-						api.executeStatus().then(function(state) {
+						api$1.executeStatus().then(function(state) {
 							if (state === null || state === void 0) {
 								setPhase("done");
 								setTone("is-ok");
@@ -5893,7 +5895,7 @@ var dshUsageAggregator = (function(exports) {
 	};
 	// src/client/features/boost/styles.js
 	/** 样式表正文。 */
-	var CSS$1 = [
+	var CSS$2 = [
 		".dsh-boost{position:fixed;right:24px;bottom:24px;z-index:2147483000;pointer-events:auto;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
 		".dsh-boost-launch{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease,background .15s ease;user-select:none;touch-action:none;-webkit-user-select:none;}",
 		".dsh-boost-launch:hover{background:var(--dsw-alias-interactive-bg-hover);box-shadow:0 8px 22px rgba(0,0,0,.24);}",
@@ -5965,10 +5967,10 @@ var dshUsageAggregator = (function(exports) {
 	*
 	* @returns {object} React 元素。
 	*/
-	function Styles$1() {
+	function Styles$2() {
 		return h("style", {
 			"data-dsh-boost": "dsh-boost-style",
-			dangerouslySetInnerHTML: { __html: CSS$1 }
+			dangerouslySetInnerHTML: { __html: CSS$2 }
 		});
 	}
 	// src/client/features/boost/panel.js
@@ -6001,7 +6003,7 @@ var dshUsageAggregator = (function(exports) {
 		}, 0);
 		const analysis = job?.analysis ?? null;
 		const ageLabel = scanAgeLabel(t, job);
-		return h("div", { className: "dsh-boost-hub" }, h(Styles$1, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null, h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
+		return h("div", { className: "dsh-boost-hub" }, h(Styles$2, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null, h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
 			type: "button",
 			className: "dsh-boost-btn is-quiet",
 			onClick: function() {
@@ -6290,7 +6292,7 @@ var dshUsageAggregator = (function(exports) {
 		return h("div", {
 			className: "dsh-boost" + (dragging ? " is-dragging" : "") + (high ? " is-high" : ""),
 			style
-		}, h(Styles$1, null), open ? h("div", {
+		}, h(Styles$2, null), open ? h("div", {
 			className: "dsh-boost-panel",
 			role: "dialog",
 			"aria-label": t("title")
@@ -6349,11 +6351,11 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/boost/index.js
 	var boost_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView,
-		__ui: () => __ui,
-		apply: () => apply$1,
-		dictionaries: () => dictionaries,
-		meta: () => meta
+		HubView: () => HubView$1,
+		__ui: () => __ui$1,
+		apply: () => apply$2,
+		dictionaries: () => dictionaries$1,
+		meta: () => meta$1
 	});
 	/**
 	* 功能标识。
@@ -6363,18 +6365,18 @@ var dshUsageAggregator = (function(exports) {
 	* hubTabKey 'tabBoost' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
 	* 字典里（src/client/hub/i18n.js）。
 	*/
-	var meta = {
+	var meta$1 = {
 		id: "boost",
-		namespace: NS$1,
+		namespace: NS$2,
 		hubOrder: 40,
 		hubTabKey: "tabBoost"
 	};
 	/**
 	* 完整字典。聚合入口拿它注册 locale 命名空间。
 	*/
-	var dictionaries = {
-		zh: zh$1,
-		en: en$1
+	var dictionaries$1 = {
+		zh: zh$2,
+		en: en$2
 	};
 	/**
 	* 装配本功能。
@@ -6382,14 +6384,14 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {(key: string, vars?: object) => string} t 本功能命名空间的 translator。
 	*/
-	function apply$1(ctx, t) {
-		const translator = typeof t === "function" ? t : (key) => zh$1[key] !== void 0 ? zh$1[key] : key;
+	function apply$2(ctx, t) {
+		const translator = typeof t === "function" ? t : (key) => zh$2[key] !== void 0 ? zh$2[key] : key;
 		ctx.slots.inject("shell.overlay", function() {
 			return ctx.slots.register({
 				name: "shell.overlay",
 				id: "axzo-boost",
 				order: 30,
-				locale: NS$1
+				locale: NS$2
 			}, function(slotProps) {
 				return h(BoostWidget, {
 					t: translator,
@@ -6411,18 +6413,1169 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	var HubView = (props) => h(BoostPanel, props);
+	var HubView$1 = (props) => h(BoostPanel, props);
 	/**
 	* 离线渲染自检用（scripts/ui-check-boost.mjs）：把组件暴露出来，好在没有浏览器的
 	* 环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在页面上
 	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
 	*/
-	var __ui = {
+	var __ui$1 = {
 		BoostWidget,
 		BoostPanel,
 		DiagnosisBlock,
 		ItemList,
 		useHandoff,
+		zh: zh$2,
+		en: en$2
+	};
+	// src/client/features/autocomplete/i18n.js
+	/** locale 命名空间。 */
+	var NS$1 = "pcAutocomplete";
+	/** 中文（基准字典）。 */
+	var zh$1 = {
+		tab: "AI 补全",
+		title: "AI 自动补全",
+		intro: "在会话输入框里自动补全：打字停顿后由模型给出候选，按 Tab 采纳第一条，下拉列表里可以换其他候选。",
+		sectionSuggest: "建议",
+		sectionTrigger: "触发",
+		sectionDisplay: "显示",
+		enabled: "启用自动补全",
+		enabledHint: "关掉后输入框里不再出现补全提示，也不会再调用模型。",
+		maxSuggestions: "推荐条数",
+		maxSuggestionsHint: "下拉列表里最多给几条（1–5）。",
+		analysisModel: "分析模型",
+		analysisModelHint: "分析用的模型。留空表示用插件配置里的默认模型。",
+		analysisMissing: "未配置",
+		analysisDefault: "默认",
+		minChars: "最少字数",
+		minCharsHint: "输入少于这么多个字时不触发补全（省一次模型调用）。",
+		debounce: "触发延迟",
+		debounceHint: "输入停顿多少毫秒后才去问模型。",
+		contextMessages: "上下文条数",
+		contextMessagesHint: "把最近几条对话一起给模型参考（0 = 不带，只看输入框）。",
+		maxInputChars: "最长输入",
+		maxInputCharsHint: "只分析输入框里的前 N 个字符。",
+		allowMultiline: "多行输入也补全",
+		allowMultilineHint: "关掉后，输入框里有换行时不给补全。",
+		inlineHint: "行内灰字",
+		inlineHintHint: "在光标后面用灰字显示待补全的片段（量不到光标位置时自动退成提示条）。",
+		placeholderHint: "空输入时给提示",
+		placeholderHintHint: "输入框为空时给出「你可能想问」的几条候选。",
+		save: "保存设置",
+		saved: "已保存",
+		saveFailed: "保存失败：{error}",
+		loadFailed: "读设置失败：{error}",
+		foot: "补全的候选由本地模型分析产生，不会离开这台机器；插件自己不存对话内容。",
+		idle: "AI 补全已开启",
+		thinking: "正在想…",
+		hintTab: "Tab 补全",
+		hintMore: "更多",
+		dropdownTitle: "AI 建议",
+		dropdownEmpty: "暂时没有建议",
+		dropdownHint: "↑↓ 选择 · Enter 采纳 · Tab 采纳当前 · Esc 关闭",
+		close: "关闭建议",
+		ghostLabel: "补全"
+	};
+	/** 英文。 */
+	var en$1 = {
+		tab: "AI Complete",
+		title: "AI autocomplete",
+		intro: "Autocomplete in the conversation composer: the model proposes candidates after you pause typing, Tab accepts the first one, and the dropdown offers the others.",
+		sectionSuggest: "Suggestions",
+		sectionTrigger: "Trigger",
+		sectionDisplay: "Display",
+		enabled: "Enable autocomplete",
+		enabledHint: "Off: the composer shows no completion hints and no model call is made.",
+		maxSuggestions: "Number of suggestions",
+		maxSuggestionsHint: "How many candidates the dropdown offers (1–5).",
+		analysisModel: "Analysis model",
+		analysisModelHint: "The model used for the analysis. Leave empty to use the plugin default.",
+		analysisMissing: "Not configured",
+		analysisDefault: "Default",
+		minChars: "Minimum characters",
+		minCharsHint: "Below this many characters no completion is requested (saves a model call).",
+		debounce: "Trigger delay",
+		debounceHint: "How long typing must pause before the model is asked.",
+		contextMessages: "Context messages",
+		contextMessagesHint: "How many recent conversation turns to show the model (0 = none).",
+		maxInputChars: "Maximum input",
+		maxInputCharsHint: "Only the first N characters of the draft are analyzed.",
+		allowMultiline: "Complete multi-line drafts",
+		allowMultilineHint: "Off: drafts containing a line break get no completion.",
+		inlineHint: "Inline ghost text",
+		inlineHintHint: "Show the pending fragment as grey text after the caret (falls back to the hint bar when the caret cannot be located).",
+		placeholderHint: "Suggest while empty",
+		placeholderHintHint: "Offer a few \"you might ask\" candidates when the composer is empty.",
+		save: "Save settings",
+		saved: "Saved",
+		saveFailed: "Save failed: {error}",
+		loadFailed: "Could not read the settings: {error}",
+		foot: "Candidates come from a local model and never leave this machine; the plugin stores no conversation content.",
+		idle: "AI completion on",
+		thinking: "Thinking…",
+		hintTab: "Tab to complete",
+		hintMore: "More",
+		dropdownTitle: "AI suggestions",
+		dropdownEmpty: "No suggestions yet",
+		dropdownHint: "↑↓ to pick · Enter to accept · Tab accepts the current one · Esc closes",
+		close: "Dismiss suggestions",
+		ghostLabel: "complete"
+	};
+	// src/client/features/autocomplete/api.js
+	var api = {
+		/** 读设置。 */
+		settings: function() {
+			return callApi("GET", AUTOCOMPLETE_ENDPOINT + "/settings");
+		},
+		/** 保存设置（只传要改的字段）。 */
+		saveSettings: function(patch) {
+			return callApi("POST", AUTOCOMPLETE_ENDPOINT + "/settings/save", patch);
+		},
+		/** 可用的 provider / model 清单。 */
+		models: function() {
+			return callApi("GET", AUTOCOMPLETE_ENDPOINT + "/models");
+		},
+		/**
+		* 要候选。
+		*
+		* @param {{sessionId: string, draft: string, context: Array<object>, limit: number}} payload 请求体。
+		* @returns {Promise<object>} { ok, suggestions, source }。
+		*/
+		suggest: function(payload) {
+			return callApi("POST", AUTOCOMPLETE_ENDPOINT + "/suggest", payload);
+		}
+	};
+	/**
+	* 求「插在光标处的那一段」。
+	*
+	* 模型给的是**一句完整的话**（"帮我分析这段代码的性能瓶颈"），而用户已经打了
+	* 半句（"帮我分析"）。按 Tab 时不能把整句再插一遍 —— 那会变成
+	* "帮我分析帮我分析这段代码的性能瓶颈"。所以这里找出「草稿结尾」与「候选开头」
+	* 的最长重叠，把重叠之后的部分作为要插入的片段。
+	*
+	* 没有重叠时返回空串：**不自动插**。这时候候选与用户写的不是同一条句子，
+	* 硬插只会得到一句怪话；用户点选候选时再整句替换。
+	*
+	* @param {string} draft 当前草稿。
+	* @param {string} suggestion 候选（完整的一句话）。
+	* @returns {string} 要插进输入框的片段（空串 = 不该自动插）。
+	*/
+	function completionSuffix(draft, suggestion) {
+		if (typeof suggestion !== "string") return "";
+		const text = suggestion.trim();
+		if (text === "") return "";
+		if (typeof draft !== "string" || draft.trim() === "") return text;
+		const lines = draft.split("\n");
+		const tail = lines[lines.length - 1];
+		const max = Math.min(tail.length, text.length);
+		for (let size = max; size > 0; size -= 1) if (tail.slice(tail.length - size) === text.slice(0, size)) return text.slice(size);
+		return "";
+	}
+	/**
+	* 从内容块里摘出纯文本。
+	*
+	* 内容块是模型的 ContentBlock（text / image 等）；这里只取 text，其余丢掉。
+	*
+	* @param {unknown} blocks 内容块数组。
+	* @returns {string} 文本（可能是空串）。
+	*/
+	function textFromBlocks(blocks) {
+		if (!Array.isArray(blocks)) return "";
+		const parts = [];
+		for (const block of blocks) {
+			if (block === null || typeof block !== "object") continue;
+			if (block.kind !== "text") continue;
+			if (typeof block.text !== "string") continue;
+			const text = block.text.trim();
+			if (text !== "") parts.push(text);
+		}
+		return parts.join("\n");
+	}
+	/**
+	* 从 Chat 快照里摘最近几条对话。
+	*
+	* Chat 的节点形状：node.kind 是渲染器种类（user / steering / assistant-step …），
+	* 载荷在 node.data 里（user 的 data.content、assistant-step 的 data.blocks）。
+	* 认不出的节点直接跳过 —— 聊天视图的节点种类会变，这里不能写死。
+	*
+	* @param {object|null} chat Chat 快照。
+	* @param {number} limit 最多几条。
+	* @returns {Array<{role: string, text: string}>} 上下文条目。
+	*/
+	function contextFromChat(chat, limit) {
+		const max = Number.isFinite(limit) ? Math.max(0, Math.min(20, Math.round(limit))) : 0;
+		if (max === 0) return [];
+		if (chat === null || typeof chat !== "object") return [];
+		const store = chat.nodes;
+		if (store === null || typeof store !== "object" || typeof store.values !== "function") return [];
+		let nodes;
+		try {
+			nodes = store.values();
+		} catch {
+			return [];
+		}
+		if (!Array.isArray(nodes)) return [];
+		const out = [];
+		for (const node of nodes) {
+			if (node === null || typeof node !== "object") continue;
+			const data = node.data !== null && typeof node.data === "object" ? node.data : {};
+			let role = "";
+			let text = "";
+			if (node.kind === "user" || node.kind === "steering") {
+				role = "user";
+				text = textFromBlocks(data.content);
+			} else if (node.kind === "assistant-step") {
+				role = "assistant";
+				text = textFromBlocks(data.blocks);
+			}
+			if (text === "") continue;
+			out.push({
+				role,
+				text: text.length > 300 ? text.slice(0, 300) : text
+			});
+		}
+		return out.slice(-max);
+	}
+	/**
+	* 候选列表里挑一条（用于键盘上下移动）。
+	*
+	* @param {Array<string>} list 候选。
+	* @param {number} index 当前下标。
+	* @param {number} delta 移动方向（-1 / +1）。
+	* @returns {number} 新的下标（越界时回到另一头）。
+	*/
+	function moveIndex(list, index, delta) {
+		const count = Array.isArray(list) ? list.length : 0;
+		if (count === 0) return 0;
+		return (((Number.isFinite(index) ? index : 0) + delta) % count + count) % count;
+	}
+	// src/client/features/autocomplete/store.js
+	/**
+	* 新会话的初始状态。
+	*
+	* @returns {object} 状态。
+	*/
+	function createState() {
+		return {
+			/** Host 给的生效设置（null = 还没读到）。 */
+			settings: null,
+			/** 候选列表。 */
+			suggestions: [],
+			/** 当前高亮的候选下标。 */
+			activeIndex: 0,
+			/** idle / thinking / ready。 */
+			status: "idle",
+			/** 下拉列表是否展开。 */
+			open: false,
+			/** 上次出错的原因（空串 = 没有错）。 */
+			error: ""
+		};
+	}
+	/** sessionId → { state, listeners }。 */
+	var sessions = /* @__PURE__ */ new Map();
+	/**
+	* 取某个会话的状态条目（没有就建一个）。
+	*
+	* @param {string} sessionId 会话 id。
+	* @returns {{state: object, listeners: Set<Function>}} 条目。
+	*/
+	function entryOf(sessionId) {
+		const key = typeof sessionId === "string" && sessionId !== "" ? sessionId : "__none__";
+		let item = sessions.get(key);
+		if (item === void 0) {
+			item = {
+				state: createState(),
+				listeners: /* @__PURE__ */ new Set()
+			};
+			sessions.set(key, item);
+		}
+		return item;
+	}
+	/**
+	* 读某个会话的状态。
+	*
+	* @param {string} sessionId 会话 id。
+	* @returns {object} 状态。
+	*/
+	function getState(sessionId) {
+		return entryOf(sessionId).state;
+	}
+	/**
+	* 改某个会话的状态并通知订阅者。
+	*
+	* @param {string} sessionId 会话 id。
+	* @param {object} patch 要改的字段。
+	*/
+	function setState(sessionId, patch) {
+		const item = entryOf(sessionId);
+		item.state = {
+			...item.state,
+			...patch
+		};
+		for (const listener of Array.from(item.listeners)) try {
+			listener();
+		} catch {}
+	}
+	/**
+	* 订阅某个会话的状态（组件用）。
+	*
+	* @param {string} sessionId 会话 id。
+	* @returns {object} 当前状态。
+	*/
+	function useAutocompleteState(sessionId) {
+		const [, bump] = useState(0);
+		useEffect(function() {
+			const item = entryOf(sessionId);
+			const listener = function() {
+				bump(function(n) {
+					return n + 1;
+				});
+			};
+			item.listeners.add(listener);
+			return function() {
+				item.listeners.delete(listener);
+			};
+		}, [sessionId]);
+		return getState(sessionId);
+	}
+	/**
+	* 采纳一条候选。
+	*
+	* 采纳的写法必须走官方的输入动作（inputActions），不能直接改 DOM ——
+	* 编辑器（Lexical）持有草稿，直接改 DOM 会被它下一次更新抹掉。
+	*
+	* 有重叠时只插「重叠之后的那一段」；没有重叠说明候选与用户写的不是同一条
+	* 句子，这时整句替换草稿（用户是明确点了这条候选）。
+	*
+	* @param {string} sessionId 会话 id。
+	* @param {object|null} inputActions 官方的输入动作。
+	* @param {string} draft 当前草稿。
+	* @param {number} index 候选下标。
+	* @returns {boolean} 是否采纳成功。
+	*/
+	function acceptSuggestion(sessionId, inputActions, draft, index) {
+		const state = getState(sessionId);
+		const suggestion = Array.isArray(state.suggestions) ? state.suggestions[index] : void 0;
+		if (typeof suggestion !== "string" || suggestion.trim() === "") return false;
+		if (inputActions === null || inputActions === void 0) return false;
+		const suffix = completionSuffix(draft, suggestion);
+		let applied = false;
+		if (suffix !== "" && typeof inputActions.captureInsertion === "function" && typeof inputActions.insertText === "function") {
+			const span = inputActions.captureInsertion();
+			if (span !== void 0 && span !== null) applied = inputActions.insertText(suffix, span) === true;
+		}
+		if (!applied && suffix === "" && typeof inputActions.setDraft === "function") {
+			inputActions.setDraft(suggestion);
+			applied = true;
+		}
+		if (applied) setState(sessionId, {
+			suggestions: [],
+			activeIndex: 0,
+			open: false,
+			status: "idle"
+		});
+		return applied;
+	}
+	// src/client/features/autocomplete/engine.js
+	/**
+	* 没有 useChat 时的占位（保持 Hook 调用顺序稳定）。
+	*
+	* 与「电脑加速与清理」里 noSessions 同一个用法：Chat 视图不在时，插槽里
+	* 拿不到对话快照，补全就只剩「看草稿」这一路。
+	*
+	* @param {Function} selector 选择器。
+	* @returns {null} 永远没有对话。
+	*/
+	function noChat(selector) {
+		return selector(null);
+	}
+	/**
+	* 没有 useInput 时的占位（保持 Hook 调用顺序稳定）。
+	*
+	* 输入状态是会话级的标准属性，正常一定在。但插槽里少一个 Hook 就崩，
+	* 崩了会把**整个输入框区域**清空 —— 那比「没有补全」严重得多，所以兜住。
+	*
+	* @param {Function} selector 选择器。
+	* @returns {null} 永远没有输入状态。
+	*/
+	function noInput(selector) {
+		return selector(null);
+	}
+	/**
+	* 补全引擎。
+	*
+	* @param {object} props 属性。
+	* @param {string} props.sessionId 当前会话 id。
+	* @param {Function} props.useInput 官方的输入状态选择器。
+	* @param {Function} [props.useChat] 官方的对话快照选择器。
+	* @returns {object} 当前状态（settings / suggestions / …）。
+	*/
+	function useAutocompleteEngine(props) {
+		const sessionId = props.sessionId;
+		const state = useAutocompleteState(sessionId);
+		const input = props.useInput(function(snapshot) {
+			return snapshot;
+		});
+		const chat = (typeof props.useChat === "function" ? props.useChat : noChat)(function(snapshot) {
+			return snapshot;
+		});
+		const seqRef = useRef(0);
+		const settings = state.settings;
+		const draft = input !== null && input !== void 0 && typeof input.draft === "string" ? input.draft : "";
+		const draftRev = input !== null && input !== void 0 && typeof input.draftRev === "number" ? input.draftRev : -1;
+		const phase = input !== null && input !== void 0 && typeof input.phase === "string" ? input.phase : "plain";
+		useEffect(function() {
+			let alive = true;
+			api.settings().then(function(result) {
+				if (!alive) return;
+				const loaded = result !== null && typeof result === "object" && result.settings !== null && typeof result.settings === "object" ? result.settings : null;
+				setState(sessionId, { settings: loaded });
+			}).catch(function() {});
+			return function() {
+				alive = false;
+			};
+		}, [sessionId]);
+		useEffect(function() {
+			if (settings === null || settings.enabled !== true) return void 0;
+			if (phase !== "plain") return void 0;
+			const trimmed = draft.trim();
+			if (trimmed === "") {
+				if (settings.placeholderHint !== true) return void 0;
+			} else {
+				if (trimmed.length < settings.minChars) {
+					setState(sessionId, {
+						suggestions: [],
+						activeIndex: 0,
+						status: "idle",
+						open: false
+					});
+					return;
+				}
+				if (draft.includes("\n") && settings.allowMultiline !== true) return void 0;
+			}
+			const timer = window.setTimeout(function() {
+				const seq = seqRef.current + 1;
+				seqRef.current = seq;
+				setState(sessionId, { status: "thinking" });
+				const context = contextFromChat(chat, settings.contextMessages);
+				api.suggest({
+					sessionId,
+					draft,
+					context,
+					limit: settings.maxSuggestions
+				}).then(function(result) {
+					if (seqRef.current !== seq) return;
+					const list = result !== null && typeof result === "object" && Array.isArray(result.suggestions) ? result.suggestions : [];
+					setState(sessionId, {
+						suggestions: list,
+						activeIndex: 0,
+						status: list.length > 0 ? "ready" : "idle",
+						error: ""
+					});
+				}).catch(function() {
+					if (seqRef.current !== seq) return;
+					setState(sessionId, {
+						suggestions: [],
+						activeIndex: 0,
+						status: "idle"
+					});
+				});
+			}, settings.debounceMs);
+			return function() {
+				window.clearTimeout(timer);
+			};
+		}, [
+			sessionId,
+			draft,
+			draftRev,
+			phase,
+			settings,
+			chat
+		]);
+		return state;
+	}
+	// src/client/features/autocomplete/styles.js
+	var CSS$1 = [
+		".dsh-ac-root{position:absolute;left:0;right:0;top:0;height:0;}",
+		".dsh-ac-ghost{position:absolute;white-space:pre;pointer-events:none;color:var(--dsw-alias-label-tertiary);z-index:1;}",
+		".dsh-ac-wrap{position:relative;width:100%;max-width:var(--dsh-composer-card-max-width);margin:0 auto;}",
+		".dsh-ac-menu{position:absolute;left:0;right:0;bottom:calc(100% + 6px);box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:10px;background:var(--dsw-alias-bg-overlay);border:1px solid var(--dsw-alias-border-l2);box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:min(320px,50vh);overflow-y:auto;z-index:20;}",
+		".dsh-ac-menu-head{display:flex;align-items:center;gap:10px;padding:2px 2px 6px 6px;}",
+		".dsh-ac-menu-title{flex:0 0 auto;font-size:11px;font-weight:600;color:var(--dsw-alias-label-secondary);}",
+		".dsh-ac-menu-hint{flex:1 1 auto;min-width:0;font-size:10px;color:var(--dsw-alias-label-tertiary);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}",
+		".dsh-ac-menu-close{flex:0 0 auto;width:18px;height:18px;padding:0;border:none;border-radius:50%;background:transparent;color:var(--dsw-alias-label-tertiary);font:inherit;font-size:14px;line-height:1;cursor:pointer;}",
+		".dsh-ac-menu-close:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary);}",
+		".dsh-ac-row{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:left;padding:6px 8px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;line-height:1.5;cursor:pointer;}",
+		".dsh-ac-row:hover{background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-ac-row.is-on{background:var(--dsw-alias-interactive-bg-hover);border-color:var(--dsw-alias-brand-primary);}",
+		".dsh-ac-row-index{flex:0 0 auto;min-width:16px;height:16px;margin-top:1px;border-radius:4px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);font-size:10px;line-height:16px;text-align:center;}",
+		".dsh-ac-row-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}",
+		".dsh-ac-bar{display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box;padding:3px 8px;border-radius:8px;background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);font-size:11px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-ac-badge{flex:0 0 auto;padding:1px 6px;border-radius:999px;background:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary-foreground);font-size:10px;font-weight:600;letter-spacing:.02em;}",
+		".dsh-ac-bar-text{flex:1 1 auto;min-width:0;padding:0;border:none;background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:11px;text-align:left;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}",
+		".dsh-ac-bar-text:hover{color:var(--dsw-alias-brand-primary);}",
+		".dsh-ac-bar-hint{flex:0 0 auto;margin-left:4px;color:var(--dsw-alias-label-tertiary);white-space:nowrap;}",
+		".dsh-ac-bar-more{flex:0 0 auto;padding:1px 8px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-secondary);font:inherit;font-size:11px;cursor:pointer;}",
+		".dsh-ac-bar-more:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary);}",
+		".dsh-ac-page{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
+		".dsh-ac-intro{margin:0;font-size:12px;color:var(--dsw-alias-label-secondary);max-width:76ch;}",
+		".dsh-ac-card{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:12px;background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);}",
+		".dsh-ac-card-title{margin:0;font-size:12px;font-weight:600;color:var(--dsw-alias-label-primary);}",
+		".dsh-ac-field{display:flex;align-items:flex-start;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;}",
+		".dsh-ac-field-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}",
+		".dsh-ac-label{font-size:12px;font-weight:500;}",
+		".dsh-ac-hint{font-size:11px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-ac-control{flex:0 0 auto;display:flex;align-items:center;gap:8px;}",
+		".dsh-ac-number{width:76px;padding:4px 8px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;}",
+		".dsh-ac-check{width:15px;height:15px;accent-color:var(--dsw-alias-brand-primary);cursor:pointer;}",
+		".dsh-ac-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;cursor:pointer;}",
+		".dsh-ac-btn:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-ac-btn.is-primary{background:var(--dsw-alias-button-primary-fill);border-color:transparent;color:var(--dsw-alias-label-primary-foreground);}",
+		".dsh-ac-btn.is-primary:hover:not(:disabled){background:var(--dsw-alias-button-primary-hover);}",
+		".dsh-ac-btn:disabled{opacity:.5;cursor:not-allowed;}",
+		".dsh-ac-msg{font-size:12px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-ac-msg.is-error{color:var(--dsw-alias-state-error-primary);}",
+		".dsh-ac-msg.is-ok{color:var(--dsw-alias-state-success-primary);}",
+		".dsh-ac-foot{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}"
+	].join("\n");
+	/**
+	* 样式组件。
+	*
+	* @returns {object} React 元素。
+	*/
+	function Styles$1() {
+		return h("style", {
+			"data-dsh-usage-aggregator": "autocomplete",
+			dangerouslySetInnerHTML: { __html: CSS$1 }
+		});
+	}
+	// src/client/features/autocomplete/dock.js
+	/**
+	* 输入框上方的提示条（含下拉卡片）。
+	*
+	* @param {{t: Function, sessionId: string, useInput: Function, inputActions: object}} props 属性。
+	* @returns {object} React 元素（没有建议时是 null）。
+	*/
+	function AutocompleteDock(props) {
+		const t = props.t;
+		const sessionId = props.sessionId;
+		const state = useAutocompleteState(sessionId);
+		const input = (typeof props.useInput === "function" ? props.useInput : noInput)(function(snapshot) {
+			return snapshot;
+		});
+		const draft = input !== null && input !== void 0 && typeof input.draft === "string" ? input.draft : "";
+		const suggestions = Array.isArray(state.suggestions) ? state.suggestions : [];
+		if (state.settings === null || state.settings.enabled !== true || suggestions.length === 0) return null;
+		const top = suggestions[state.activeIndex] !== void 0 ? suggestions[state.activeIndex] : suggestions[0];
+		const open = state.open === true;
+		/**
+		* 采纳某一条。
+		*
+		* @param {number} index 下标。
+		*/
+		const pick = function(index) {
+			acceptSuggestion(sessionId, props.inputActions, draft, index);
+		};
+		/**
+		* 关掉这一次的候选：清掉候选、收起卡片。不动草稿，也不关功能。
+		*/
+		const dismiss = function() {
+			setState(sessionId, {
+				suggestions: [],
+				activeIndex: 0,
+				open: false,
+				status: "idle"
+			});
+		};
+		return h("div", { className: "dsh-ac-wrap" }, h(Styles$1, null), open ? h("div", {
+			className: "dsh-ac-menu",
+			role: "listbox",
+			"aria-label": t("dropdownTitle")
+		}, h("div", { className: "dsh-ac-menu-head" }, h("span", { className: "dsh-ac-menu-title" }, t("dropdownTitle")), h("span", { className: "dsh-ac-menu-hint" }, t("dropdownHint")), h("button", {
+			type: "button",
+			className: "dsh-ac-menu-close",
+			title: t("close"),
+			"aria-label": t("close"),
+			onMouseDown: function(event) {
+				event.preventDefault();
+				dismiss();
+			}
+		}, "×")), suggestions.map(function(text, index) {
+			return h("button", {
+				key: text + "#" + index,
+				type: "button",
+				role: "option",
+				"aria-selected": index === state.activeIndex ? "true" : "false",
+				className: "dsh-ac-row" + (index === state.activeIndex ? " is-on" : ""),
+				onMouseDown: function(event) {
+					event.preventDefault();
+					pick(index);
+				},
+				onMouseEnter: function() {
+					setState(sessionId, { activeIndex: index });
+				}
+			}, h("span", { className: "dsh-ac-row-index" }, String(index + 1)), h("span", { className: "dsh-ac-row-text" }, text));
+		})) : null, h("div", { className: "dsh-ac-bar" }, h("span", { className: "dsh-ac-badge" }, "AI"), h("button", {
+			type: "button",
+			className: "dsh-ac-bar-text",
+			title: top,
+			onMouseDown: function(event) {
+				event.preventDefault();
+				pick(state.activeIndex);
+			}
+		}, top), h("span", { className: "dsh-ac-bar-hint" }, t("hintTab")), suggestions.length > 1 ? h("button", {
+			type: "button",
+			className: "dsh-ac-bar-more",
+			"aria-expanded": open ? "true" : "false",
+			onMouseDown: function(event) {
+				event.preventDefault();
+				setState(sessionId, { open: !open });
+			}
+		}, t("hintMore")) : null));
+	}
+	// src/client/features/autocomplete/overlay.js
+	/**
+	* 量出光标的位置。
+/**
+	* 量出「光标后面该从哪儿开始画灰字」。
+	*
+	* ⚠️ 为什么不用折叠光标的矩形：`range.getBoundingClientRect()` 对一个折叠
+	* 选区（光标）返回的是**光标矩形**，它未必等于字形框 —— 实测比字形高出一截，
+	* 灰字就会跟输入的文字错行（截图里那次的错位就是这么来的）。
+	*
+	* 所以优先量**光标前一个字符的字形矩形**：它的 right 就是光标 x，它的
+	* top / height 就是这一行字真正占据的上下边界。量不到（光标在行首、或选区
+	* 跨节点）再退回光标矩形。
+	*
+	* @param {Element} editor 编辑器（contenteditable）。
+	* @returns {{left: number, top: number, height: number}|null} 位置；量不到就是 null。
+	*/
+	function caretAnchor(editor) {
+		const selection = window.getSelection();
+		if (selection === null || selection.rangeCount === 0) return null;
+		const range = selection.getRangeAt(0);
+		const container = range.startContainer;
+		if (container === null || container === void 0) return null;
+		if (typeof Node !== "undefined" && !(container instanceof Node)) return null;
+		if (!editor.contains(container)) return null;
+		const collapsed = range.getBoundingClientRect();
+		if (container.nodeType === 3 && range.startOffset > 0) try {
+			const before = document.createRange();
+			before.setStart(container, range.startOffset - 1);
+			before.setEnd(container, range.startOffset);
+			const rect = before.getBoundingClientRect();
+			const sameLine = collapsed === null || collapsed === void 0 || Math.abs(rect.top - collapsed.top) <= Math.max(rect.height, 1);
+			if (rect.height > 0 && sameLine) return {
+				left: rect.right,
+				top: rect.top,
+				height: rect.height
+			};
+		} catch {}
+		if (collapsed !== null && collapsed !== void 0 && collapsed.height > 0) return {
+			left: collapsed.left,
+			top: collapsed.top,
+			height: collapsed.height
+		};
+		const rects = range.getClientRects();
+		if (rects !== null && rects !== void 0 && rects.length > 0 && rects[0].height > 0) return {
+			left: rects[0].left,
+			top: rects[0].top,
+			height: rects[0].height
+		};
+		return null;
+	}
+	/**
+	* 输入框浮层：下拉列表 + 行内灰字 + 键盘接管。
+	*
+	* @param {{t: Function, sessionId: string, useInput: Function, inputActions: object, useChat?: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function AutocompleteOverlay(props) {
+		props.t;
+		const sessionId = props.sessionId;
+		const inputActions = props.inputActions;
+		const useInput = typeof props.useInput === "function" ? props.useInput : noInput;
+		const state = useAutocompleteEngine({
+			sessionId,
+			useInput,
+			useChat: props.useChat
+		});
+		const input = useInput(function(snapshot) {
+			return snapshot;
+		});
+		const draft = input !== null && input !== void 0 && typeof input.draft === "string" ? input.draft : "";
+		const rootRef = useRef(null);
+		const [ghost, setGhost] = useState(null);
+		const latestRef = useRef({
+			state,
+			draft,
+			inputActions
+		});
+		latestRef.current = {
+			state,
+			draft,
+			inputActions
+		};
+		useEffect(function() {
+			const onKeyDown = function(event) {
+				const target = event.target;
+				if (target === null || target === void 0 || typeof target.closest !== "function") return;
+				const editor = target.closest("[data-composer-input]");
+				if (editor === null) return;
+				const card = editor.closest("[data-composer-card]");
+				const latest = latestRef.current;
+				const current = latest.state;
+				if (current.settings === null || current.settings.enabled !== true) return;
+				const suggestions = Array.isArray(current.suggestions) ? current.suggestions : [];
+				if (suggestions.length === 0) return;
+				if (card !== null && card.querySelector("[data-trigger-menu]") !== null) return;
+				if (event.isComposing === true) return;
+				if (editor.hasAttribute("data-composer-composing")) return;
+				if (event.key === "Tab" && event.shiftKey !== true) {
+					event.preventDefault();
+					event.stopPropagation();
+					acceptSuggestion(sessionId, latest.inputActions, latest.draft, current.activeIndex);
+					return;
+				}
+				if (current.open !== true) return;
+				if (event.key === "ArrowDown") {
+					event.preventDefault();
+					event.stopPropagation();
+					setState(sessionId, { activeIndex: moveIndex(suggestions, current.activeIndex, 1) });
+					return;
+				}
+				if (event.key === "ArrowUp") {
+					event.preventDefault();
+					event.stopPropagation();
+					setState(sessionId, { activeIndex: moveIndex(suggestions, current.activeIndex, -1) });
+					return;
+				}
+				if (event.key === "Enter") {
+					event.preventDefault();
+					event.stopPropagation();
+					acceptSuggestion(sessionId, latest.inputActions, latest.draft, current.activeIndex);
+					return;
+				}
+				if (event.key === "Escape") {
+					event.preventDefault();
+					event.stopPropagation();
+					setState(sessionId, { open: false });
+				}
+			};
+			document.addEventListener("keydown", onKeyDown, true);
+			return function() {
+				document.removeEventListener("keydown", onKeyDown, true);
+			};
+		}, [sessionId]);
+		useEffect(function() {
+			const settings = state.settings;
+			if (settings === null || settings.inlineHint !== true) {
+				setGhost(null);
+				return;
+			}
+			const suggestion = Array.isArray(state.suggestions) ? state.suggestions[state.activeIndex] : void 0;
+			const suffix = completionSuffix(draft, suggestion);
+			if (suffix === "") {
+				setGhost(null);
+				return;
+			}
+			const root = rootRef.current;
+			if (root === null) {
+				setGhost(null);
+				return;
+			}
+			const card = root.closest("[data-composer-card]");
+			if (card === null) {
+				setGhost(null);
+				return;
+			}
+			const editor = card.querySelector("[data-composer-input]");
+			if (editor === null) {
+				setGhost(null);
+				return;
+			}
+			const anchor = caretAnchor(editor);
+			if (anchor === null) {
+				setGhost(null);
+				return;
+			}
+			const cardRect = card.getBoundingClientRect();
+			const style = window.getComputedStyle(editor);
+			setGhost({
+				left: anchor.left - cardRect.left,
+				top: anchor.top - cardRect.top,
+				height: anchor.height,
+				text: suffix,
+				fontSize: style.fontSize,
+				fontFamily: style.fontFamily
+			});
+		}, [
+			draft,
+			state.suggestions,
+			state.activeIndex,
+			state.settings
+		]);
+		return h("div", {
+			className: "dsh-ac-root",
+			ref: rootRef
+		}, h(Styles$1, null), ghost !== null ? h("span", {
+			className: "dsh-ac-ghost",
+			"aria-hidden": "true",
+			style: {
+				left: ghost.left + "px",
+				top: ghost.top + "px",
+				height: ghost.height + "px",
+				fontSize: ghost.fontSize,
+				lineHeight: ghost.height + "px",
+				fontFamily: ghost.fontFamily
+			}
+		}, ghost.text) : null);
+	}
+	// src/client/features/autocomplete/panel.js
+	/**
+	* 把 provider 与 model 摊平成下拉里的一项一项。
+	*
+	* @param {Array<object>} providers Host 给的 provider 清单。
+	* @returns {Array<{value: string, label: string, group: string}>} 选项。
+	*/
+	function modelOptions(providers) {
+		const list = Array.isArray(providers) ? providers : [];
+		const out = [];
+		for (const provider of list) {
+			if (provider === null || typeof provider !== "object") continue;
+			const providerId = typeof provider.id === "string" ? provider.id : "";
+			if (providerId === "") continue;
+			const providerName = typeof provider.name === "string" && provider.name !== "" ? provider.name : providerId;
+			const models = Array.isArray(provider.models) ? provider.models : [];
+			for (const model of models) {
+				if (model === null || typeof model !== "object") continue;
+				const modelId = typeof model.id === "string" ? model.id : "";
+				if (modelId === "") continue;
+				const modelName = typeof model.name === "string" && model.name !== "" ? model.name : modelId;
+				out.push({
+					value: providerId + "\0" + modelId,
+					label: providerName + " · " + modelName,
+					group: providerName
+				});
+			}
+		}
+		return out;
+	}
+	/**
+	* 数字输入项。
+	*
+	* @param {{label: string, hint: string, value: number, min: number, max: number, onChange: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function NumberField(props) {
+		return h("div", { className: "dsh-ac-field" }, h("div", { className: "dsh-ac-field-main" }, h("span", { className: "dsh-ac-label" }, props.label), h("span", { className: "dsh-ac-hint" }, props.hint)), h("div", { className: "dsh-ac-control" }, h("input", {
+			type: "number",
+			className: "dsh-ac-number",
+			value: props.value,
+			min: props.min,
+			max: props.max,
+			step: 1,
+			onChange: function(event) {
+				const next = Number(event.target.value);
+				if (Number.isFinite(next)) props.onChange(next);
+			}
+		})));
+	}
+	/**
+	* 开关项。
+	*
+	* @param {{label: string, hint: string, checked: boolean, onChange: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function ToggleField(props) {
+		return h("div", { className: "dsh-ac-field" }, h("div", { className: "dsh-ac-field-main" }, h("span", { className: "dsh-ac-label" }, props.label), h("span", { className: "dsh-ac-hint" }, props.hint)), h("div", { className: "dsh-ac-control" }, h("input", {
+			type: "checkbox",
+			className: "dsh-ac-check",
+			checked: props.checked === true,
+			onChange: function(event) {
+				props.onChange(event.target.checked === true);
+			}
+		})));
+	}
+	/**
+	* 「AI 补全」页签。
+	*
+	* @param {{t: Function, initialSettings?: object, initialModels?: object}} props 属性。
+	*   initialSettings / initialModels 只给离线渲染自检用
+	*   （scripts/ui-check-autocomplete.mjs）：真页面上永远是 undefined，数据由下面的
+	*   useEffect 去 Host 拉。
+	* @returns {object} React 元素。
+	*/
+	function AutocompletePanel(props) {
+		const t = props.t;
+		const [settings, setSettings] = useState(props.initialSettings ?? null);
+		const [models, setModels] = useState(props.initialModels ?? null);
+		const [message, setMessage] = useState("");
+		const [error, setError] = useState("");
+		const [busy, setBusy] = useState(false);
+		useEffect(function() {
+			let alive = true;
+			api.settings().then(function(result) {
+				if (!alive) return;
+				setSettings(result !== null && typeof result === "object" && result.settings !== null ? result.settings : null);
+			}).catch(function(failure) {
+				if (!alive) return;
+				setError(t("loadFailed", { error: String(failure.message || failure) }));
+			});
+			api.models().then(function(result) {
+				if (!alive) return;
+				setModels(result !== null && typeof result === "object" ? result : null);
+			}).catch(function() {});
+			return function() {
+				alive = false;
+			};
+		}, [t]);
+		if (settings === null) return h("div", { className: "dsh-ac-page" }, h(Styles$1, null), error !== "" ? h("p", { className: "dsh-ac-msg is-error" }, error) : h("p", { className: "dsh-ac-msg" }, "…"));
+		/**
+		* 改一项设置。
+		*
+		* @param {string} key 字段名。
+		* @param {unknown} value 新值。
+		*/
+		const change = function(key, value) {
+			setSettings(function(current) {
+				return current === null ? current : {
+					...current,
+					[key]: value
+				};
+			});
+			setMessage("");
+			setError("");
+		};
+		/**
+		* 保存。
+		*/
+		const save = function() {
+			setBusy(true);
+			setMessage("");
+			setError("");
+			api.saveSettings({
+				enabled: settings.enabled,
+				maxSuggestions: settings.maxSuggestions,
+				minChars: settings.minChars,
+				debounceMs: settings.debounceMs,
+				contextMessages: settings.contextMessages,
+				maxInputChars: settings.maxInputChars,
+				allowMultiline: settings.allowMultiline,
+				inlineHint: settings.inlineHint,
+				placeholderHint: settings.placeholderHint,
+				provider: settings.provider,
+				model: settings.model
+			}).then(function(result) {
+				setBusy(false);
+				if (result !== null && typeof result === "object" && result.settings !== null) setSettings(result.settings);
+				setMessage(t("saved"));
+			}).catch(function(failure) {
+				setBusy(false);
+				setError(t("saveFailed", { error: String(failure.message || failure) }));
+			});
+		};
+		const options = modelOptions(models?.providers);
+		const modelValue = settings.provider === "" ? "" : settings.provider + "\0" + settings.model;
+		const groups = [];
+		for (const option of options) {
+			const last = groups[groups.length - 1];
+			if (last !== void 0 && last.group === option.group) last.items.push(option);
+			else groups.push({
+				group: option.group,
+				items: [option]
+			});
+		}
+		return h("div", { className: "dsh-ac-page" }, h(Styles$1, null), h("p", { className: "dsh-ac-intro" }, t("intro")), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionSuggest")), ToggleField({
+			label: t("enabled"),
+			hint: t("enabledHint"),
+			checked: settings.enabled === true,
+			onChange: function(value) {
+				change("enabled", value);
+			}
+		}), NumberField({
+			label: t("maxSuggestions"),
+			hint: t("maxSuggestionsHint"),
+			value: settings.maxSuggestions,
+			min: 1,
+			max: 5,
+			onChange: function(value) {
+				change("maxSuggestions", value);
+			}
+		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionTrigger")), NumberField({
+			label: t("minChars"),
+			hint: t("minCharsHint"),
+			value: settings.minChars,
+			min: 0,
+			max: 200,
+			onChange: function(value) {
+				change("minChars", value);
+			}
+		}), NumberField({
+			label: t("debounce"),
+			hint: t("debounceHint"),
+			value: settings.debounceMs,
+			min: 0,
+			max: 5e3,
+			onChange: function(value) {
+				change("debounceMs", value);
+			}
+		}), NumberField({
+			label: t("contextMessages"),
+			hint: t("contextMessagesHint"),
+			value: settings.contextMessages,
+			min: 0,
+			max: 10,
+			onChange: function(value) {
+				change("contextMessages", value);
+			}
+		}), NumberField({
+			label: t("maxInputChars"),
+			hint: t("maxInputCharsHint"),
+			value: settings.maxInputChars,
+			min: 100,
+			max: 2e4,
+			onChange: function(value) {
+				change("maxInputChars", value);
+			}
+		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionDisplay")), ToggleField({
+			label: t("allowMultiline"),
+			hint: t("allowMultilineHint"),
+			checked: settings.allowMultiline === true,
+			onChange: function(value) {
+				change("allowMultiline", value);
+			}
+		}), ToggleField({
+			label: t("inlineHint"),
+			hint: t("inlineHintHint"),
+			checked: settings.inlineHint === true,
+			onChange: function(value) {
+				change("inlineHint", value);
+			}
+		}), ToggleField({
+			label: t("placeholderHint"),
+			hint: t("placeholderHintHint"),
+			checked: settings.placeholderHint === true,
+			onChange: function(value) {
+				change("placeholderHint", value);
+			}
+		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("analysisModel")), h("div", { className: "dsh-ac-field" }, h("div", { className: "dsh-ac-field-main" }, h("span", { className: "dsh-ac-label" }, t("analysisModel")), h("span", { className: "dsh-ac-hint" }, t("analysisModelHint"))), h("div", { className: "dsh-ac-control" }, h("select", {
+			className: "dsh-ac-number",
+			style: { width: "260px" },
+			value: modelValue,
+			onChange: function(event) {
+				const raw = String(event.target.value);
+				if (raw === "") {
+					change("provider", "");
+					change("model", "");
+					return;
+				}
+				const split = raw.indexOf("\0");
+				change("provider", raw.slice(0, split));
+				change("model", raw.slice(split + 1));
+			}
+		}, h("option", { value: "" }, t("analysisDefault")), groups.map(function(group) {
+			return h("optgroup", {
+				key: group.group,
+				label: group.group
+			}, group.items.map(function(option) {
+				return h("option", {
+					key: option.value,
+					value: option.value
+				}, option.label);
+			}));
+		}))))), h("div", { className: "dsh-ac-field" }, h("div", { className: "dsh-ac-control" }, h("button", {
+			type: "button",
+			className: "dsh-ac-btn is-primary",
+			disabled: busy === true,
+			onClick: save
+		}, t("save"))), message !== "" ? h("span", { className: "dsh-ac-msg is-ok" }, message) : null, error !== "" ? h("span", { className: "dsh-ac-msg is-error" }, error) : null), h("p", { className: "dsh-ac-foot" }, t("foot")));
+	}
+	// src/client/features/autocomplete/index.js
+	var autocomplete_exports = /* @__PURE__ */ __exportAll({
+		HubView: () => HubView,
+		__ui: () => __ui,
+		apply: () => apply$1,
+		dictionaries: () => dictionaries,
+		meta: () => meta
+	});
+	/**
+	* 功能元信息。
+	*
+	* namespace 'pcAutocomplete' —— 新功能，取一个不会与别的包撞的名字。
+	* hubOrder 50 —— 聚合页里排第五（主题 10 / 用量 20 / 插件更新 30 / 加速 40）。
+	* hubTabKey 'tabAutocomplete' —— 页签标签在聚合页自己的字典里。
+	*/
+	var meta = {
+		id: "autocomplete",
+		namespace: NS$1,
+		hubOrder: 50,
+		hubTabKey: "tabAutocomplete"
+	};
+	/** 完整字典。聚合入口拿它注册 locale 命名空间。 */
+	var dictionaries = {
+		zh: zh$1,
+		en: en$1
+	};
+	/**
+	* 装配本功能。
+	*
+	* @param {object} ctx 插件上下文。
+	* @param {Function} t 本功能命名空间的 translator。
+	*/
+	function apply$1(ctx, t) {
+		const translator = typeof t === "function" ? t : (key) => zh$1[key] !== void 0 ? zh$1[key] : key;
+		ctx.slots.inject("conversation.input.dock", function() {
+			return ctx.slots.register({
+				name: "conversation.input.dock",
+				id: "axzo-autocomplete-bar",
+				order: 20,
+				locale: NS$1
+			}, function(slotProps) {
+				const props = slotProps !== void 0 && slotProps !== null ? slotProps : {};
+				return h(AutocompleteDock, {
+					t: translator,
+					sessionId: typeof props.sessionId === "string" ? props.sessionId : "",
+					useInput: props.useInput,
+					inputActions: props.inputActions
+				});
+			});
+		});
+		ctx.slots.inject("conversation.input.overlay", function() {
+			return ctx.slots.register({
+				name: "conversation.input.overlay",
+				id: "axzo-autocomplete",
+				order: 20,
+				locale: NS$1
+			}, function(slotProps) {
+				const props = slotProps !== void 0 && slotProps !== null ? slotProps : {};
+				return h(AutocompleteOverlay, {
+					t: translator,
+					sessionId: typeof props.sessionId === "string" ? props.sessionId : "",
+					useInput: props.useInput,
+					inputActions: props.inputActions,
+					useChat: props.useChat
+				});
+			});
+		});
+	}
+	/**
+	* 聚合设置页里本功能的视图。
+	*
+	* @param {{t: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	var HubView = (props) => h(AutocompletePanel, props);
+	/**
+	* 离线渲染自检用（scripts/ui-check-autocomplete.mjs）：把组件暴露出来，好在没有
+	* 浏览器的环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在
+	* 页面上才暴露的问题。运行时不受影响。
+	*/
+	var __ui = {
+		AutocompleteDock,
+		AutocompleteOverlay,
+		AutocompletePanel,
+		modelOptions,
 		zh: zh$1,
 		en: en$1
 	};
@@ -6432,7 +7585,8 @@ var dshUsageAggregator = (function(exports) {
 		theme_exports,
 		usage_exports,
 		expander_exports,
-		boost_exports
+		boost_exports,
+		autocomplete_exports
 	];
 	// src/client/hub/i18n.js
 	/** 聚合页的 locale 命名空间。 */
@@ -6443,7 +7597,8 @@ var dshUsageAggregator = (function(exports) {
 		tabUsage: "流量",
 		tabExpander: "插件更新",
 		tabBoost: "加速",
-		hint: "四块能力在同一个插件里。左侧切换，下方是当前功能的设置。",
+		tabAutocomplete: "AI 补全",
+		hint: "五块能力在同一个插件里。左侧切换，下方是当前功能的设置。",
 		empty: "没有可用的功能。",
 		buildAt: "客户端构建于 {at}"
 	};
@@ -6453,7 +7608,8 @@ var dshUsageAggregator = (function(exports) {
 		tabUsage: "Traffic",
 		tabExpander: "Plugin Updates",
 		tabBoost: "Boost",
-		hint: "Four capabilities in one plugin. Switch below to configure each one.",
+		tabAutocomplete: "AI Complete",
+		hint: "Five capabilities in one plugin. Switch below to configure each one.",
 		empty: "No capability available.",
 		buildAt: "Client built at {at}"
 	};
@@ -6580,7 +7736,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-11-02 10:04:33";
+	var BUILD_AT = "2026-11-03 18:34:18";
 	/**
 	* 声明要等的服务。
 	*

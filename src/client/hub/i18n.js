@@ -20,7 +20,7 @@ export const NS = 'dsh-usage-aggregator';
 
 export const zh = {
   // 设置面板左侧导航里的入口名。
-  tab: 'AxzoAggregator',
+  tab: 'Aggregator',
   // 五个页签的标签。键名 = 功能 meta.hubTabKey。
   tabTheme: 'Theme',
   tabUsage: '流量',
@@ -33,7 +33,7 @@ export const zh = {
 };
 
 export const en = {
-  tab: 'AxzoAggregator',
+  tab: 'Aggregator',
   tabTheme: 'Theme',
   tabUsage: 'Traffic',
   tabExpander: 'Plugin Updates',

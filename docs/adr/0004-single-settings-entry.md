@@ -19,7 +19,7 @@
 **只注册一个 `settings.section`**（id `usage-aggregator`，order 92），内容是一个页签条 + 当前功能的视图：
 
 ```
-设置 → AxzoAggregator
+设置 → Aggregator
         [ Theme ] [ 流量 ] [ 插件更新 ]
 ```
 

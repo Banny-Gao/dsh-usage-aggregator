@@ -7592,7 +7592,7 @@ var dshUsageAggregator = (function(exports) {
 	/** 聚合页的 locale 命名空间。 */
 	var NS = "dsh-usage-aggregator";
 	var zh = {
-		tab: "AxzoAggregator",
+		tab: "Aggregator",
 		tabTheme: "Theme",
 		tabUsage: "流量",
 		tabExpander: "插件更新",
@@ -7603,7 +7603,7 @@ var dshUsageAggregator = (function(exports) {
 		buildAt: "客户端构建于 {at}"
 	};
 	var en = {
-		tab: "AxzoAggregator",
+		tab: "Aggregator",
 		tabTheme: "Theme",
 		tabUsage: "Traffic",
 		tabExpander: "Plugin Updates",

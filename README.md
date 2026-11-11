@@ -15,6 +15,10 @@
 **插件管理器里占一行，设置面板里占一个入口**（`AxzoAggregator`，内含五个页签）。
 这是本包存在的理由：此前三个插件各占一行、各占一个设置入口。
 
+此外本包还**携带一个 Agent 预设**：`硬指标`（预设 id `hard-metrics`）——
+PTC 基座 +《硬指标手册》全文作为人格约束，并把手册的「硬禁令」落到工具执行层
+（提交 / 推送必须有用户**当轮**的显式授权，破坏性命令一律拒绝）。
+
 ## 结构
 
 一个 DSH 插件 = 一个 npm 包 = 一个 `client/client.js` + 一个 Host 入口。
@@ -31,6 +35,7 @@ src/host/            Host 半边
   shared/            http（统一的路由与安全网关）· context（配置与端点）· llm（收模型正文）
   features/          theme（空座位）· usage · expander · boost · autocomplete
 client/client.js     构建产物（DSH 加载它）
+presets/             本包携带的 Agent 预设（预设补丁 + 守卫模块）
 vite.config.mjs      构建链（必须在仓库根）
 scripts/             验证套件
 docs/adr/            架构决策记录
@@ -51,6 +56,12 @@ docs/adr/            架构决策记录
 | `usage_query` | `list` · `refresh` · `renew` · `import` · `remove` |
 | `plugin_update` | `check`（只读）· `update` |
 | `system_boost` | `scan`（体检，只读）· `execute`（清理勾选的缓存） |
+
+**Agent 预设**（本包携带，基座取自官方 PTC 预设）：
+
+| 预设 | 说明 |
+|---|---|
+| `hard-metrics`（显示名「硬指标」） | PTC 基座（与官方 `preset-ptc` 差四处：人格约束换成《硬指标手册》全文、多一个守卫行、多 `name`/`description`、`order` 为 5）；追加 `hard-metrics-guard`，把「永不自动提交或推送」落到工具执行层 —— 提交 / 推送必须有用户**当轮**的显式授权，每个动作各只够用一次；`git checkout --` / `git reset --hard` / `git clean -f` 一律拒绝 |
 
 **HTTP 路由**（21 条，全部在 `/dsh-usage-aggregator/` 之下）：
 
@@ -142,6 +153,8 @@ Agent 会先说明要做什么再动手；会话不可用时面板直接执行�
 ## 关系
 
 - **DSH**：作为普通插件装进 profile。客户端半边是浏览器里的 IIFE 产物，Host 半边是 Node 里的 cordis 插件；两者都靠 `cordis.patch.yml` 的一行 insert 接入。
+- **Agent 预设**：由本包的**补丁列表**携带（`dsh.bundle.patch` 是文件列表，与官方 `web-app` 同构）—— `presets/hard-metrics.patch.yml` 声明预设，预设里的守卫行按**裸包名 + exports 子路径**（`dsh-usage-aggregator/preset-guard`）引用本包的守卫模块：预设作用域的 baseUrl 是 profile 目录，相对路径与绝对路径都不可移植。改本包需要重装 profile 依赖并重启 DSH 才生效。
+- **预设依赖谁提供**：预设里引用的 30 个 `@deepseek-ai/*` 官方包**由宿主 DSH 的安装作用域提供**（DSH 自带的那些包），本包不声明它们 —— npm 上同名的官方包版本远低于本机 DSH 实际安装的版本，装进来只会版本错配。本包自己只多一个 `js-yaml` 开发依赖（补丁 YAML 的解析校验用，与装载器同款方言）。
 - **取代** `dsh-axzo-theme` / `dsh-usage-query` / `dsh-plugin-expander` 三个插件。功能、数据路径、locale 命名空间、工具名、槽位 id 全部原样保留 —— 已接入的接口与主题设置接着用。
 - **依赖 DSH 官方能力**：已装清单走官方 `pluginManager.listBundles()`，安装动作走官方 `removeBundle` + `installBundle`（继承 profile 写锁、失败回滚、HMR 重载、构建脚本审批）。本包不自己碰 pnpm。
 - **数据落本机**：用量凭证在 `$DSH_HOME/dsh-usage-query/store.json`（0600），**永不发往浏览器**；主题偏好在 `localStorage` 的 `dsh-axzo-theme:*`；补全的设置在 `$DSH_HOME/dsh-usage-aggregator/autocomplete.json`（0600）。

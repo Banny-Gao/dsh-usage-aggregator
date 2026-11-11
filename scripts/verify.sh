@@ -45,7 +45,7 @@ while IFS= read -r FILE; do
     bad "语法错误：${FILE#$PLUGIN_DIR/}"
     SYNTAX_BAD=1
   fi
-done < <(find "$PLUGIN_DIR/src" "$PLUGIN_DIR/vite" "$PLUGIN_DIR/scripts" -type f \( -name '*.js' -o -name '*.mjs' \) 2>/dev/null | sort)
+done < <(find "$PLUGIN_DIR/src" "$PLUGIN_DIR/vite" "$PLUGIN_DIR/scripts" "$PLUGIN_DIR/presets" -type f \( -name '*.js' -o -name '*.mjs' \) 2>/dev/null | sort)
 if [ -f "$PLUGIN_DIR/client/client.js" ]; then
   SYNTAX_COUNT=$((SYNTAX_COUNT + 1))
   syntax_ok "$PLUGIN_DIR/client/client.js" || { bad "语法错误：client/client.js"; SYNTAX_BAD=1; }
@@ -59,6 +59,8 @@ check_file() {
 }
 check_file "package.json"
 check_file "cordis.patch.yml"
+check_file "presets/hard-metrics.patch.yml"
+check_file "presets/hard-metrics-guard.js"
 check_file "icon.svg"
 check_file "locale/zh.json"
 check_file "locale/en.json"
@@ -111,18 +113,27 @@ check_file "scripts/ui-check-boost.mjs"
 check_file "scripts/boost-check.mjs"
 check_file "scripts/ui-check-autocomplete.mjs"
 check_file "scripts/autocomplete-check.mjs"
+check_file "scripts/preset-check.mjs"
+check_file "scripts/preset-guard-check.mjs"
+check_file "scripts/preset-guard-real.mjs"
+check_file "scripts/patch-dialect.mjs"
+check_file "scripts/check-patch-yaml.mjs"
 check_file "scripts/render-check.mjs"
 check_file "scripts/release.mjs"
 check_file "scripts/verify.sh"
 
 echo ""
 echo "→ 清单一致性（package.json ↔ cordis.patch.yml）"
-if node - "$PLUGIN_DIR" <<'NODE'
-const fs = require('fs')
-const path = require('path')
+if node --input-type=module - "$PLUGIN_DIR" <<'NODE'
+import fs from 'node:fs'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 const dir = process.argv[2]
+const { insertRows, parsePatchFile } = await import(
+  pathToFileURL(path.join(dir, 'scripts/patch-dialect.mjs')).href
+)
 const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'))
-const patch = fs.readFileSync(path.join(dir, 'cordis.patch.yml'), 'utf8')
 let bad = 0
 const check = (label, ok, detail) => {
   if (!ok) bad += 1
@@ -131,17 +142,25 @@ const check = (label, ok, detail) => {
 
 // cordis.patch.yml 的 insert id / name 必须与 package.json 的 name 一致 ——
 // 不一致的话 DSH 会按 bundle 名找插件行，找不到就是「装了但不显示」。
-const insertIds = [...patch.matchAll(/^\s*-?\s*id:\s*['"]?([\w.-]+)['"]?/gm)].map((m) => m[1])
-const insertNames = [...patch.matchAll(/^\s*name:\s*['"]?([\w.-]+)['"]?/gm)].map((m) => m[1])
-check('cordis.patch.yml 的 insert id 含 ' + pkg.name, insertIds.includes(pkg.name), insertIds.join(', '))
-check('cordis.patch.yml 的 insert name 含 ' + pkg.name, insertNames.includes(pkg.name), insertNames.join(', '))
+// 这里按装载器同款方言解析，不靠正则扫文本（正则会漏掉带引号/带注释的写法）。
+const parsed = parsePatchFile(path.join(dir, 'cordis.patch.yml'))
+check('cordis.patch.yml 能按 DSH 方言解析', parsed.ok, parsed.ok ? undefined : parsed.error)
+const rows = parsed.ok ? insertRows(parsed.entries) : []
+check('cordis.patch.yml 的 insert id 含 ' + pkg.name, rows.some((row) => row.id === pkg.name), rows.map((row) => row.id).join(', '))
+check('cordis.patch.yml 的 insert name 含 ' + pkg.name, rows.some((row) => row.name === pkg.name), rows.map((row) => row.name).join(', '))
 
 check('exports["./client"] 指向 client/client.js', pkg.exports['./client'] === './client/client.js', pkg.exports['./client'])
 check('exports["."] 指向 src/host/index.js', pkg.exports['.'] === './src/host/index.js', pkg.exports['.'])
 check('files 覆盖 src/host', Array.isArray(pkg.files) && pkg.files.includes('src/host'))
 check('files 覆盖 client/client.js', Array.isArray(pkg.files) && pkg.files.includes('client/client.js'))
 check('files 覆盖 locale', Array.isArray(pkg.files) && pkg.files.includes('locale'))
-check('dsh.bundle.patch 指向存在的补丁', typeof pkg.dsh?.bundle?.patch === 'string' && fs.existsSync(path.join(dir, pkg.dsh.bundle.patch)))
+// dsh.bundle.patch 可以是一份补丁，也可以是一份补丁列表（官方 web-app 就是列表，
+// 预设补丁与主补丁一起挂载）。不管哪种形态，每份补丁都必须在磁盘上真的存在。
+const bundlePatches = pkg.dsh?.bundle?.patch
+const patchList = typeof bundlePatches === 'string' ? [bundlePatches] : (Array.isArray(bundlePatches) ? bundlePatches : [])
+check('dsh.bundle.patch 指向存在的补丁', patchList.length > 0 && patchList.every((file) => fs.existsSync(path.join(dir, file))), patchList.join(', '))
+check('exports 暴露 ./preset-guard', pkg.exports?.['./preset-guard'] === './presets/hard-metrics-guard.js', pkg.exports?.['./preset-guard'])
+check('files 覆盖 presets', Array.isArray(pkg.files) && pkg.files.includes('presets'))
 check('dsh.client.platform = web', pkg.dsh?.client?.platform === 'web')
 process.exit(bad === 0 ? 0 : 1)
 NODE
@@ -556,6 +575,50 @@ if node "$PLUGIN_DIR/scripts/ui-check-autocomplete.mjs" >"$SYNTAX_TMP/ui-autocom
 else
   bad "scripts/ui-check-autocomplete.mjs 未通过（跑 node scripts/ui-check-autocomplete.mjs 看详情）"
   tail -20 "$SYNTAX_TMP/ui-autocomplete.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 补丁 YAML（装载器同款方言解析）"
+# 补丁解析不过 = 整个 bundle 起不来，界面上只表现为「装上了但不出现」。
+if node "$PLUGIN_DIR/scripts/check-patch-yaml.mjs" >"$SYNTAX_TMP/patch-yaml.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/patch-yaml.log")"
+else
+  bad "scripts/check-patch-yaml.mjs 未通过（跑 node scripts/check-patch-yaml.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/patch-yaml.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 硬指标预设（接线：补丁 / exports / files）"
+# 预设由本 bundle 携带：断一环的表现都是「装上了但不出现」，界面上看不出来。
+if node "$PLUGIN_DIR/scripts/preset-check.mjs" >"$SYNTAX_TMP/preset.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/preset.log")"
+else
+  bad "scripts/preset-check.mjs 未通过（跑 node scripts/preset-check.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/preset.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 硬指标守卫（拦截 / 授权一次性 / 否定式措辞）"
+if node "$PLUGIN_DIR/scripts/preset-guard-check.mjs" >"$SYNTAX_TMP/preset-guard.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/preset-guard.log")"
+else
+  bad "scripts/preset-guard-check.mjs 未通过（跑 node scripts/preset-guard-check.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/preset-guard.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 硬指标守卫（真机：真实 cordis / dsh-tools 管线）"
+# 静态自检证明不了「守卫真的拦得住」：这里在宿主真实的工具执行管线上跑一遍。
+# 宿主作用域不可用时脚本自己跳过，不算失败。
+if node "$PLUGIN_DIR/scripts/preset-guard-real.mjs" >"$SYNTAX_TMP/preset-guard-real.log" 2>&1; then
+  if grep -q '^SKIP:' "$SYNTAX_TMP/preset-guard-real.log"; then
+    skip "$(tail -1 "$SYNTAX_TMP/preset-guard-real.log")"
+  else
+    ok "$(tail -1 "$SYNTAX_TMP/preset-guard-real.log")"
+  fi
+else
+  bad "scripts/preset-guard-real.mjs 未通过（跑 node scripts/preset-guard-real.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/preset-guard-real.log" | sed 's/^/    /'
 fi
 
 echo ""

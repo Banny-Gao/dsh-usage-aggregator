@@ -82,6 +82,25 @@ async function checkAsync(name, fn) {
   }
 }
 
+/**
+ * 轮询等某个条件成立，最多等 timeoutMs 毫秒。
+ *
+ * 用固定 setTimeout 去赌一段异步链跑完，在机器忙的时候会偶发不够 ——
+ * 那种失败重跑又好了，最难查。这里等到条件真的成立为止。
+ *
+ * @param {() => boolean} predicate 条件。
+ * @param {number} timeoutMs 最长等待毫秒数。
+ * @returns {Promise<boolean>} 条件最终是否成立。
+ */
+async function waitUntil(predicate, timeoutMs = 3000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return true;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return predicate();
+}
+
 /* ─────────────────── 夹具：一条真实的 minimax 用量响应 ─────────────────── */
 
 // 夹具里的 token 带一个 exp（真实抓包就是这样）。写死它等于在测试里埋一颗
@@ -1094,10 +1113,14 @@ await checkAsync('自动查询定时器真的会自己发起请求（假 setInte
 
     tick();
     // 一拍里要走：读 store → 判到点 → 真实 fetch（假的）→ 写回 store。
-    // 里面全是 async fs 与 promise，两拍 setImmediate 不够等它跑完。
-    await new Promise((resolve) => setTimeout(resolve, 120));
+    // 里面全是 async fs 与 promise，跑完没有可观测的信号。
+    // 早先这里固定等 120ms 再断言，机器忙的时候这一步会偶尔不够 ——
+    // 日志晚到几十毫秒，断言就先判了失败。改成等条件真的成立。
+    const autoQueryLogged = await waitUntil(
+      () => logs.some((line) => line.includes('自动查询：1/1 成功')),
+    );
     assert.equal(upstreamCalls, callsAfterImport + 1, '按一拍后应当真的发了一次上游请求');
-    assert.ok(logs.some((line) => line.includes('自动查询：1/1 成功')), '应当留下一条可 grep 的「自动查询 N/M」日志');
+    assert.ok(autoQueryLogged, '应当留下一条可 grep 的「自动查询 N/M」日志');
 
     // 卸载：插件卸载时所有 effect 的 cleanup 都会跑 —— 少了任何一个，
     // 插件重载就会叠一层定时器。

@@ -7,6 +7,51 @@
 
 ---
 
+## Unreleased · 2026-11-11 · 携带「硬指标」Agent 预设；把硬禁令落到工具执行层
+
+### 新增
+
+- **Agent 预设「硬指标」**（预设 id `hard-metrics`）：本包开始携带 Agent 预设，
+  与官方 `web-app` 同构 —— `dsh.bundle.patch` 变成**补丁文件列表**，
+  `presets/hard-metrics.patch.yml` 声明预设本身。
+  - 基座取自官方 PTC 预设（plan-mode / compaction / delegation 等原样保留），
+    与官方 `preset-ptc` 差四处：人格约束换成《硬指标手册》全文、多一个守卫行、
+    多 `name`/`description`、`order` 为 5；
+  - 追加守卫 `hard-metrics-guard`：把「永不自动提交或推送」从提示层落到工具执行层 ——
+    提交 / 推送必须有用户**当轮**的显式授权，且每个动作的授权各只够用一次。
+    - 授权只认**用户来源**的消息：子代理转发、助手自己的话、失败的工具结果都不算；
+    - 否定式与提及式不算授权（「先不要提交」「审查当前未提交的代码」都不算）；
+    - 破坏性命令一律拒绝（`git checkout --` / `git restore .` / `git reset --hard` /
+      `git clean -f` / `git stash`）；
+    - 一次卡片点击只算一次授权；命令被拒时不消耗授权。
+  - 守卫以**裸包名 + exports 子路径**（`dsh-usage-aggregator/preset-guard`）被预设引用：
+    预设作用域的 baseUrl 是 profile 目录，相对路径与绝对路径都不可移植。
+  - 预设引用的 `@deepseek-ai/*` 官方包由**宿主 DSH 安装作用域**提供，本包不声明它们。
+
+### 修复
+
+- **AGENTS.md 的「硬禁令」段与手册原文对齐**：改成列表项，并补上原先缺失的
+  「绝对禁止执行 git checkout --」一条。
+- **补丁 YAML 现在会被真解析**：新增 `scripts/check-patch-yaml.mjs`，
+  用装载器同款方言（js-yaml + `!!js` 表达式）解析 bundle 里的每份补丁，
+  校验顶层结构、`insert` 行的字面量 `name`、`!!js` 表达式的位置，
+  以及主补丁的 `insert id`/`name` 与 `package.json` 的 name 一致。
+- **预设自检不再把「本包自引用」当成宿主作用域**：探测宿主作用域时只看向官方包
+  （`@deepseek-ai/*`），本包自己的名字走 Node 的 self-reference、在任何机器上都能解析，
+  拿它当判据会让「宿主没装 DSH 作用域」的机器上直接判失败。现在这种机器上跳过
+  该项探测（结构校验仍生效）。
+- **守卫有了真机验证**：新增 `scripts/preset-guard-real.mjs`，
+  在宿主真实的 cordis / dsh-tools / dsh-scope / dsh-agent 上装载守卫并走真实工具执行管线，
+  验证「拒绝时命令不执行」「拒绝理由变成 `isError` 的工具结果」「授权一次性」
+  「破坏性命令有授权也拒绝」「授权不跨 agent」「守卫只管本预设作用域」
+  「`agent/pre-step` 不截断 waterfall」「换轮后授权作废」「提问卡片的选中项算授权」。
+  宿主作用域不可用时脚本自己跳过，不算失败。
+- **纯函数自测不再偶发失败**：`scripts/smoke.mjs` 的「自动查询定时器真的会自己发起请求」
+  原本固定等 120ms 就断言日志已出现，机器忙的时候这一步偶尔不够 —— 日志其实晚到了几十毫秒，
+  断言却先判了失败。现在改成轮询等条件真的成立（上限 3 秒）。
+
+---
+
 ## 0.3.0 · 2026-11-03
 
 ### 新增

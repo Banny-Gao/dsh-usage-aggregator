@@ -15,3 +15,10 @@ scripts/render-check*.html
 
 # 构建产物入库（DSH 靠它加载），但 source map 不入库
 client/*.map
+
+# ai-docs/ 是 AI 编码（dsh-ai-coding）在本机的工作副本，不进版本控制；
+# 团队共享那份落在 docs/REQ-xxxx/（随包 scripts/land-team-artifacts.mjs 落地）。
+# 例外：__tests__/ 下的测试代码必须入库（否则 CI 跑不到），故用「放行目录 + 只放行测试」三行写法。
+ai-docs/**
+!ai-docs/**/
+!ai-docs/**/__tests__/**

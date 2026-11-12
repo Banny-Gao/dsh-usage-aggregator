@@ -30,6 +30,7 @@ export const zh = {
 
   // 条目
   groupCache: '工具链缓存',
+  groupSystem: '系统与磁盘',
   groupDsh: 'DSH 自己',
   groupProcess: '进程与窗口',
   itemSemanticsPrune: '只删没人引用的',
@@ -94,6 +95,7 @@ export const en = {
   close: 'Close',
 
   groupCache: 'Toolchain caches',
+  groupSystem: 'System & disk',
   groupDsh: 'DSH itself',
   groupProcess: 'Processes & windows',
   itemSemanticsPrune: 'only unreferenced entries',

@@ -98,13 +98,115 @@ function note(label) { notes.push(label); console.log('  – ' + label); }
 
 /* ─────────────────────── 找一份真实的 cordis ─────────────────────── */
 
-/** 本机 pnpm store 里 @deepseek-ai 的链接根目录。 */
+/**
+ * 本机 pnpm store 里 @deepseek-ai 的链接根目录。
+ *
+ * store 的位置各平台不同：macOS 在 ~/Library/pnpm/store、Linux 在 ~/.pnpm-store、
+ * Windows 在 %LOCALAPPDATA%\pnpm\store。store 里的版本目录名也随 pnpm 版本走
+ * （v3 / v10 / v11 …），所以按实际存在的目录枚举，不写死版本号。
+ */
 function storeRoots() {
   const home = homedir();
-  return [
-    join(home, 'Library/pnpm/store/v11/links/@deepseek-ai'),
-    join(home, '.pnpm-store/v3/links/@deepseek-ai'),
+  const bases = [
+    join(home, 'Library/pnpm/store'),
+    join(home, '.pnpm-store'),
+    join(home, 'AppData/Local/pnpm/store'),
+    join(home, 'AppData/Local/pnpm-cache'),
   ];
+  const roots = [];
+  for (const base of bases) {
+    if (!existsSync(base)) continue;
+    for (const version of readdirSync(base)) {
+      const links = join(base, version, 'links/@deepseek-ai');
+      if (existsSync(links)) roots.push(links);
+    }
+  }
+  return roots;
+}
+
+/**
+ * 列出本机装过的 @deepseek-ai 包目录。
+ *
+ * pnpm 的安装布局有好几种，脚本必须都认 —— 否则在没在本仓库装依赖、或者换了
+ * 平台的机器上就找不到 cordis：
+ *   · 扁平布局：<root>/node_modules/@deepseek-ai/<pkg>
+ *   · pnpm 虚拟存储：<root>/node_modules/.pnpm/@deepseek-ai+<pkg>@<版本>_<hash>/node_modules/@deepseek-ai/<pkg>
+ *   · pnpm store 的 links：<store>/v<N>/links/@deepseek-ai/<pkg>/<版本>/<hash>/node_modules/@deepseek-ai/<pkg>
+ *   · pnpm dlx 的缓存（DSH 自己就是 dlx 起来的，装在那儿）
+ *
+ * @param {string|null} pkg 包名（不带 @deepseek-ai/ 前缀）；null 表示全部。
+ * @returns {string[]} 候选目录。
+ */
+function candidatePackageDirs(pkg) {
+  const home = homedir();
+  const dirs = [];
+  const roots = [join(ROOT, 'node_modules')];
+  const profiles = join(home, '.dsh', 'profiles');
+  if (existsSync(profiles)) {
+    for (const name of readdirSync(profiles)) {
+      roots.push(join(profiles, name, 'node_modules'));
+    }
+  }
+  // pnpm dlx 的缓存目录：每个 dlx 目录里各有一份虚拟存储。
+  // dlx 的目录是两层（哈希 / 子哈希），所以往下再走一层。
+  const dlxRoots = [
+    join(home, 'AppData/Local/pnpm-cache/dlx'),
+    join(home, '.cache/pnpm/dlx'),
+  ];
+  for (const dlxRoot of dlxRoots) {
+    if (!existsSync(dlxRoot)) continue;
+    for (const entry of readdirSync(dlxRoot)) {
+      const first = join(dlxRoot, entry);
+      if (!existsSync(first)) continue;
+      roots.push(join(first, 'node_modules'));
+      if (!statSync(first).isDirectory()) continue;
+      for (const sub of readdirSync(first)) {
+        roots.push(join(first, sub, 'node_modules'));
+      }
+    }
+  }
+
+  for (const root of roots) {
+    // 扁平布局。
+    const flat = join(root, '@deepseek-ai');
+    if (existsSync(flat)) {
+      for (const name of readdirSync(flat)) {
+        if (pkg !== null && name !== pkg) continue;
+        dirs.push(join(flat, name));
+      }
+    }
+    // pnpm 虚拟存储：@deepseek-ai+<pkg>@<版本>_<hash>/node_modules/@deepseek-ai/<pkg>
+    const virtual = join(root, '.pnpm');
+    if (!existsSync(virtual)) continue;
+    for (const entry of readdirSync(virtual)) {
+      if (!entry.startsWith('@deepseek-ai+')) continue;
+      const inner = join(virtual, entry, 'node_modules', '@deepseek-ai');
+      if (!existsSync(inner)) continue;
+      for (const name of readdirSync(inner)) {
+        if (pkg !== null && name !== pkg) continue;
+        dirs.push(join(inner, name));
+      }
+    }
+  }
+
+  // pnpm store 的 links 布局。
+  for (const root of storeRoots()) {
+    if (!existsSync(root)) continue;
+    for (const name of readdirSync(root)) {
+      if (pkg !== null && name !== pkg) continue;
+      const base = join(root, name);
+      if (!existsSync(base)) continue;
+      for (const version of readdirSync(base)) {
+        const versionDir = join(base, version);
+        if (!existsSync(versionDir)) continue;
+        for (const hash of readdirSync(versionDir)) {
+          dirs.push(join(versionDir, hash, 'node_modules', '@deepseek-ai', name));
+        }
+      }
+    }
+  }
+
+  return dirs;
 }
 
 /**
@@ -119,17 +221,9 @@ function findCordis() {
   const local = join(ROOT, 'node_modules', '@deepseek-ai', 'cordis', 'lib', 'index.js');
   if (existsSync(local)) return { file: local, from: '本仓库 node_modules' };
 
-  for (const root of storeRoots()) {
-    const base = join(root, 'cordis');
-    if (!existsSync(base)) continue;
-    for (const version of readdirSync(base).sort().reverse()) {
-      const vdir = join(base, version);
-      if (!statSync(vdir).isDirectory()) continue;
-      for (const hash of readdirSync(vdir)) {
-        const p = join(vdir, hash, 'node_modules/@deepseek-ai/cordis/lib/index.js');
-        if (existsSync(p)) return { file: p, from: `pnpm store（cordis ${version}）` };
-      }
-    }
+  for (const dir of candidatePackageDirs('cordis')) {
+    const file = join(dir, 'lib', 'index.js');
+    if (existsSync(file)) return { file, from: `本机安装（${dir}）` };
   }
   return null;
 }
@@ -140,33 +234,26 @@ function findCordis() {
  * 为什么要现找：inject 里写的服务名必须真实存在。'tools' 由
  * @deepseek-ai/dsh-tools 提供（class ToolsService extends Service，
  * 构造时 super(ctx, 'tools')）。DSH 的服务不来自 cordis 核心里，所以只能去
- * store 里把提供方找出来 —— 找不到就说明 inject 写了一个不存在的服务。
+ * 本机装过的包里把提供方找出来 —— 找不到就说明 inject 写了一个不存在的服务。
  *
  * @param {string} service 服务名。
  * @returns {{pkg: string, file: string} | null} 提供方包名与命中文件。
  */
 function findServiceProvider(service) {
   const needle = new RegExp(`super\\(ctx,\\s*['"\`]${service}['"\`]\\)|provide\\(\\s*['"\`]${service}['"\`]`);
-  for (const root of storeRoots()) {
-    if (!existsSync(root)) continue;
-    for (const pkg of readdirSync(root).sort()) {
-      if (!pkg.includes('tool')) continue;
-      const base = join(root, pkg);
-      for (const version of readdirSync(base).sort().reverse()) {
-        const vdir = join(base, version);
-        if (!statSync(vdir).isDirectory()) continue;
-        for (const hash of readdirSync(vdir)) {
-          const libDir = join(vdir, hash, 'node_modules/@deepseek-ai', pkg, 'lib');
-          if (!existsSync(libDir)) continue;
-          for (const file of readdirSync(libDir)) {
-            if (!file.endsWith('.js')) continue;
-            const p = join(libDir, file);
-            try {
-              if (needle.test(readFileSync(p, 'utf8'))) return { pkg, file: p };
-            } catch { /* 读不到就跳过 */ }
-          }
-        }
-      }
+  // 服务名一般由名字相近的包提供（tools → dsh-tools），先按名字筛一遍，
+  // 省得把本机装过的每个包都读一遍。
+  for (const dir of candidatePackageDirs(null)) {
+    const name = dir.split(/[\\/]/).pop();
+    if (!name.includes('tool')) continue;
+    const libDir = join(dir, 'lib');
+    if (!existsSync(libDir)) continue;
+    for (const file of readdirSync(libDir)) {
+      if (!file.endsWith('.js')) continue;
+      const p = join(libDir, file);
+      try {
+        if (needle.test(readFileSync(p, 'utf8'))) return { pkg: name, file: p };
+      } catch { /* 读不到就跳过 */ }
     }
   }
   return null;

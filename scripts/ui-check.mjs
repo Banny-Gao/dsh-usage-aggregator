@@ -25,52 +25,20 @@
 
 import { strict as assert } from 'node:assert';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import { resolveView } from '../src/host/features/usage/resolve.js';
 import { installRuntime } from '../src/client/runtime.js';
 import { __ui as ui } from '../src/client/features/usage/index.js';
+import { fileURLToPath } from 'node:url';
 
-const PLUGIN_DIR = new URL('..', import.meta.url).pathname;
+const PLUGIN_DIR = fileURLToPath(new URL('..', import.meta.url));
 
 /* ─────────────────────── 找一份本机已有的 react ─────────────────────── */
 
-function findInStore(name, wanted) {
-  const roots = [
-    join(homedir(), 'Library/pnpm/store/v11/links/@', name),
-    join(homedir(), '.pnpm-store/v3/links/@', name),
-  ];
-  for (const root of roots) {
-    if (!existsSync(root)) continue;
-    const versions = (wanted === undefined ? readdirSync(root).sort().reverse() : [wanted]).filter((version) => existsSync(join(root, version)));
-    for (const version of versions) {
-      const base = join(root, version);
-      for (const hash of readdirSync(base)) {
-        const pkgDir = join(base, hash, 'node_modules', name);
-        if (existsSync(join(pkgDir, 'package.json'))) return { dir: pkgDir, version: version };
-      }
-    }
-  }
-  return null;
-}
-
-async function loadReact() {
-  // react 与 react-dom 必须**同版本**：跨版本混用会在渲染时报
-  // 「Objects are not valid as a React child」这种指错方向的错。
-  // 默认对齐生产：DSH 客户端的 react 是 18.x（dsh-client-ui-* 的 peer 是 ^18.2.0）。
-  // 需要时用 DUQ_UI_REACT_VERSION=19.2.8 换一版验证向前兼容。
-  const wanted = process.env.DUQ_UI_REACT_VERSION ?? '18.3.1';
-  const react = findInStore('react', wanted) ?? findInStore('react');
-  if (react === null) throw new Error('本机找不到 react —— 这个自检需要它（pnpm store 里应当有）');
-  const reactDom = findInStore('react-dom', react.version);
-  if (reactDom === null) throw new Error(`本机找不到与 react ${react.version} 同版本的 react-dom`);
-  const React = await import(pathToFileURL(join(react.dir, 'index.js')).href);
-  const serverEntry = existsSync(join(reactDom.dir, 'server.node.js')) ? 'server.node.js' : 'server.js';
-  const ReactDOMServer = await import(pathToFileURL(join(reactDom.dir, serverEntry)).href);
-  return { React: React.default ?? React, ReactDOMServer: ReactDOMServer.default ?? ReactDOMServer, version: react.version };
-}
+// react 在哪，各平台不一样（pnpm store 的位置、DSH profile、仓库 node_modules），
+// 查找逻辑统一放在 scripts/react-host.mjs 里。
+const { loadReact } = await import('./react-host.mjs');
 
 /* ─────────────────── 装上真实 React，取到要渲染的组件 ─────────────────── */
 
@@ -133,7 +101,7 @@ function check(name, fn) {
   }
 }
 
-const { React, ReactDOMServer, version } = await loadReact();
+const { React, ReactDOMServer, version } = await loadReact({ versionEnv: 'DUQ_UI_REACT_VERSION' });
 console.log(`→ react ${version} 离线渲染`);
 
 // 把真实 React 装进**共享 runtime**（src/client/runtime.js）——

@@ -27,9 +27,9 @@
 // 每条命令都有超时；所有动作都写进审计日志（DSH_HOME 下的 boost.log）。
 
 import { appendFile, mkdir, readdir, rm, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 import { formatCommand, runCommand } from './catalog.js';
-import { closeBrowserWindow, reniceProcesses, terminateProcesses } from './processes.js';
+import * as processes from './processes.js';
 import {
   listLegacyLogs,
   listSessions,
@@ -41,14 +41,151 @@ import {
 const CLEAN_TIMEOUT_MS = 180000;
 
 /**
+ * Windows 上必须拒绝的系统根目录（只挡「根目录本身」，不挡它下面的缓存目录）。
+ *
+ * 比如 C:\Windows 要拒绝，但 C:\Windows\Temp、C:\Windows\SoftwareDistribution\Download
+ * 是允许清理的缓存目录 —— Windows 侧的清理项就落在这些更深的地方。
+ *
+ * 恢复分区（Recovery）、性能日志（PerfLogs）、系统卷信息（System Volume
+ * Information）这三个是系统自己管理的目录，碰了会出事，同样挡在根目录这一层。
+ */
+const WINDOWS_SYSTEM_ROOTS = new Set([
+  'windows',
+  'program files',
+  'program files (x86)',
+  'programdata',
+  'users',
+  'system volume information',
+  'recovery',
+  'perflogs',
+]);
+
+/**
+ * 浏览器每个配置目录里的缓存目录（Default、Profile 1 … 里各有一份）。
+ */
+const PROFILE_CACHE_DIRS = [
+  'Cache', 'Code Cache', 'GPUCache', 'GrShaderCache', 'ShaderCache', 'DawnCache',
+  'GraphiteDawnCache', 'Service Worker/CacheStorage', 'Service Worker/ScriptCache',
+];
+
+/**
+ * 配置根目录下的缓存目录（浏览器自己管的那些：崩溃上报、组件缓存……）。
+ */
+const ROOT_CACHE_DIRS = [
+  ...PROFILE_CACHE_DIRS,
+  'Crashpad/pending', 'component_crx_cache', 'optimization_guide_model_store',
+];
+
+/**
+ * 浏览器配置目录的名字（Chrome / Edge / Brave 系）。
+ *
+ * Default 是第一个配置，Profile 1、Profile 2 是后来加的；Guest Profile、
+ * System Profile 是浏览器自己建的。
+ */
+const PROFILE_DIR_PATTERN = /^(Default|Profile \d+|Guest Profile|System Profile)$/;
+
+/** Windows 上比较路径不区分大小写（NTFS 默认如此），POSIX 上区分。 */
+const CASE_INSENSITIVE = process.platform === 'win32';
+
+/**
+ * 把分隔符统一成 '/'（Windows 的命令行里两种分隔符混着用）。
+ *
+ * 长度不变 —— 归一化之后的下标还能直接用回原文（子目录名要保留原来的大小写）。
+ *
+ * @param {string} value 原文。
+ * @returns {string} 统一分隔符后的文本。
+ */
+function unifySeparators(value) {
+  return CASE_INSENSITIVE ? value.replace(/\\/g, '/') : value;
+}
+
+/**
+ * 转义正则里的元字符。
+ *
+ * @param {string} value 原文。
+ * @returns {string} 转义后的文本。
+ */
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * 去掉末尾多余的分隔符（根目录本身保留）。
+ *
+ * @param {string} value 路径。
+ * @returns {string} 去掉末尾分隔符后的路径。
+ */
+function trimTrailingSeparators(value) {
+  const trimmed = value.replace(/\/+$/, '');
+  return trimmed === '' ? '/' : trimmed;
+}
+
+/**
+ * 去掉路径里的「.」段。
+ *
+ * 「.」解析成它自己，但留着会让层级数与家目录判定失真 —— '/Users/x/.' 会被 rm
+ * 解析成家目录本身，正是路径护栏要挡的事。去掉之后再判定：等于家目录、或者
+ * 层数不够，一律拒。
+ *
+ * 「..」不解析 —— 它一律直接拒（见 checkPosixPath / checkWindowsPath）。
+ *
+ * @param {string} value 已统一分隔符的路径。
+ * @returns {string} 去掉「.」段后的路径。
+ */
+function dropDotSegments(value) {
+  return value.split('/').filter((part) => part !== '.').join('/');
+}
+
+/**
+ * Windows 路径里「根之后的各段」。
+ *
+ * 盘符（C:\）与 UNC 共享（\\server\share）都算**一级** —— 所以 Windows 上的层级
+ * 判断是「根 + 至少一段」：C:\$Recycle.Bin 够得着，C:\ 太浅。
+ *
+ * @param {string} normalized 已统一分隔符的路径。
+ * @returns {string[]} 根之后的各段。
+ */
+function windowsSegments(normalized) {
+  if (normalized.startsWith('//')) {
+    return normalized.slice(2).split('/').filter((part) => part !== '').slice(2);
+  }
+  return normalized.replace(/^[a-zA-Z]:\//, '').split('/').filter((part) => part !== '');
+}
+
+/**
  * 正在运行的进程的命令行。
+ *
+ * 命令行由进程层提供 —— 那边知道 macOS 的 ps 与 Windows 的进程查询分别怎么读，
+ * 这里不重复造一遍。
+ *
+ * 拿不到就当没有进程在跑（降级成空数组），不让护栏把清理整个卡死。
  *
  * @returns {Promise<string[]>} 命令行列表。
  */
 export async function listRunningCommandLines() {
-  const result = await runCommand('ps', ['-Ao', 'command='], { timeoutMs: 8000 });
-  if (!result.ok) return [];
-  return result.stdout.split('\n').map((line) => line.trim()).filter((line) => line !== '');
+  const provider = processes.listRunningCommandLines;
+  if (typeof provider !== 'function') return [];
+  try {
+    const lines = await provider();
+    return Array.isArray(lines) ? lines : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 这个路径在不在。
+ *
+ * @param {string} target 路径。
+ * @returns {Promise<boolean>} 在不在。
+ */
+async function pathExists(target) {
+  try {
+    await stat(target);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -57,6 +194,9 @@ export async function listRunningCommandLines() {
  * 只看命令行：进程命令行里出现了 `<缓存目录>/xxx`，说明 xxx 这个子目录里有
  * 正在被运行的东西，删了就会打断它。
  *
+ * Windows 上分隔符统一、大小写不敏感（NTFS 默认如此）；子目录名从**原文**里切，
+ * 保留原来的大小写 —— 拿它跟目录项的名字比对才比得上。
+ *
  * @param {string} cachePath 缓存目录。
  * @param {string[]} commandLines 正在运行的命令行。
  * @returns {Set<string>} 被占用的子目录名。
@@ -64,11 +204,13 @@ export async function listRunningCommandLines() {
 export function findInUseSubdirs(cachePath, commandLines) {
   const used = new Set();
   if (typeof cachePath !== 'string' || cachePath === '') return used;
-  const prefix = cachePath.endsWith('/') ? cachePath : `${cachePath}/`;
+  const prefix = trimTrailingSeparators(unifySeparators(cachePath));
+  const pattern = new RegExp(`${escapeRegExp(prefix)}/`, CASE_INSENSITIVE ? 'i' : '');
   for (const line of commandLines) {
-    const index = line.indexOf(prefix);
-    if (index === -1) continue;
-    const rest = line.slice(index + prefix.length);
+    const unified = unifySeparators(line);
+    const match = pattern.exec(unified);
+    if (match === null) continue;
+    const rest = unified.slice(match.index + match[0].length);
     const name = rest.split('/')[0];
     if (name !== '') used.add(name);
   }
@@ -83,7 +225,8 @@ export function findInUseSubdirs(cachePath, commandLines) {
  *   - `tail -f /x/cache/inuse/a.txt` → **不算**整体在用 —— 占用的只是它下面的
  *     一个子目录，那是 findInUseSubdirs 的活，不该把整个缓存目录都放过。
  *
- * 前后都要求是参数的边界：前面是行首 / 空白 / `=`，后面不能是路径字符
+ * 前后都要求是参数的边界：前面是行首 / 空白 / `=` / 引号（Windows 上带空格的
+ * 路径命令行里是带引号的），后面不能是路径字符
  * （否则 `/x/cache` 会匹配上 `/x/cache/inuse/a.txt`）。
  *
  * @param {string} path 路径。
@@ -92,13 +235,83 @@ export function findInUseSubdirs(cachePath, commandLines) {
  */
 export function isPathInUse(path, commandLines) {
   if (typeof path !== 'string' || path === '') return false;
-  const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`(?:^|[\\s=])${escaped}(?![\\/\\w.-])`);
-  return commandLines.some((line) => pattern.test(line));
+  const target = trimTrailingSeparators(unifySeparators(path));
+  const pattern = new RegExp(
+    `(?:^|[\\s="])${escapeRegExp(target)}(?![\\/\\w.-])`,
+    CASE_INSENSITIVE ? 'i' : '',
+  );
+  return commandLines.some((line) => pattern.test(unifySeparators(line)));
+}
+
+/**
+ * POSIX 路径的合法性（macOS / Linux）。
+ *
+ * 层数口径：根（'/'）**不计入层级**，根之后的段数至少 2 段 ——
+ * '/Users/x' 两段放行，'/Users' 一段拒绝。
+ *
+ * @param {string} value 已去空白的路径。
+ * @param {string} home 家目录。
+ * @returns {{ok: boolean, reason?: string}} 结论。
+ */
+function checkPosixPath(value, home) {
+  const normalized = trimTrailingSeparators(dropDotSegments(value));
+  if (normalized === '/') return { ok: false, reason: '拒绝操作根目录' };
+  const homeNormalized = typeof home === 'string'
+    ? trimTrailingSeparators(dropDotSegments(home))
+    : '';
+  if (homeNormalized !== '' && homeNormalized !== '/' && normalized === homeNormalized) {
+    return { ok: false, reason: '拒绝操作家目录本身' };
+  }
+  const depth = normalized.split('/').filter((part) => part !== '').length;
+  if (depth < 2) return { ok: false, reason: '路径层级过浅，拒绝操作' };
+  if (value.includes('..')) return { ok: false, reason: '路径含 ..，拒绝操作' };
+  return { ok: true };
+}
+
+/**
+ * Windows 路径的合法性。
+ *
+ * 层数口径（跟 POSIX 对称，只是 Windows 的「根」是盘符）：
+ *   · 盘符（C:\）或 UNC 共享（\\server\share）本身算**一级**，但不算成「段」；
+ *   · 根之后的段数至少 1 段 —— C:\$Recycle.Bin 是「盘符 + 一段」两级，放行；
+ *     C:\ 只有盘符这一级，拒绝；
+ *   · 于是 C:\Windows\Temp 是三段（盘符、Windows、Temp），放行。
+ *
+ * @param {string} value 已去空白的路径。
+ * @param {string} home 家目录。
+ * @returns {{ok: boolean, reason?: string}} 结论。
+ */
+function checkWindowsPath(value, home) {
+  const unified = unifySeparators(value);
+  if (!win32.isAbsolute(unified)) return { ok: false, reason: '不是绝对路径' };
+  const normalized = trimTrailingSeparators(dropDotSegments(unified));
+  if (/^[a-zA-Z]:\/?$/.test(normalized)) return { ok: false, reason: '拒绝操作根目录' };
+  if (typeof home === 'string' && home !== '') {
+    const homeNormalized = trimTrailingSeparators(dropDotSegments(unifySeparators(home))).toLowerCase();
+    if (normalized.toLowerCase() === homeNormalized) {
+      return { ok: false, reason: '拒绝操作家目录本身' };
+    }
+  }
+  const segments = windowsSegments(normalized);
+  // 系统根目录本身要挡下来，但它们**下面**的缓存目录（Windows 更新缓存之类）要放行。
+  if (segments.length === 1 && WINDOWS_SYSTEM_ROOTS.has(segments[0].toLowerCase())) {
+    return { ok: false, reason: '拒绝操作系统根目录' };
+  }
+  // 盘符（共享）本身算一级，之下至少还要有一段 —— C:\$Recycle.Bin 放行，C:\ 不行。
+  if (segments.length < 1) return { ok: false, reason: '路径层级过浅，拒绝操作' };
+  if (value.includes('..')) return { ok: false, reason: '路径含 ..，拒绝操作' };
+  return { ok: true };
 }
 
 /**
  * 这个路径能不能删。
+ *
+ * 路径的**形状**决定用哪套规则：以 '/' 开头是 POSIX 路径，驱动器 / UNC 开头是
+ * Windows 路径。POSIX 上 Windows 形状的路径不算绝对路径（macOS 上没有这种路径）。
+ *
+ * 层数口径两边对称：POSIX 的根（'/'）与 Windows 的盘符（C:\）都**不算成「段」**，
+ * 但 Windows 的盘符本身算一级 —— 所以 C:\$Recycle.Bin（盘符 + 一段）放行，
+ * C:\（只有盘符）拒绝。判定前先把「.」段去掉（'/Users/x/.' 会解析成家目录本身）。
  *
  * @param {string} path 路径。
  * @param {string} home 家目录。
@@ -107,13 +320,11 @@ export function isPathInUse(path, commandLines) {
 export function checkPathAllowed(path, home) {
   if (typeof path !== 'string' || path.trim() === '') return { ok: false, reason: '路径为空' };
   const value = path.trim();
-  if (!value.startsWith('/')) return { ok: false, reason: '不是绝对路径' };
-  if (value === '/') return { ok: false, reason: '拒绝操作根目录' };
-  if (value === home || value === `${home}/`) return { ok: false, reason: '拒绝操作家目录本身' };
-  const depth = value.split('/').filter((part) => part !== '').length;
-  if (depth < 2) return { ok: false, reason: '路径层级过浅，拒绝操作' };
-  if (value.includes('..')) return { ok: false, reason: '路径含 ..，拒绝操作' };
-  return { ok: true };
+  if (value.startsWith('/')) return checkPosixPath(value, home);
+  if (CASE_INSENSITIVE && (win32.isAbsolute(value) || /^[a-zA-Z]:/.test(value))) {
+    return checkWindowsPath(value, home);
+  }
+  return { ok: false, reason: '不是绝对路径' };
 }
 
 /**
@@ -240,7 +451,7 @@ export function createExecutor(options) {
       case 'renice':
         return runRenice(action, record);
       case 'terminate':
-        return runTerminate(action, record, commandLines);
+        return runTerminate(action, record);
       case 'close-window':
         return runCloseWindow(action, record);
       default:
@@ -258,7 +469,10 @@ export function createExecutor(options) {
    * @returns {Promise<object>} 结果。
    */
   async function runCleanCommand(item, action, record, timeout) {
-    const result = await runCommand(action.cmd, action.args ?? [], { timeoutMs: timeout });
+    // 条目自己声明的超时优先 —— Windows 的 WinSxS 组件清理（dism /StartComponentCleanup）
+    // 要跑好几分钟，用全局默认的 180 秒会被中途杀掉，用户看到的是「命令失败」。
+    const limit = item.timeoutMs ?? timeout;
+    const result = await runCommand(action.cmd, action.args ?? [], { timeoutMs: limit });
     if (!result.ok) {
       return { ok: false, reason: `命令失败：${result.stderr.slice(0, 300)}` };
     }
@@ -547,9 +761,61 @@ export function createExecutor(options) {
   }
 
   /**
+   * 清掉一个缓存目录。
+   *
+   * @param {string} target 目标目录。
+   * @returns {Promise<number|null>} 清掉的字节数；没有这个目录就是 null。
+   */
+  async function clearCacheDir(target) {
+    try {
+      const info = await stat(target);
+      if (!info.isDirectory()) return null;
+      const bytes = await dirSize(target);
+      await rm(target, { recursive: true, force: true });
+      return bytes;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 列出浏览器配置根目录下的「配置目录」（Default、Profile 1 …）。
+   *
+   * Chrome / Edge 系的每个配置是一个子目录，里面各有 Preferences、书签和自己
+   * 的缓存目录 —— 只清 Default 的话，第二个配置的缓存一直躺在那儿。
+   *
+   * 判定：名字像配置目录（Default / Profile N / Guest Profile / System Profile），
+   * 或者目录里有 Preferences 文件。
+   *
+   * @param {string} profileRoot 配置根目录。
+   * @returns {Promise<string[]>} 配置目录列表。
+   */
+  async function listProfileDirs(profileRoot) {
+    const dirs = [];
+    let entries;
+    try {
+      entries = await readdir(profileRoot, { withFileTypes: true });
+    } catch {
+      return dirs;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const dir = join(profileRoot, entry.name);
+      if (!PROFILE_DIR_PATTERN.test(entry.name) && !(await pathExists(join(dir, 'Preferences')))) {
+        continue;
+      }
+      dirs.push(dir);
+    }
+    return dirs;
+  }
+
+  /**
    * 清掉一个浏览器用户配置里的缓存目录。
    *
    * 只删浏览器自己的缓存目录，不动配置、书签、Cookie、登录态。
+   *
+   * 根级的缓存目录照清，**每个配置目录**（Default、Profile 1 …）里的那份也清 ——
+   * 只清第一个配置的话，第二个配置的缓存一直躺在那儿，条目名不副实。
    *
    * @param {string} path 浏览器配置根目录。
    * @param {object} record 结果记录。
@@ -562,31 +828,29 @@ export function createExecutor(options) {
     if (isPathInUse(path, commandLines)) {
       return { ok: false, skipped: true, reason: '这个浏览器正在运行中，跳过' };
     }
-    const CACHE_DIRS = [
-      'Cache', 'Code Cache', 'GPUCache', 'GrShaderCache', 'ShaderCache', 'DawnCache',
-      'GraphiteDawnCache', 'Service Worker/CacheStorage', 'Service Worker/ScriptCache',
-      'Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'Default/DawnCache',
-      'Default/GraphiteDawnCache', 'Default/Service Worker/CacheStorage',
-      'Crashpad/pending', 'component_crx_cache', 'optimization_guide_model_store',
-    ];
     let bytes = 0;
     let removed = 0;
-    for (const relative of CACHE_DIRS) {
-      const target = join(path, relative);
-      try {
-        const info = await stat(target);
-        if (!info.isDirectory()) continue;
-        bytes += await dirSize(target);
-        await rm(target, { recursive: true, force: true });
+    for (const relative of ROOT_CACHE_DIRS) {
+      const size = await clearCacheDir(join(path, relative));
+      if (size === null) continue;
+      bytes += size;
+      removed += 1;
+    }
+    const profiles = await listProfileDirs(path);
+    for (const profile of profiles) {
+      for (const relative of PROFILE_CACHE_DIRS) {
+        const size = await clearCacheDir(join(profile, relative));
+        if (size === null) continue;
+        bytes += size;
         removed += 1;
-      } catch {
-        /* 没有这个目录就跳过 */
       }
     }
     return {
       ok: true,
       reclaimedBytes: bytes,
-      reason: removed === 0 ? '这个浏览器配置里没有可清的缓存目录' : `已清掉 ${removed} 个缓存目录`,
+      reason: removed === 0
+        ? '这个浏览器配置里没有可清的缓存目录'
+        : `已清掉 ${removed} 个缓存目录${profiles.length > 0 ? `（覆盖 ${profiles.length} 个配置目录）` : ''}`,
     };
   }
 
@@ -598,7 +862,7 @@ export function createExecutor(options) {
    * @returns {Promise<object>} 结果。
    */
   async function runRenice(action, record) {
-    const results = await reniceProcesses(action.pids ?? [], action.delta ?? 10);
+    const results = await processes.reniceProcesses(action.pids ?? [], action.delta ?? 10);
     const failed = results.filter((item) => item.ok !== true);
     return {
       ok: failed.length === 0,
@@ -614,22 +878,43 @@ export function createExecutor(options) {
    * 执行前**复核** pid 现在的命令行：pid 会被回收复用，不复核就可能杀掉一个
    * 跟体检时完全无关的新进程。
    *
+   * 复核靠「pid → 命令行」的精确配对（进程层给的），**不是**在命令行列表里找
+   * pid 数字 —— 命令行里本来就没有自己的 pid，那种找法一次都命中不了，复核成了
+   * 摆设；退一步说，`includes(' ${pid} ')` 还会碰巧命中别的命令行里的数字，
+   * 复核就假通过了。
+   *
+   * 命令行拿不到时（Windows 的服务与 SYSTEM 进程是空串）只按 pid 存在与否判断：
+   * 进程还在就认为还是它，不因为「命令行读不到」而误跳过正当的结束。
+   *
+   * 进程层给不出 pid 清单时按「体检之后就没了」处理 —— 宁可不结束，也不能在
+   * 没法复核的情况下动手。
+   *
    * @param {object} action 动作。
    * @param {object} record 结果记录。
-   * @param {string[]} commandLines 运行中的命令行。
    * @returns {Promise<object>} 结果。
    */
-  async function runTerminate(action, record, commandLines) {
+  async function runTerminate(action, record) {
     const expect = action.expect ?? {};
     const targets = [];
     let changed = 0;
+    let running = [];
+    try {
+      const provider = processes.listRunningProcesses;
+      running = typeof provider === 'function' ? await provider() : [];
+    } catch {
+      running = [];
+    }
+    const byPid = new Map(
+      (Array.isArray(running) ? running : []).map((proc) => [Number(proc.pid), String(proc.command ?? '')]),
+    );
     for (const [pid, prefix] of Object.entries(expect)) {
-      const line = commandLines.find((item) => item.startsWith(`${pid} `) || item.includes(` ${pid} `));
+      const line = byPid.get(Number(pid));
       if (line === undefined) {
         changed += 1;
         continue;
       }
-      if (typeof prefix === 'string' && prefix !== '' && !line.includes(prefix)) {
+      // 命令行是空串（读不到）时只按 pid 判断；能拿到才比对片段。
+      if (line !== '' && typeof prefix === 'string' && prefix !== '' && !line.includes(prefix)) {
         changed += 1;
         continue;
       }
@@ -638,11 +923,23 @@ export function createExecutor(options) {
     if (targets.length === 0) {
       return { ok: false, skipped: true, reason: '体检之后这些进程已经不在了（或已经换了别的进程）' };
     }
-    const results = await terminateProcesses(targets);
+    const results = await processes.terminateProcesses(targets);
     const failed = results.filter((item) => item.ok !== true);
+    // 结束不掉要说清楚为什么：Windows 上控制台进程没有窗口可关，taskkill 不带 /F
+    // 结束不掉它 —— 只报「1 个失败」用户根本不知道下一步该干什么。
+    const errors = failed
+      .map((item) => item.error)
+      .filter((text) => typeof text === 'string' && text !== '');
+    const parts = [];
+    const ended = results.length - failed.length;
+    if (ended > 0) parts.push(`已结束 ${ended} 个进程`);
+    if (changed > 0) parts.push(`${changed} 个已经不在了`);
+    if (failed.length > 0) {
+      parts.push(`${failed.length} 个没结束掉${errors.length > 0 ? `（${errors.join('；')}）` : ''}`);
+    }
     return {
       ok: failed.length === 0,
-      reason: `已结束 ${results.length - failed.length} 个进程${changed > 0 ? `；${changed} 个已经不在了` : ''}${failed.length > 0 ? `；${failed.length} 个失败` : ''}`,
+      reason: parts.join('；'),
     };
   }
 
@@ -658,7 +955,7 @@ export function createExecutor(options) {
     let closed = 0;
     const failed = [];
     for (const win of windows) {
-      const result = await closeBrowserWindow(win);
+      const result = await processes.closeBrowserWindow(win);
       if (result.ok) closed += 1;
       else failed.push(`${win.browserLabel}#${win.windowId}`);
     }

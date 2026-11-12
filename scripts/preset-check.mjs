@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { insertRows, parsePatchFile } from './patch-dialect.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -153,13 +153,15 @@ if (scopeDetected) {
 
 check('仓库里有 AGENTS.md 手册', fs.existsSync(AGENTS_FILE));
 if (personaPrefix !== null && fs.existsSync(AGENTS_FILE)) {
-  const manual = fs.readFileSync(AGENTS_FILE, 'utf8').replace(/\n+$/, '');
+  // 行尾统一成 LF 再比：Windows 上 checkout 出来的手册是 CRLF，而 persona 载荷
+  // 在 YAML 里是 LF —— 比的是内容，不该被行尾差异判成不一致。
+  const manual = fs.readFileSync(AGENTS_FILE, 'utf8').replace(/\r\n/g, '\n').replace(/\n+$/, '');
   // persona 载荷比手册多一句模型引导语，其余必须逐字相同。
   const guidance = 'You are a coding agent powered by the {{model}} model.';
   // YAML 块标量保留结尾换行,手册读进来也统一去掉尾部空行再比。
   const withoutGuidance = (personaPrefix.startsWith(guidance)
     ? personaPrefix.slice(guidance.length).replace(/^\n+/, '')
-    : personaPrefix).replace(/\n+$/, '');
+    : personaPrefix).replace(/\r\n/g, '\n').replace(/\n+$/, '');
   check('persona 载荷与 AGENTS.md 手册逐字一致', withoutGuidance === manual);
   for (const heading of ['## 编码准则', '## 论断准则', '## 工作流', '## 硬禁令', '## 交付前自检', '## 代码约定']) {
     check(`persona 含「${heading}」`, withoutGuidance.includes(heading));
@@ -169,7 +171,9 @@ if (personaPrefix !== null && fs.existsSync(AGENTS_FILE)) {
 
 // ---------------------------------------------------------------- 守卫导出
 
-const guard = await import(path.join(ROOT, 'presets/hard-metrics-guard.js'));
+// 绝对路径在 Windows 上不是合法的模块说明符（'C:\…' 会被当成 URL 方案），
+// 所以要走 file:// URL。
+const guard = await import(pathToFileURL(path.join(ROOT, 'presets/hard-metrics-guard.js')).href);
 check('守卫导出 name', typeof guard.name === 'string' && guard.name.length > 0, guard.name);
 check('守卫导出 inject', Array.isArray(guard.inject) && guard.inject.includes('tools'), JSON.stringify(guard.inject));
 check('守卫导出 apply', typeof guard.apply === 'function');

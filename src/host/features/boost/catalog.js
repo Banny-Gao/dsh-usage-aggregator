@@ -29,8 +29,9 @@
 // 旧版本目录（pnpm 从 v3 换到 v11 之后，store/v3 就没人再用了）。这类没有官方
 // 命令可调，只能定向删除 —— 所以它们由发现过程**派生**出来，不在适配器表里。
 
-import { readdir } from 'node:fs/promises';
-import { basename, dirname, isAbsolute, join } from 'node:path';
+import { readdir, stat } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { basename, delimiter, dirname, isAbsolute, join, resolve } from 'node:path';
 
 import { runProcess } from '../../shared/cmd.js';
 
@@ -485,6 +486,93 @@ export async function detectTool(adapter) {
 }
 
 /**
+ * 这台机器上「还活着的」pnpm store 目录。
+ *
+ * 为什么必须问一圈：一台机器上常常装了**不止一个 pnpm**（nvm 的版本目录、独立的
+ * 全局安装、pnpm 自带的那个……），每个 pnpm 版本各有各的 store 代次（store/v10、
+ * store/v11 …）。当前这个 pnpm 用的那一代之外，别的 pnpm 可能**正在用**那一代 ——
+ * 把别人的 store 当成「旧版本残留」删掉，删的是别的 pnpm 正在写的缓存。
+ *
+ * 办法还是那句老话：**问工具自己**。把 PATH 上每个 pnpm 都问一遍「你的 store 在哪」，
+ * 报回来的都是活的，一个都不许当成孤儿。
+ *
+ * @param {object} env 环境变量。
+ * @returns {Promise<Set<string>>} 活着的 store 目录（规范化后的路径）。
+ */
+export async function liveStoreRoots(env) {
+  const roots = new Set();
+  const directories = String(env?.PATH ?? '').split(delimiter).filter((item) => item !== '');
+  const binaries = new Set();
+  for (const directory of directories) {
+    for (const name of ['pnpm', 'pnpm.cmd', 'pnpm.exe', 'pnpm.bat']) {
+      const binary = join(directory, name);
+      try {
+        if (existsSync(binary)) binaries.add(binary);
+      } catch {
+        /* 读不到就跳过 */
+      }
+    }
+  }
+  await Promise.all([...binaries].map(async (binary) => {
+    const result = await runCommand(binary, ['store', 'path'], { timeoutMs: LOCATE_TIMEOUT_MS });
+    if (!result.ok) return;
+    const value = result.stdout.split('\n')[0].trim();
+    if (value !== '') roots.add(normalizePath(value));
+  }));
+  return roots;
+}
+
+/**
+ * 把路径规范化成「能拿来比相等」的形态。
+ *
+ * @param {string} path 路径。
+ * @returns {string} 规范化后的路径。
+ */
+function normalizePath(path) {
+  const resolved = resolve(path);
+  // Windows 上不区分大小写，比较时统一小写。
+  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+}
+
+/**
+ * 最近这么多天内还在写入的 store 代次，不算孤儿。
+ *
+ * 为什么要这条：PATH 上看不到的 pnpm（nvm 的版本目录里那个、独立装在别处的那个…）
+ * 也在用某个代次 —— 体检问不到它。但 store 目录里「最近还在被写」是个诚实的信号：
+ * 没人用的 store 不会变新。
+ *
+ * 判据取**直接子目录里最新的 mtime**：真正在写的是 files / index / projects 这些
+ * 子目录，顶层目录的 mtime 反映不了它们。
+ */
+const RECENT_STORE_DAYS = 7;
+
+/**
+ * 这个 store 代次最近有没有在被写入。
+ *
+ * @param {string} dir 代次目录。
+ * @returns {Promise<boolean>} 最近 RECENT_STORE_DAYS 天内写过就是 true。
+ */
+async function storeIsActive(dir) {
+  let names;
+  try {
+    names = await readdir(dir);
+  } catch {
+    return false;
+  }
+  let newest = 0;
+  for (const name of names) {
+    try {
+      const info = await stat(join(dir, name));
+      if (info.mtimeMs > newest) newest = info.mtimeMs;
+    } catch {
+      /* 读不到就跳过 */
+    }
+  }
+  if (newest === 0) return false;
+  return Date.now() - newest < RECENT_STORE_DAYS * 86400000;
+}
+
+/**
  * 从当前 pnpm store 里找出**已经没人用的旧版本目录**。
  *
  * pnpm 把不同代的存储格式放在同一个 store 根目录下面（store/v3、store/v11 …）。
@@ -494,12 +582,18 @@ export async function detectTool(adapter) {
  * 目录清单直接读文件系统 —— 早先用 `sh -c ls`，那在 Windows 上没有 sh 的语义，
  * 路径里的反斜杠还会被 shell 吃掉。
  *
+ * ⚠️ 「没人用」这件事不能只看当前这一个 pnpm：机器上装了多个 pnpm 时，别的那几个
+ * 可能正在用别的代次。所以要把它们报出来的 store 一并排除（见 liveStoreRoots），
+ * 最近还在写入的那一代也不排除（见 storeIsActive）。
+ *
  * @param {string} storeDir 当前 store 路径（形如 <root>/v11）。
+ * @param {{liveRoots?: Set<string>}} options options.liveRoots 是别的 pnpm 正在用的 store。
  * @returns {Promise<string[]>} 旧版本目录的绝对路径。
  */
-export async function findOrphanStoreVersions(storeDir) {
+export async function findOrphanStoreVersions(storeDir, options = {}) {
   if (typeof storeDir !== 'string' || storeDir === '') return [];
   if (!isAbsolute(storeDir)) return [];
+  const live = options.liveRoots instanceof Set ? options.liveRoots : new Set();
   const root = dirname(storeDir);
   const current = basename(storeDir);
   // 根目录（'/' 或 'C:\'）下面找不出「上一代」—— 那一层没有意义。
@@ -515,7 +609,12 @@ export async function findOrphanStoreVersions(storeDir) {
     if (name === current) continue;
     // pnpm 的存储代次目录都叫 v<数字>；别的同名目录不碰。
     if (!/^v\d+$/.test(name)) continue;
-    orphans.push(join(root, name));
+    const path = join(root, name);
+    // 别的 pnpm 正在用的那一代，不算孤儿。
+    if (live.has(normalizePath(path))) continue;
+    // 最近还在写入的那一代，也不算孤儿（有人在用，只是体检没问到那个 pnpm）。
+    if (await storeIsActive(path)) continue;
+    orphans.push(path);
   }
   return orphans;
 }

@@ -14,14 +14,14 @@
  */
 
 import { strict as assert } from 'node:assert';
-import { mkdtemp, mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { zstdCompressSync } from 'node:zlib';
 
-import { ADAPTERS, adapterSupported, formatCommand, runCommand } from '../src/host/features/boost/catalog.js';
+import { ADAPTERS, adapterSupported, findOrphanStoreVersions, formatCommand, runCommand } from '../src/host/features/boost/catalog.js';
 import { checkPathAllowed, createExecutor, findInUseSubdirs, isPathInUse, listRunningCommandLines } from '../src/host/features/boost/execute.js';
 import { humanBytes, factsToText, ruleAnalysis } from '../src/host/features/boost/analyze.js';
 import { isMachineIdle, measureBytes, probeSystem } from '../src/host/features/boost/probe.js';
@@ -505,6 +505,57 @@ await check('要跑很久的清理条目自带时限', () => {
   assert.ok(winsxs.timeoutMs > 180000, `win-winsxs 的时限应当比全局默认长：${winsxs.timeoutMs}`);
 });
 
+await check('pnpm 的旧代存储：别的 pnpm 正在用的那一代不算孤儿', async () => {
+  // 机器上常驻着不止一个 pnpm（nvm 的版本目录、独立安装的那个……），每个各有各的
+  // store 代次。把别人正在用的那代当成「旧版本残留」删掉，删的是人家的缓存。
+  const root = await mkdtemp(join(tmpdir(), 'boost-store-'));
+  try {
+    for (const name of ['v3', 'v10', 'v11', 'other']) {
+      await mkdir(join(root, name), { recursive: true });
+    }
+    const livePath = join(root, 'v11');
+    const live = new Set([process.platform === 'win32' ? livePath.toLowerCase() : livePath]);
+    const orphans = await findOrphanStoreVersions(join(root, 'v10'), { liveRoots: live });
+    assert.deepEqual(
+      orphans.map((path) => path.split(/[\\/]/).pop()),
+      ['v3'],
+      '只有谁都没用的那一代才算孤儿',
+    );
+    const withoutLive = await findOrphanStoreVersions(join(root, 'v10'));
+    assert.deepEqual(
+      withoutLive.map((path) => path.split(/[\\/]/).pop()).sort(),
+      ['v11', 'v3'],
+      '不排除活的那一代时，两代都被当成孤儿（这正是要防的事）',
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+await check('pnpm 的旧代存储：最近还在写入的那一代不算孤儿', async () => {
+  // 体检只问得到 PATH 上的 pnpm；看不见的那一个（nvm 的版本目录里那个）也可能在写
+  // 某个代次 —— 「最近还在被写」是个诚实的信号：没人用的 store 不会变新。
+  const root = await mkdtemp(join(tmpdir(), 'boost-store-'));
+  try {
+    const old = join(root, 'v3', 'files');
+    const fresh = join(root, 'v10', 'files');
+    await mkdir(old, { recursive: true });
+    await mkdir(fresh, { recursive: true });
+    const longAgo = new Date(Date.now() - 30 * 86400000);
+    await utimes(old, longAgo, longAgo);
+    const now = new Date();
+    await utimes(fresh, now, now);
+    const orphans = await findOrphanStoreVersions(join(root, 'v11'));
+    assert.deepEqual(
+      orphans.map((path) => path.split(/[\\/]/).pop()),
+      ['v3'],
+      '只有停用了一阵子的那一代才算孤儿',
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 await check('命令渲染成给人看的文本', () => {
   assert.equal(formatCommand({ cmd: 'npm', args: ['cache', 'clean', '--force'] }), 'npm cache clean --force');
   assert.equal(formatCommand(null), '');
@@ -856,7 +907,6 @@ await check('执行器：回收站只删旧的快照，最近几份留着', asyn
       await writeFile(join(root, 'trash', name, 'x.txt'), 'x');
     }
     // 让 mtime 有明确先后：靠 utimes 设置。
-    const { utimes } = await import('node:fs/promises');
     const names = ['20260101-000000', '20260102-000000', '20260103-000000', '20260104-000000'];
     for (let index = 0; index < names.length; index += 1) {
       const when = new Date(Date.UTC(2026, 0, index + 1));

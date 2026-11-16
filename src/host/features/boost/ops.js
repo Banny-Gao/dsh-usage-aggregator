@@ -14,7 +14,7 @@
 
 import { stat } from 'node:fs/promises';
 
-import { ADAPTERS, adapterSupported, detectTool, findOrphanStoreVersions, formatCommand, locateCacheDir } from './catalog.js';
+import { ADAPTERS, adapterSupported, detectTool, findOrphanStoreVersions, formatCommand, liveStoreRoots, locateCacheDir } from './catalog.js';
 import { analyzeSystem, humanBytes } from './analyze.js';
 import { createExecutor } from './execute.js';
 import { isMachineIdle, measureBytes, probeSystem } from './probe.js';
@@ -195,7 +195,10 @@ export function createOps(options) {
     const orphans = [];
     const pnpmStoreDir = context.pnpmStoreDir;
     if (typeof pnpmStoreDir === 'string' && pnpmStoreDir !== '') {
-      for (const orphan of await findOrphanStoreVersions(pnpmStoreDir)) {
+      // 机器上可能装了不止一个 pnpm，每个各有各的 store 代次 —— 先问一圈哪些还活着，
+      // 只有「谁都不用」的那一代才算孤儿。
+      const liveRoots = await liveStoreRoots(env);
+      for (const orphan of await findOrphanStoreVersions(pnpmStoreDir, { liveRoots })) {
         orphans.push({
           adapter: {
             id: 'pnpm-store-orphan',
@@ -203,7 +206,9 @@ export function createOps(options) {
             tool: 'pnpm',
             semantics: 'prune',
             risk: 'medium',
-            note: 'pnpm 升级到新版本之后，旧的一代存储目录没人再写也没人再读，但没有任何官方命令会清它。',
+            // 删的是别的 pnpm 可能正在写的缓存 —— 默认不勾，让人自己确认。
+            selectedByDefault: false,
+            note: 'pnpm 升级到新版本之后，旧的一代存储目录没人再写也没人再读，但没有任何官方命令会清它。体检已经排除了「本机其它 pnpm 正在用」与「最近一周还在写入」的那一代；确认没有别的 pnpm 在用再删。',
           },
           path: orphan,
           cleanCommand: null,

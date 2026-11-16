@@ -3793,7 +3793,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-11-13 00:41:04";
+		return "2026-11-17 00:36:35";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -7742,7 +7742,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-11-13 00:41:04";
+	var BUILD_AT = "2026-11-17 00:36:35";
 	/**
 	* 声明要等的服务。
 	*

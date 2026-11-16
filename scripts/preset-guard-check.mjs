@@ -8,9 +8,17 @@
  * 每条断言写的是手册要求的行为,不是实现的内部步骤;
  * 实现换成另一种写法时,断言应当仍然成立。
  */
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { apply } from '../presets/hard-metrics-guard.js';
 
-const AGENT = { id: 'session-1' };
+const AGENT = { id: 'session-1', session: { header: { delegationDepth: 0 } } };
+const SUBAGENT = { id: 'session-sub', session: { header: { delegationDepth: 1 } } };
+/** 顶层会话:会话头里可能根本没有委托深度这个字段。 */
+const TOP_LEVEL = { id: 'session-plain', session: { header: {} } };
+/** 子代理会话:靠 origin 标记,深度字段可能没写。 */
+const SUBAGENT_ORIGIN = { id: 'session-origin', session: { header: { origin: 'subagent' } } };
 
 /** 假 ctx:收集事件监听器与工具守卫。 */
 function createHarness() {
@@ -88,6 +96,29 @@ function questionExecution(callId = 'call-q1', agent = AGENT) {
   return { name: 'ask_user_question', callId, agent, arguments: { questions: [] } };
 }
 
+/**
+ * 造一个临时项目:脚本名看不出轻重,内容里藏着重命令。
+ *
+ * 守卫按会话的工作目录读 package.json,所以这个项目要挂在会话头的 cwd 上。
+ */
+const PROJECT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'guard-project-'));
+fs.writeFileSync(
+  path.join(PROJECT_DIR, 'package.json'),
+  JSON.stringify({
+    scripts: {
+      verify: 'bash scripts/verify.sh',
+      dev: 'vite',
+      hello: 'echo hi',
+      'lint:fix': 'eslint --fix .',
+    },
+  }),
+);
+fs.mkdirSync(path.join(PROJECT_DIR, 'scripts'));
+fs.writeFileSync(path.join(PROJECT_DIR, 'scripts/verify.sh'), 'pnpm exec vite build\n');
+
+/** 项目内的会话:cwd 指向临时项目。 */
+const PROJECT_AGENT = { id: 'session-proj', session: { header: { delegationDepth: 0, cwd: PROJECT_DIR } } };
+
 let passed = 0;
 const failures = [];
 const checks = [];
@@ -127,9 +158,9 @@ function authorize(harness, text, id = 'msg-1', turn = 1) {
 }
 
 /** 走一轮真实流程:pre-step 带 turn,user message 在 messages 里。 */
-async function startTurn(harness, text, id = 'msg-1', turn = 1) {
+async function startTurn(harness, text, id = 'msg-1', turn = 1, agent = AGENT) {
   const message = userMessage(id, text);
-  await harness.emitWaterfall('agent/pre-step', { agent: AGENT, messages: [message], turn, step: 1 });
+  await harness.emitWaterfall('agent/pre-step', { agent, messages: [message], turn, step: 1 });
   return message;
 }
 
@@ -532,6 +563,194 @@ check('不同 agent 的授权互不相干', async () => {
   await startTurn(harness, '提交', 'msg-1', 1);
   const other = { id: 'session-2' };
   assertDenied(harness.guard(bashExecution('git commit -m x', other)), '另一个 agent');
+});
+
+// ------------------------------------------------------- 复合提交指令
+
+check('复合指令里的提交算授权', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交,然后继续深入分析是否应该重构', 'msg-1', 1);
+  assertAllowed(harness.guard(bashExecution('git commit -m "fix"')), '复合指令');
+});
+
+check('复合指令里的提交算授权(各种说法)', async () => {
+  for (const text of [
+    '提交,然后继续深入分析 #67',
+    '那更新文档并提交,然后继续深入分析 #67',
+    '提交,然后再次简明扼要的说明 #15 本仓与书判差异',
+    '提交,然后继续深入分析 #46 为什么书判与本仓不符',
+  ]) {
+    const harness = createHarness();
+    await startTurn(harness, text, 'msg-1', 1);
+    assertAllowed(harness.guard(bashExecution('git commit -m "fix"')), text);
+  }
+});
+
+check('复合指令里的否定式仍然不算授权', async () => {
+  for (const text of ['不要提交,然后继续任务', '不用提交,然后继续任务']) {
+    const harness = createHarness();
+    await startTurn(harness, text, 'msg-1', 1);
+    assertDenied(harness.guard(bashExecution('git commit -m "fix"')), text);
+  }
+});
+
+check('谈论词只否定自己那一段', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交历史很乱,然后继续', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('git commit -m "fix"')), '提交历史很乱');
+});
+
+// ---------------------------------------------------------------- 重命令
+
+check('主代理没拿到同意时重命令被拒绝', () => {
+  const harness = createHarness();
+  assertDenied(harness.guard(bashExecution('pnpm build')), '没有同意');
+});
+
+check('子代理跑重命令被拒绝', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('pnpm build', SUBAGENT)), '子代理');
+});
+
+check('主代理拿到同意后重命令放行一次,第二次拒绝', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1);
+  assertAllowed(harness.guard(bashExecution('pnpm vitest')), '第一次');
+  assertDenied(harness.guard(bashExecution('pnpm vitest')), '第二次');
+});
+
+check('同意跑测试不等于同意构建', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('pnpm build')), '构建');
+});
+
+check('类型检查要单独授权', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('vue-tsc --noEmit')), '类型检查');
+});
+
+check('同意类型检查后放行一次', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下类型检查', 'msg-1', 1);
+  assertAllowed(harness.guard(bashExecution('vue-tsc --noEmit')), '类型检查');
+  assertDenied(harness.guard(bashExecution('vue-tsc --noEmit')), '类型检查第二次');
+});
+
+check('否定式的重命令要求不算授权', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '不用跑测试', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('pnpm vitest')), '不用跑测试');
+});
+
+check('重命令的同意换一轮就失效', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1);
+  await startTurn(harness, '继续', 'msg-2', 2);
+  assertDenied(harness.guard(bashExecution('pnpm vitest')), '第二轮');
+});
+
+check('普通命令不算重命令', () => {
+  const harness = createHarness();
+  for (const command of ['ls -la', 'node scripts/check.mjs', 'pnpm dev', 'npm run dev', 'git status']) {
+    assertAllowed(harness.guard(bashExecution(command)), command);
+  }
+});
+
+check('run_code 里藏着重命令也算重命令', () => {
+  const harness = createHarness();
+  const code = 'exec' + 'Sync("pnpm build");';
+  assertDenied(harness.guard(runCodeExecution(code, SUBAGENT)), '子代理 run_code');
+});
+
+check('会话头没写委托深度时仍按主代理放行', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1, TOP_LEVEL);
+  assertAllowed(harness.guard(bashExecution('pnpm vitest', TOP_LEVEL)), '顶层会话');
+});
+
+check('会话头标了 origin=subagent 就算子代理', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1, SUBAGENT_ORIGIN);
+  assertDenied(harness.guard(bashExecution('pnpm vitest', SUBAGENT_ORIGIN)), 'origin=subagent');
+});
+
+check('读不到执行者是谁时不放行重命令', () => {
+  const harness = createHarness();
+  assertDenied(harness.guard(bashExecution('pnpm vitest', null)), '执行者未知');
+});
+
+check('只是聊构建不算同意跑构建', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '看下构建配置在哪', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('pnpm build')), '只是聊构建');
+});
+
+check('「构建一下」算同意跑构建', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '构建一下', 'msg-1', 1);
+  assertAllowed(harness.guard(bashExecution('pnpm build')), '构建一下');
+});
+
+// ------------------------------------------------------ 重命令覆盖面
+
+check('静态检查类的重命令也要授权', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下代码检查', 'msg-1', 1);
+  assertAllowed(harness.guard(bashExecution('pnpm eslint .')), 'eslint');
+  assertDenied(harness.guard(bashExecution('pnpm eslint .')), '第二次 eslint');
+});
+
+check('同意跑测试不等于同意跑端到端', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下测试', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('playwright test')), 'playwright');
+});
+
+check('构建器的 build 子命令算重命令,dev 不算', () => {
+  const harness = createHarness();
+  assertDenied(harness.guard(bashExecution('vite build')), 'vite build');
+  assertAllowed(harness.guard(bashExecution('vite dev')), 'vite dev');
+});
+
+check('全仓编排器算重命令', () => {
+  const harness = createHarness();
+  assertDenied(harness.guard(bashExecution('turbo run build')), 'turbo');
+});
+
+check('本地 bin 目录里的 eslint 也算重命令', () => {
+  const harness = createHarness();
+  assertDenied(harness.guard(bashExecution('./node_modules/.bin/eslint .')), 'eslint bin');
+});
+
+check('包脚本按内容判定:脚本链里有构建就算重命令', async () => {
+  const harness = createHarness();
+  // 只同意静态检查:按内容判定出来的构建仍要单独授权。
+  await startTurn(harness, '跑一下代码检查', 'msg-1', 1, PROJECT_AGENT);
+  assertDenied(harness.guard(bashExecution('npm run verify', PROJECT_AGENT)), 'npm run verify');
+  await startTurn(harness, '跑一下构建', 'msg-2', 2, PROJECT_AGENT);
+  assertAllowed(harness.guard(bashExecution('npm run verify', PROJECT_AGENT)), 'npm run verify');
+});
+
+check('包脚本按内容判定:内容里没有重命令就放行', () => {
+  const harness = createHarness();
+  for (const command of ['npm run dev', 'npm run hello']) {
+    assertAllowed(harness.guard(bashExecution(command, PROJECT_AGENT)), command);
+  }
+});
+
+check('包脚本的名字本身是重命令名时按名字判定', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下代码检查', 'msg-1', 1, PROJECT_AGENT);
+  assertAllowed(harness.guard(bashExecution('npm run lint:fix', PROJECT_AGENT)), 'lint:fix');
+});
+
+check('子代理跑静态检查同样被拒绝', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '跑一下代码检查', 'msg-1', 1);
+  assertDenied(harness.guard(bashExecution('pnpm eslint .', SUBAGENT)), '子代理 eslint');
 });
 
 await runChecks();

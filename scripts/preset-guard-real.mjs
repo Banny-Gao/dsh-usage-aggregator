@@ -12,12 +12,17 @@
  *   5. 提问卡片里选中的选项算授权,一次点击只算一次;
  *   6. 守卫只作用于本预设作用域内的 agent(作用域隔离);
  *   7. 守卫的 agent/pre-step 监听器不截断 waterfall 链条;
- *   8. 进入新一轮后上一轮授权作废。
+ *   8. 进入新一轮后上一轮授权作废;
+ *   9. 重命令(类型检查 / 静态检查 / 全量测试 / 端到端测试 / 构建)没有当轮同意时被真实拒绝;
+ *  10. 子代理跑重命令一律被拒,顶层会话(没有委托深度字段)仍按主代理处理;
+ *  11. 项目自定义包脚本按内容判定:脚本链里有重命令就被拦。
  *
  * 宿主作用域不可用时跳过(静态自检 scripts/preset-guard-check.mjs 仍然生效)。
  */
 
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -119,6 +124,12 @@ createScope(ctx, agentC, { parent: presetKey });
 /** 预设作用域之外的 agent:守卫对它不生效。 */
 const agentOut = { id: 'out' };
 createScope(ctx, agentOut);
+/** 顶层会话:会话头里没有委托深度字段(生产里的主代理就是这样)。 */
+const agentTop = { id: 'top', session: { header: {} } };
+createScope(ctx, agentTop, { parent: presetKey });
+/** 子代理会话:会话头标了 origin=subagent。 */
+const agentSub = { id: 'sub', session: { header: { origin: 'subagent' } } };
+createScope(ctx, agentSub, { parent: presetKey });
 
 /**
  * 走真实工具执行管线跑一条命令。
@@ -266,6 +277,68 @@ userMessage(agentA, 'm1c', '现在提交并推送');
 
   const commit = await runBash(agentA, 'git commit -m "z"');
   check('进入新一轮后上一轮授权作废', commit.isError && commit.text.includes('硬指标禁令'), commit.text);
+}
+
+// 10. 重命令:没有当轮同意一律拒绝,同意一次只够跑一次
+{
+  const before = executed.length;
+  const heavy = await runBash(agentTop, 'pnpm build');
+  check('未获同意的重命令被拒绝', heavy.isError && heavy.text.includes('硬指标禁令'), heavy.text);
+  check('被拒绝的重命令没有执行', executed.length === before);
+
+  userMessage(agentTop, 'm10', '跑一下构建');
+  const allowed = await runBash(agentTop, 'pnpm build');
+  check('拿到同意后的重命令放行', !allowed.isError && allowed.text.includes('ok'), allowed.text);
+
+  const again = await runBash(agentTop, 'pnpm build');
+  check('重命令的同意只够跑一次', again.isError && again.text.includes('硬指标禁令'), again.text);
+}
+
+// 11. 子代理跑重命令一律被拒
+userMessage(agentSub, 'm11', '跑一下构建');
+{
+  const heavy = await runBash(agentSub, 'pnpm build');
+  check('子代理跑重命令被拒绝', heavy.isError && heavy.text.includes('子代理'), heavy.text);
+}
+
+// 12. 扩面后的重命令类别:静态检查 / 构建器 / 全仓编排器
+{
+  const lint = await runBash(agentTop, 'pnpm eslint .');
+  check('未获同意的静态检查被拒绝', lint.isError && lint.text.includes('硬指标禁令'), lint.text);
+
+  const build = await runBash(agentTop, 'vite build');
+  check('未获同意的 vite build 被拒绝', build.isError && build.text.includes('硬指标禁令'), build.text);
+
+  const dev = await runBash(agentTop, 'vite dev');
+  check('vite dev 不算重命令', !dev.isError && dev.text.includes('ok'), dev.text);
+
+  userMessage(agentTop, 'm12', '跑一下代码检查');
+  const allowed = await runBash(agentTop, 'pnpm eslint .');
+  check('拿到同意后的静态检查放行', !allowed.isError && allowed.text.includes('ok'), allowed.text);
+
+  const again = await runBash(agentTop, 'pnpm eslint .');
+  check('静态检查的同意只够跑一次', again.isError && again.text.includes('硬指标禁令'), again.text);
+}
+
+// 13. 项目自定义包脚本按内容判定
+{
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'guard-real-'));
+  fs.writeFileSync(
+    path.join(dir, 'package.json'),
+    JSON.stringify({ scripts: { verify: 'bash scripts/verify.sh', dev: 'vite' } }),
+  );
+  fs.mkdirSync(path.join(dir, 'scripts'));
+  fs.writeFileSync(path.join(dir, 'scripts/verify.sh'), 'pnpm exec vite build\n');
+  const agentProject = { id: 'proj', session: { header: { cwd: dir } } };
+  createScope(ctx, agentProject, { parent: presetKey });
+
+  const verify = await runBash(agentProject, 'npm run verify');
+  check('包脚本链里有构建时被拒绝', verify.isError && verify.text.includes('硬指标禁令'), verify.text);
+
+  const dev = await runBash(agentProject, 'npm run dev');
+  check('包脚本里没有重命令时放行', !dev.isError && dev.text.includes('ok'), dev.text);
+
+  fs.rmSync(dir, { recursive: true, force: true });
 }
 
 if (failed > 0) {

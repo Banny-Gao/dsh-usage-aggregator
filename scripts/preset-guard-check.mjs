@@ -92,8 +92,8 @@ function runCodeExecution(code, agent = AGENT) {
 }
 
 /** 工具执行:提问卡片。 */
-function questionExecution(callId = 'call-q1', agent = AGENT) {
-  return { name: 'ask_user_question', callId, agent, arguments: { questions: [] } };
+function questionExecution(callId = 'call-q1', agent = AGENT, questions = []) {
+  return { name: 'ask_user_question', callId, agent, arguments: { questions } };
 }
 
 /**
@@ -475,6 +475,62 @@ check('一次卡片点击不会产生两份授权', () => {
   });
   assertAllowed(harness.guard(bashExecution('git commit -m "fix"')), '第一次 commit');
   assertDenied(harness.guard(bashExecution('git commit -m "fix2"')), '第二次 commit');
+});
+
+// ------------------------------------------------- 提问卡片点名命令
+
+/** 只跑一个文件的测试命令:选项文案里没有「测试」这类类别词。 */
+const H23_COMMAND = 'pnpm vitest run packages/bazi/src/__tests__/F2.H23-geBing.test.ts';
+/** 同一类里的另一条命令:卡片没点名它。 */
+const H58_COMMAND = 'pnpm vitest run packages/bazi/src/__tests__/F2.H58-mingLi-jianYan.test.ts';
+
+/** 一张点名了某条命令的授权卡片;另外两条命令只是顺带提到。 */
+function commandCard(command) {
+  return [
+    {
+      id: 'run_h23',
+      header: '跑测试授权',
+      question: `是否允许我现在跑单文件测试 \`${command}\`?全量测试 \`pnpm test\` 需另行同意;不要跑 \`pnpm build\`。`,
+      options: [
+        { label: '允许跑该单文件(推荐)', description: '只跑这一个文件。' },
+        { label: '暂不跑', description: '先看 diff。' },
+      ],
+    },
+  ];
+}
+
+/** 卡片答案:选中的选项。 */
+function cardAnswer(selected) {
+  return { isError: false, content: [{ type: 'text', text: JSON.stringify({ answers: [{ id: 'run_h23', selected }] }) }] };
+}
+
+check('卡片点名的命令按命令授权:同一条命令放行一次,第二次拒绝', () => {
+  const harness = createHarness();
+  harness.emit('tools/result', questionExecution('call-q1', AGENT, commandCard(H23_COMMAND)), cardAnswer(['允许跑该单文件(推荐)']));
+  assertAllowed(harness.guard(bashExecution(H23_COMMAND)), '点名命令第一次');
+  assertDenied(harness.guard(bashExecution(H23_COMMAND)), '点名命令第二次');
+});
+
+check('卡片点名一条命令不等于授权整类', () => {
+  const harness = createHarness();
+  harness.emit('tools/result', questionExecution('call-q1', AGENT, commandCard(H23_COMMAND)), cardAnswer(['允许跑该单文件(推荐)']));
+  assertDenied(harness.guard(bashExecution(H58_COMMAND)), '同类里的另一条命令');
+  assertDenied(harness.guard(bashExecution('pnpm test')), '全量测试');
+});
+
+check('卡片里选「暂不跑」时,卡片写明的命令也不授权', () => {
+  const harness = createHarness();
+  harness.emit('tools/result', questionExecution('call-q1', AGENT, commandCard(H23_COMMAND)), cardAnswer(['暂不跑']));
+  assertDenied(harness.guard(bashExecution(H23_COMMAND)), '暂不跑');
+});
+
+check('卡片答复消息里点名的命令同样按命令授权', () => {
+  const harness = createHarness();
+  harness.emit('agent/inbox/inserted', {
+    agent: AGENT,
+    message: questionReplyMessage('msg-q1', 'call-q1', commandCard(H23_COMMAND), [{ id: 'run_h23', selected: ['允许跑该单文件(推荐)'] }]),
+  });
+  assertAllowed(harness.guard(bashExecution(H23_COMMAND)), '答复消息点名命令');
 });
 
 // ---------------------------------------------------------------- 命令识别

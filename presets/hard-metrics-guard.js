@@ -23,12 +23,17 @@
  *     `user-question-reply` 用户消息。两者正文都带着问题全文与全部选项,
  *     因此只取用户**选中**的那些项;两条路径按同一个 `question:<callId>` 记账,
  *     一次点击只算一次授权。
+ *   - 卡片上点「允许」授权的是**卡片里写明的那条命令**:选项文案里往往没有
+ *     「测试 / 构建」这类类别词,只有「允许跑该单文件」这样的说法,靠类别词推不出
+ *     授权。因此把卡片问题(以及被选中选项)里用反引号写明的命令取出来,按命令
+ *     指纹逐字匹配——只有真正执行的就是那一条命令才放行,卡片承诺的「只覆盖这一条
+ *     命令」才落得住;卡片里没写明的命令仍然要用户另行同意。
  *   - 授权判定是意图判定而非关键词命中:先按句切分,再按分句边界把句子拆成小段,
  *     动作词只在自己的小段里判定——否定式(不要/未/没有/尚未…)与谈论词
  *     (什么/是否/历史/已经…)只否定它们所在的那一段,不会连坐同一句里的其他动作。
  *     所以「提交,然后继续深入分析是否…」里的「提交」仍然算授权。
- *   - 重命令按类别授权(类型检查 / 静态检查 / 测试 / 端到端 / 构建):用户同意跑测试
- *     不等于同意构建。
+ *   - 重命令有两种授权粒度:用户在对话里按类别授权(类型检查 / 静态检查 / 测试 /
+ *     端到端 / 构建,同意跑测试不等于同意构建),或者用卡片点名授权某一条命令。
  *   - 重命令的识别先看命令本身(二进制、子命令、包脚本名),再看包脚本的脚本体:
  *     名字看不出轻重的自定义脚本(verify / ci / check…)会读项目 package.json 里的
  *     脚本体,脚本体里或它引用的仓库脚本文件里有重命令就算重命令。
@@ -401,6 +406,102 @@ function selectedTexts(payload) {
 }
 
 /**
+ * 卡片上被选中就表示用户在点头的字样。
+ *
+ * 只认选项开头(至多 6 个字以内)的许可词:「先看 diff 再跑」这类选项里虽然也有
+ * 「跑」,但那是下一步的事,不算这次点头。许可词前面的那段单独捕获,用来判否定式。
+ */
+const CARD_CONSENT = /^([^，,、]{0,6})(?:允许|同意|可以|批准|确认|执行|跑)/;
+
+/** 许可词之前出现这些词,说明是「等会儿再跑」,不是现在。 */
+const CARD_LATER = /(?:先|暂|稍后|回头|等|再|一会)\s*$/;
+
+/**
+ * 这条卡片答复是不是用户在点头。
+ *
+ * @param {string} text 选中的选项文案或自由填写文本。
+ * @returns {boolean} 是否构成同意。
+ */
+function consents(text) {
+  if (typeof text !== 'string' || text.length === 0) return false;
+  const hit = CARD_CONSENT.exec(text);
+  if (hit === null) return false;
+  const before = hit[1];
+  const tail = before.slice(-12);
+  return !NEGATION_BEFORE.test(tail) && !NEGATION_BEFORE_EN.test(tail) && !CARD_LATER.test(before);
+}
+
+/** 卡片上用反引号写明的命令。 */
+const CARD_COMMAND = /`([^`\n]+)`/g;
+
+/** 小段里出现这些词,说明这一段在说「以后再说」或「不要跑」,不是这次要授权的那条。 */
+const CARD_EXCLUDED_SEGMENT = /另行|单独|另外|再议|暂不|先不|不要|不用|别跑|禁止/;
+
+/** 点名命令的这一段得带执行或同意的字样,否则只是顺带提到这条命令。 */
+const CARD_NAMED_SEGMENT = /跑|运行|执行|允许|同意|可以|批准|\b(?:run|test|build|lint|check)\b/i;
+
+/**
+ * 这些文字里用反引号写明的重命令指纹。
+ *
+ * 只在「这次要跑它」的那一小段里认命令:同一张卡片顺带提到的
+ * 「全量测试需另行同意」「不要跑 xxx」不构成授权。
+ *
+ * @param {string[]} chunks 卡片上的文字片段(问题与被选中的选项)。
+ * @returns {string[]} 命令指纹。
+ */
+function cardCommandKeys(chunks) {
+  const keys = new Set();
+  for (const chunk of chunks) {
+    if (typeof chunk !== 'string') continue;
+    for (const segment of chunk.split(/[，,、；;。！!？?\n]/)) {
+      if (!CARD_NAMED_SEGMENT.test(segment) || CARD_EXCLUDED_SEGMENT.test(segment)) continue;
+      for (const match of segment.matchAll(CARD_COMMAND)) {
+        const tokens = match[1].trim().split(/\s+/).filter((token) => token.length > 0).map(cleanToken);
+        if (tokens.length === 0) continue;
+        if (heavyCommandOf(tokens, {}) === undefined) continue;
+        keys.add(tokens.join(' '));
+      }
+    }
+  }
+  return [...keys];
+}
+
+/**
+ * 这次卡片表态点名的重命令。
+ *
+ * 只有用户点了头(选中项里有允许 / 同意这类说法)才算;选「暂不跑」时卡片里写着的
+ * 命令一条也不授权。问题按答案的 id 配对,卡片只有一道题时直接取那一题。
+ *
+ * @param {unknown} payload 卡片答复载荷(含 answers)。
+ * @param {unknown} questions 卡片问题列表(含 question 与 options)。
+ * @returns {string[]} 命令指纹。
+ */
+function consentCommandKeys(payload, questions) {
+  const answers = payload?.answers;
+  if (!Array.isArray(answers)) return [];
+  const list = Array.isArray(questions)
+    ? questions.filter((question) => question !== null && typeof question === 'object')
+    : [];
+  const keys = new Set();
+  for (const answer of answers) {
+    const selected = Array.isArray(answer?.selected) ? answer.selected.filter((text) => typeof text === 'string') : [];
+    const custom = typeof answer?.custom === 'string' && answer.custom.length > 0 ? [answer.custom] : [];
+    if (![...selected, ...custom].some((text) => consents(text))) continue;
+    const question = list.find((item) => item.id === answer?.id) ?? (list.length === 1 ? list[0] : undefined);
+    const chunks = [];
+    if (typeof question?.header === 'string') chunks.push(question.header);
+    if (typeof question?.question === 'string') chunks.push(question.question);
+    for (const option of Array.isArray(question?.options) ? question.options : []) {
+      if (option === null || typeof option !== 'object' || !selected.includes(option.label)) continue;
+      if (typeof option.label === 'string') chunks.push(option.label);
+      if (typeof option.description === 'string') chunks.push(option.description);
+    }
+    for (const key of cardCommandKeys(chunks)) keys.add(key);
+  }
+  return [...keys];
+}
+
+/**
  * 取出消息或工具结果里的文本块。
  *
  * @param {object} value 消息或工具结果。
@@ -544,8 +645,10 @@ function heavyCommandOf(tokens, context) {
 /**
  * 这次工具执行里有哪些重命令。
  *
+ * `key` 是这一段命令逐字规范化后的指纹:卡片点名授权时按它匹配同一条命令。
+ *
  * @param {object} execution 工具执行。
- * @returns {{kind: string, name: string}[]} 重命令列表。
+ * @returns {{kind: string, name: string, key: string}[]} 重命令列表。
  */
 function heavyCommands(execution, context) {
   const found = [];
@@ -554,7 +657,7 @@ function heavyCommands(execution, context) {
       const tokens = segment.trim().split(/\s+/).filter((token) => token.length > 0).map(cleanToken);
       if (tokens.length === 0) continue;
       const heavy = heavyCommandOf(tokens, context);
-      if (heavy !== undefined) found.push(heavy);
+      if (heavy !== undefined) found.push({ ...heavy, key: tokens.join(' ') });
     }
   }
   return found;
@@ -750,6 +853,9 @@ export function apply(ctx) {
       for (const selected of selectedTexts(payload)) {
         for (const action of granted(selected)) actions.add(action);
       }
+      const questions =
+        payload?.questions ?? (typeof payload?.question === 'string' ? [{ question: payload.question, options: payload.options }] : []);
+      for (const key of consentCommandKeys(payload, questions)) actions.add(`cmd:${key}`);
       remember(state, `question:${callId}`, actions);
     }
   };
@@ -779,10 +885,12 @@ export function apply(ctx) {
     if (result?.isError === true) return;
     const state = stateOf(execution.agent);
     if (state === undefined) return;
+    const payload = parseJson(textOf(result));
     const actions = new Set();
-    for (const selected of selectedTexts(parseJson(textOf(result)))) {
+    for (const selected of selectedTexts(payload)) {
       for (const action of granted(selected)) actions.add(action);
     }
+    for (const key of consentCommandKeys(payload, execution.arguments?.questions)) actions.add(`cmd:${key}`);
     remember(state, `question:${execution.callId}`, actions);
   });
 
@@ -797,16 +905,24 @@ export function apply(ctx) {
     if (invocations.some(destroysWorktree)) return DENY_DESTRUCTIVE;
 
     // 重命令:子代理一律不跑;主代理每跑一次都要用户当轮的同意。
-    const kinds = [...new Set(heavyCommands(execution, { cwd: execution.agent?.session?.header?.cwd }).map((heavy) => heavy.kind))];
+    const heavies = heavyCommands(execution, { cwd: execution.agent?.session?.header?.cwd });
     const heavyPlan = [];
-    if (kinds.length > 0) {
+    if (heavies.length > 0) {
       if (execution.agent === undefined || execution.agent === null) return DENY_HEAVY_UNKNOWN;
       if (isSubagentAgent(execution.agent)) return DENY_HEAVY_SUBAGENT;
       if (state === undefined) return DENY_HEAVY_NO_CONSENT;
-      for (const kind of kinds) {
-        const key = [...state.grants].find(([, entry]) => entry.granted.has(kind) && !entry.used.has(kind))?.[0];
+      // 先按类别找,再按卡片点名的命令指纹找;两种授权粒度都只够用一次。
+      const claim = (token) =>
+        [...state.grants].find(([, entry]) => entry.granted.has(token) && !entry.used.has(token))?.[0];
+      for (const heavy of heavies) {
+        let token = heavy.kind;
+        let key = claim(token);
+        if (key === undefined) {
+          token = `cmd:${heavy.key}`;
+          key = claim(token);
+        }
         if (key === undefined) return DENY_HEAVY_NO_CONSENT;
-        heavyPlan.push({ kind, key });
+        heavyPlan.push({ key, token });
       }
     }
 
@@ -833,7 +949,7 @@ export function apply(ctx) {
     }
 
     // 都拿到了才扣:命令没执行,授权不能被失败的执行烧掉。
-    for (const { kind, key } of heavyPlan) state.grants.get(key).used.add(kind);
+    for (const { key, token } of heavyPlan) state.grants.get(key).used.add(token);
     for (const { action, keys } of gitPlan) {
       for (const key of keys) state.grants.get(key).used.add(action);
     }

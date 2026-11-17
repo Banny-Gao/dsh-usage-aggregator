@@ -67,6 +67,7 @@ export function riskLabelKey(item) {
 /** 清单的分组顺序。顺序也是风险的顺序：先无损的，后有代价的。 */
 export const ITEM_GROUPS = [
   { key: 'cache', labelKey: 'groupCache' },
+  { key: 'system', labelKey: 'groupSystem' },
   { key: 'dsh', labelKey: 'groupDsh' },
   { key: 'process', labelKey: 'groupProcess' },
 ];

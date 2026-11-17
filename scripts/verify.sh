@@ -631,7 +631,9 @@ echo "→ 版本一致性"
 #    与「已发布版本」本来就不是一回事。等 pnpm release 落下 0.1.0 节之后，
 #    这条检查才有意义、也才会真正生效。
 if [ -f "$PLUGIN_DIR/CHANGELOG.md" ]; then
-  PKG_VER=$(node -p "require('$PLUGIN_DIR/package.json').version")
+  # 路径作为**参数**传给 node，不要拼进脚本文本里 —— Git Bash（Windows）下的
+  # /c/Users/… 路径拼进 require() 里会被当成不存在的路径。
+  PKG_VER=$(node -p "require(process.argv[1]).version" "$PLUGIN_DIR/package.json")
   TOP_VER=$(grep -E '^## [0-9]+[.][0-9]+[.][0-9]+' "$PLUGIN_DIR/CHANGELOG.md" | head -1 | sed 's/^## //' | sed 's/ ·.*//')
   if [ -z "$TOP_VER" ]; then
     if grep -qE '^## Unreleased' "$PLUGIN_DIR/CHANGELOG.md"; then

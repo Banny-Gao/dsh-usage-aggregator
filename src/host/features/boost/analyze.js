@@ -10,6 +10,7 @@
 //
 // 无论哪一级，数字都来自 probe.js 的实测，模型只负责解释，不负责报数。
 
+import { parse } from 'node:path';
 import { callModelText, extractJson } from '../../shared/llm.js';
 
 /** 送去分析的提示词：只输出 JSON，不许编数字。 */
@@ -48,7 +49,10 @@ export function humanBytes(bytes) {
 export function factsToText(facts, items) {
   const lines = [];
   lines.push(`平台：${facts.platform}，CPU 核数：${facts.cpuCount}`);
-  lines.push(`负载：1 分钟 ${facts.load.avg1} / 5 分钟 ${facts.load.avg5} / 15 分钟 ${facts.load.avg15}`);
+  // Windows 上没有 loadavg —— 那里报的是「相当于几个核在忙」，不是负载比。
+  lines.push(facts.platform === 'win32'
+    ? `CPU 忙碌核数：${facts.load.avg1}（共 ${facts.cpuCount} 核）`
+    : `负载：1 分钟 ${facts.load.avg1} / 5 分钟 ${facts.load.avg5} / 15 分钟 ${facts.load.avg15}`);
   if (facts.memory !== null) {
     lines.push(
       `内存：总计 ${humanBytes(facts.memory.totalBytes)}，已用 ${humanBytes(facts.memory.usedBytes)}，可用 ${humanBytes(facts.memory.freeBytes)}`,
@@ -113,7 +117,9 @@ export function ruleAnalysis(facts, items) {
   const findings = [];
   const warnings = [];
 
-  const disk = facts.disk.find((item) => item.path.endsWith('/')) ?? facts.disk[0] ?? null;
+  // 系统盘根：POSIX 上是 '/'，Windows 上是 'C:\' —— 用「路径本身是不是根」来认，
+  // 写死结尾字符在 Windows 上永远匹配不上。
+  const disk = facts.disk.find((item) => parse(item.path).root === item.path) ?? facts.disk[0] ?? null;
   if (disk !== null) {
     findings.push(`磁盘剩余 ${humanBytes(disk.freeBytes)}（已用 ${disk.usePct}%）`);
     if (disk.usePct >= 90) {
@@ -129,7 +135,12 @@ export function ruleAnalysis(facts, items) {
       warnings.push('内存吃紧时，腾出磁盘空间能直接缓解：交换分区需要磁盘空间');
     }
   }
-  if (facts.load.avg15 > facts.load.avg1 * 2 && facts.load.avg15 > 1) {
+  if (facts.platform === 'win32') {
+    // Windows 上的 load 是忙碌核数，三个字段是同一个值 —— 拿它比「回落」没有意义。
+    if (facts.load.avg1 > 0) {
+      findings.push(`当前相当于 ${facts.load.avg1} 个核在忙（共 ${facts.cpuCount} 核）`);
+    }
+  } else if (facts.load.avg15 > facts.load.avg1 * 2 && facts.load.avg15 > 1) {
     findings.push(`15 分钟平均负载 ${facts.load.avg15} 远高于当前 ${facts.load.avg1}：刚才跑过一波重活，负载正在回落`);
   }
   const heavy = facts.topProcesses.find((proc) => proc.rssBytes > 500 * 1024 * 1024);

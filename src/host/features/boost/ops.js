@@ -12,7 +12,9 @@
 //
 // 体检结果有 TTL：同一台机器上反复点小火箭，不该每次都重新量一遍 30 GB 的目录。
 
-import { ADAPTERS, adapterSupported, detectTool, findOrphanStoreVersions, formatCommand, locateCacheDir } from './catalog.js';
+import { stat } from 'node:fs/promises';
+
+import { ADAPTERS, adapterSupported, detectTool, findOrphanStoreVersions, formatCommand, liveStoreRoots, locateCacheDir } from './catalog.js';
 import { analyzeSystem, humanBytes } from './analyze.js';
 import { createExecutor } from './execute.js';
 import { isMachineIdle, measureBytes, probeSystem } from './probe.js';
@@ -70,6 +72,38 @@ const MAX_PROCESS_ITEMS = 6;
 const MAX_PROC_ITEMS = 8;
 
 /**
+ * 这个路径是个存在的目录吗。
+ *
+ * @param {string} path 路径。
+ * @returns {Promise<boolean>} 是就是 true。
+ */
+async function directoryExists(path) {
+  try {
+    const info = await stat(path);
+    return info.isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 这一条在面板上显示成什么命令。
+ *
+ * @param {object} adapter 适配器。
+ * @param {object} action 这一条最终的动作。
+ * @returns {string} 文本。
+ */
+function commandTextOf(adapter, action) {
+  if (action.type === 'command') {
+    return formatCommand({ cmd: action.cmd, args: action.args ?? [] });
+  }
+  if (action.type === 'clear-browser-profile') return '（只清浏览器自己的缓存目录，不动配置与登录态）';
+  if (action.type === 'remove-paths') return '（定向删除这几个目录，正在使用的会自动跳过）';
+  const text = formatCommand(adapter.clean);
+  return text !== '' ? text : '（定向删除目录，正在使用的会自动跳过）';
+}
+
+/**
  * 造一份操作层。
  *
  * @param {{home: string, env: object, llm: () => object|null, analysis: object, platform?: string, liveSessionIds?: () => string[], unarchiveSession?: Function}} options 选项。
@@ -124,7 +158,11 @@ export function createOps(options) {
     const usable = ADAPTERS.filter((adapter) => adapterSupported(adapter, platform));
     const detected = await Promise.all(usable.map(async (adapter) => ({
       adapter,
-      installed: await detectTool(adapter),
+      // 没有探测命令的适配器（自己算路径的目录类条目）：**路径本身就是证据** ——
+      // 目录不存在就不会出现在清单里。
+      installed: adapter.detect === undefined || adapter.detect === null
+        ? true
+        : await detectTool(adapter),
     })));
     const installed = new Set(detected.filter((entry) => entry.installed).map((entry) => entry.adapter.id));
 
@@ -157,7 +195,10 @@ export function createOps(options) {
     const orphans = [];
     const pnpmStoreDir = context.pnpmStoreDir;
     if (typeof pnpmStoreDir === 'string' && pnpmStoreDir !== '') {
-      for (const orphan of await findOrphanStoreVersions(pnpmStoreDir)) {
+      // 机器上可能装了不止一个 pnpm，每个各有各的 store 代次 —— 先问一圈哪些还活着，
+      // 只有「谁都不用」的那一代才算孤儿。
+      const liveRoots = await liveStoreRoots(env);
+      for (const orphan of await findOrphanStoreVersions(pnpmStoreDir, { liveRoots })) {
         orphans.push({
           adapter: {
             id: 'pnpm-store-orphan',
@@ -165,7 +206,9 @@ export function createOps(options) {
             tool: 'pnpm',
             semantics: 'prune',
             risk: 'medium',
-            note: 'pnpm 升级到新版本之后，旧的一代存储目录没人再写也没人再读，但没有任何官方命令会清它。',
+            // 删的是别的 pnpm 可能正在写的缓存 —— 默认不勾，让人自己确认。
+            selectedByDefault: false,
+            note: 'pnpm 升级到新版本之后，旧的一代存储目录没人再写也没人再读，但没有任何官方命令会清它。体检已经排除了「本机其它 pnpm 正在用」与「最近一周还在写入」的那一代；确认没有别的 pnpm 在用再删。',
           },
           path: orphan,
           cleanCommand: null,
@@ -187,33 +230,60 @@ export function createOps(options) {
       const adapter = entry.adapter;
       const path = typeof adapter.itemPath === 'function' ? adapter.itemPath(entry.path) : entry.path;
       if (typeof path !== 'string' || path === '') return null;
-      const sizeBytes = measure ? await measureBytes(path) : null;
-      // 量不到 = 目录不存在（工具装了但从没用过）；量到 0 = 空的（或者这台机器上
-      // 没权限读 —— macOS 的隐私保护会让 du 报 0）。两种都不该出现在清单里：
-      // 否则用户会勾一个「清理一个不存在的东西」，或者一个量不出体积的条目。
-      if (measure && (sizeBytes === null || sizeBytes === 0)) return null;
+      // 适配器显式声明的动作：覆盖由 clean 推导出来的动作。路径随环境变量变的时候，
+      // 动作是一个 (path) => 动作 的函数。
+      const explicit = adapter.action === undefined || adapter.action === null
+        ? null
+        : (typeof adapter.action === 'function' ? adapter.action(path) : adapter.action);
+      // 命令类清理没有「一个目录」可量（DISM 自己知道组件存储有多大，清空回收站更是
+      // 无从预判）—— 如实留 0，执行时以命令自己的输出为准。
+      const isCommandAction = explicit !== null && explicit.type === 'command';
+      // 自己算路径的条目（没有探测命令）：**路径本身就是证据** —— 目录存在就该出现。
+      // 工具给的路径不一样：工具都报出路径了，量不到多半是「装了但从没用过」。
+      const pathIsEvidence = adapter.detect === undefined || adapter.detect === null;
+      let sizeBytes = null;
+      if (measure && !isCommandAction) {
+        sizeBytes = await measureBytes(path);
+        if (pathIsEvidence) {
+          // 量不到不等于不存在 —— 系统目录没管理员权限就读不了（du 直接失败）。
+          // 这种目录照样该出现在清单里，只是大小如实留 0。
+          if (sizeBytes === null) {
+            if (!(await directoryExists(path))) return null;
+            sizeBytes = 0;
+          }
+        } else if (sizeBytes === null || sizeBytes === 0) {
+          // 量不到 = 目录不存在（工具装了但从用过）；量到 0 = 空的（或者这台机器上
+          // 没权限读 —— macOS 的隐私保护会让 du 报 0）。两种都不该出现在清单里：
+          // 否则用户会勾一个「清理一个不存在的东西」，或者一个量不出体积的条目。
+          return null;
+        }
+      }
       const cleanCommand = entry.cleanCommand !== undefined ? entry.cleanCommand : (adapter.clean === undefined ? null : adapter.clean);
+      const action = explicit !== null
+        ? explicit
+        : (cleanCommand === null
+          ? { type: 'remove-dir', path }
+          : { type: 'command', cmd: cleanCommand.cmd, args: cleanCommand.args });
       return {
         id: adapter.id,
         label: adapter.label,
-        group: 'cache',
+        group: adapter.group ?? 'cache',
         tool: adapter.tool,
         semantics: adapter.semantics,
-        risk: adapter.risk,
+        risk: adapter.risk ?? 'low',
         note: adapter.note,
         path,
         sizeBytes: sizeBytes === null ? 0 : sizeBytes,
         count: 1,
         cleanCommand,
         cleanPath: entry.cleanPath === true || adapter.cleanPath === true,
-        commandText: entry.commandText !== undefined
-          ? entry.commandText
-          : (formatCommand(adapter.clean) !== '' ? formatCommand(adapter.clean) : '（定向删除目录，正在使用的会自动跳过）'),
-        selectedByDefault: true,
+        commandText: entry.commandText !== undefined ? entry.commandText : commandTextOf(adapter, action),
+        selectedByDefault: adapter.selectedByDefault !== false,
+        // 每条目可以自带时限：有些命令（Windows 的 DISM 组件清理）要跑好几分钟，
+        // 跟别的清理命令共用同一个时限会被中途杀掉。
+        timeoutMs: adapter.timeoutMs,
         detail: { tool: adapter.tool, path },
-        action: cleanCommand === null
-          ? { type: 'remove-dir', path }
-          : { type: 'command', cmd: cleanCommand.cmd, args: cleanCommand.args },
+        action,
         orphan: adapter.id === 'pnpm-store-orphan',
       };
     };

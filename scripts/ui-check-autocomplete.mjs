@@ -15,63 +15,27 @@
  */
 
 import { strict as assert } from 'node:assert';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import { installRuntime } from '../src/client/runtime.js';
 import * as autocomplete from '../src/client/features/autocomplete/index.js';
 import { setState } from '../src/client/features/autocomplete/store.js';
 import { DEFAULT_SETTINGS } from '../src/host/features/autocomplete/settings.js';
+import { fileURLToPath } from 'node:url';
 
 // 补全组件要用 window（setTimeout / getSelection）—— Node 里没有 window，补一个最小的。
 if (typeof globalThis.window === 'undefined') {
   globalThis.window = { setTimeout, clearTimeout, setInterval, clearInterval };
 }
 
-const PLUGIN_DIR = new URL('..', import.meta.url).pathname;
+const PLUGIN_DIR = fileURLToPath(new URL('..', import.meta.url));
 
 /* ─────────────────────── 找一份本机已有的 react ─────────────────────── */
 
-function findInStore(name, wanted) {
-  const roots = [
-    join(homedir(), 'Library/pnpm/store/v11/links/@', name),
-    join(homedir(), '.pnpm-store/v3/links/@', name),
-  ];
-  for (const root of roots) {
-    if (!existsSync(root)) continue;
-    const versions = (wanted === undefined ? readdirSync(root).sort().reverse() : [wanted])
-      .filter((version) => existsSync(join(root, version)));
-    for (const version of versions) {
-      for (const hash of readdirSync(join(root, version))) {
-        const pkgDir = join(root, version, hash, 'node_modules', name);
-        if (existsSync(join(pkgDir, 'package.json'))) return { dir: pkgDir, version: version };
-      }
-    }
-  }
-  return null;
-}
-
-async function loadReact() {
-  const wanted = process.env.DUA_UI_REACT_VERSION ?? '18.3.1';
-  const react = findInStore('react', wanted) ?? findInStore('react');
-  if (react === null) {
-    console.error('✗ 本机找不到 react —— 这个自检需要它。');
-    console.error('  react / react-dom 应当在 pnpm store 里（DSH 自带的 profile 里有）；');
-    console.error('  也可以在本仓库里装：pnpm add -D react@18.3.1 react-dom@18.3.1');
-    process.exit(1);
-  }
-  const reactDom = findInStore('react-dom', react.version);
-  if (reactDom === null) {
-    console.error(`✗ 本机找不到与 react ${react.version} 同版本的 react-dom —— 版本必须一致。`);
-    process.exit(1);
-  }
-  const React = await import(pathToFileURL(join(react.dir, 'index.js')).href);
-  const serverEntry = existsSync(join(reactDom.dir, 'server.node.js')) ? 'server.node.js' : 'server.js';
-  const ReactDOMServer = await import(pathToFileURL(join(reactDom.dir, serverEntry)).href);
-  return { React: React.default ?? React, ReactDOMServer: ReactDOMServer.default ?? ReactDOMServer, version: react.version };
-}
+// react 在哪，各平台不一样（pnpm store 的位置、DSH profile、仓库 node_modules），
+// 查找逻辑统一放在 scripts/react-host.mjs 里。
+const { loadReact } = await import('./react-host.mjs');
 
 /* ───────────────────────────── 断言 ───────────────────────────── */
 

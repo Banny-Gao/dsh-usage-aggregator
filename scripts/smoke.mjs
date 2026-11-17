@@ -764,9 +764,13 @@ await checkAsync('落盘 / 读回（临时 DSH_HOME）', async () => {
     const record = makeProvider({ id: 'minimax', label: 'MiniMax', source: 'curl', request: parsed.request, notes: [] });
     upsert(store, record);
     const file = await writeStore(store, env);
-    const mode = (await import('node:fs/promises')).stat;
-    const info = await mode(file);
-    assert.equal(info.mode & 0o777, 0o600, 'store.json 必须是仅本人可读');
+    // POSIX 权限位在 Windows 上不存在（Node 报的是 0o666），等价物是 ACL，
+    // 而 Node 不暴露 ACL —— 所以这条断言只在 POSIX 上做。
+    if (process.platform !== 'win32') {
+      const stat = (await import('node:fs/promises')).stat;
+      const info = await stat(file);
+      assert.equal(info.mode & 0o777, 0o600, 'store.json 必须是仅本人可读');
+    }
     const reread = await readStore(env);
     assert.equal(reread.providers.length, 1);
     assert.equal(reread.providers[0].request.headers['x-group-id'], '2021855341230170230');

@@ -6,31 +6,76 @@
 //   · 面板上「为什么慢」的体检结论；
 //   · Agent 判断该先清哪一项的排序依据。
 //
-// 跨平台：每个平台有自己的实现；不认识��平台只返回能拿到的那部分
-// （负载与 CPU 核数是 os 模块给的，任何平台都有）。
+// 跨平台：每个平台有自己的实现；不认识的平台只返回能拿到的那部分
+// （CPU 核数是 os 模块给的，任何平台都有）。
 
-import { readFile } from 'node:fs/promises';
-import { basename } from 'node:path';
-import { loadavg, cpus } from 'node:os';
+import { readFile, opendir, lstat, statfs } from 'node:fs/promises';
+import { join, parse } from 'node:path';
+import { loadavg, cpus, totalmem, freemem } from 'node:os';
 import { runCommand } from './catalog.js';
 import { aggregateByApp, sampleProcesses } from './processes.js';
 
 /**
  * 量一个目录占多少字节。
  *
- * 用 du -sk 而不是自己遍历：系统工具更快也更准（能算稀疏文件与硬链接）。
+ * POSIX 上用 du -sk（系统工具更快也更准）；du 拿不到就退回自己遍历。
+ * Windows 上不用 du —— 它（Git 自带的那个）遇到没权限的子目录就整体失败，
+ * 量不了 C:\Windows\Temp 这种地方，所以直接自己遍历。
  *
  * @param {string} path 路径。
  * @param {{timeoutMs?: number}} options 选项。
  * @returns {Promise<number|null>} 字节数；量不了就是 null。
  */
 export async function measureBytes(path, options = {}) {
-  const result = await runCommand('du', ['-sk', path], { timeoutMs: options.timeoutMs ?? 60000 });
-  if (!result.ok) return null;
-  const head = result.stdout.split(/\s+/)[0];
-  const value = Number(head);
-  if (!Number.isFinite(value)) return null;
-  return value * 1024;
+  if (process.platform !== 'win32') {
+    const result = await runCommand('du', ['-sk', path], { timeoutMs: options.timeoutMs ?? 60000 });
+    if (result.ok) {
+      const head = result.stdout.split(/\s+/)[0];
+      const value = Number(head);
+      if (Number.isFinite(value)) return value * 1024;
+    }
+  }
+  return measureByWalking(path);
+}
+
+/**
+ * 自己遍历一个目录，累加文件字节数。
+ *
+ * 流式遍历：一次只把**一个**目录的条目读进内存（待访问的目录只记路径），
+ * 几十 GB 的目录也不会把整棵目录树装进内存。读不到的子目录跳过，
+ * 不影响其余部分的统计；根目录都读不到才算量不了。
+ *
+ * @param {string} root 根目录。
+ * @returns {Promise<number|null>} 字节数；量不了就是 null。
+ */
+async function measureByWalking(root) {
+  const pending = [root];
+  let total = 0;
+  let opened = false;
+  while (pending.length > 0) {
+    const current = pending.pop();
+    let dir;
+    try {
+      dir = await opendir(current);
+    } catch {
+      continue;
+    }
+    opened = true;
+    const files = [];
+    for await (const entry of dir) {
+      if (entry.isDirectory()) pending.push(join(current, entry.name));
+      else if (entry.isFile()) files.push(join(current, entry.name));
+    }
+    const sizes = await Promise.all(files.map(async (file) => {
+      try {
+        return (await lstat(file)).size;
+      } catch {
+        return 0;
+      }
+    }));
+    for (const size of sizes) total += size;
+  }
+  return opened ? total : null;
 }
 
 /**
@@ -94,6 +139,37 @@ async function readDarwinMeminfo() {
 }
 
 /**
+ * Windows 的内存与交换。
+ *
+ * 内存用 os 模块（totalmem / freemem）；交换分区是页面文件，没有对应的
+ * os 接口，只能问 WMI：AllocatedBaseSize 是页面文件分配的大小、
+ * CurrentUsage 是已经用掉的部分，单位都是 MB。
+ *
+ * @returns {Promise<{totalBytes: number, freeBytes: number, swapTotalBytes: number, swapFreeBytes: number}|null>}
+ */
+async function readWindowsMeminfo() {
+  const script = [
+    '$p = Get-CimInstance Win32_PageFileUsage',
+    '(($p | Measure-Object -Property AllocatedBaseSize -Sum).Sum), (($p | Measure-Object -Property CurrentUsage -Sum).Sum)',
+  ].join('; ');
+  const result = await runCommand('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { timeoutMs: 20000 });
+
+  let swapTotalBytes = 0;
+  let swapFreeBytes = 0;
+  if (result.ok) {
+    const numbers = result.stdout.match(/\d+/g) ?? [];
+    const allocatedMb = Number(numbers[0]);
+    const usedMb = Number(numbers[1]);
+    if (Number.isFinite(allocatedMb) && allocatedMb > 0) {
+      const used = Number.isFinite(usedMb) ? usedMb : 0;
+      swapTotalBytes = allocatedMb * 1024 * 1024;
+      swapFreeBytes = Math.max(0, allocatedMb - used) * 1024 * 1024;
+    }
+  }
+  return { totalBytes: totalmem(), freeBytes: freemem(), swapTotalBytes, swapFreeBytes };
+}
+
+/**
  * 内存与交换。
  *
  * @param {string} platform process.platform。
@@ -102,66 +178,105 @@ async function readDarwinMeminfo() {
 async function readMemory(platform) {
   if (platform === 'darwin') return readDarwinMeminfo();
   if (platform === 'linux') return readLinuxMeminfo();
+  if (platform === 'win32') return readWindowsMeminfo();
   return null;
 }
 
 /**
  * 磁盘占用。
  *
+ * 用 fs.statfs 而不是解析 df：df 的输出格式各平台不同（Windows 上只有六列、
+ * Linux 上也是六列），逐个平台写一套解析器既脆又没收益；statfs 给的是同一组
+ * 数字，三个平台行为一致。
+ *
  * @param {string} path 要量的挂载点。
  * @returns {Promise<{path: string, totalBytes: number, usedBytes: number, freeBytes: number, usePct: number}|null>}
  */
 async function readDisk(path) {
-  const result = await runCommand('df', ['-k', path], { timeoutMs: 8000 });
-  if (!result.ok) return null;
-  const lines = result.stdout.split('\n').filter((line) => line.trim() !== '');
-  if (lines.length < 2) return null;
-  // 只请求了一个路径，所以数据行只有一条；按位置取数字，忽略挂载点名
-  // （挂载点可能带空格，比如「Macintosh HD」）。
-  const fields = lines[lines.length - 1].trim().split(/\s+/);
-  if (fields.length < 8) return null;
-  const totalBytes = Number(fields[1]) * 1024;
-  const usedBytes = Number(fields[2]) * 1024;
-  const freeBytes = Number(fields[3]) * 1024;
-  const usePct = Number(String(fields[4]).replace('%', ''));
-  if (!Number.isFinite(totalBytes) || totalBytes <= 0) return null;
+  let stats;
+  try {
+    stats = await statfs(path);
+  } catch {
+    return null;
+  }
+  const bsize = Number(stats.bsize);
+  const blocks = Number(stats.blocks);
+  const available = Number(stats.bavail);
+  if (!Number.isFinite(bsize) || !Number.isFinite(blocks) || blocks <= 0) return null;
+  const totalBytes = bsize * blocks;
+  const freeBytes = bsize * (Number.isFinite(available) ? available : 0);
+  const usedBytes = Math.max(0, totalBytes - freeBytes);
   return {
     path,
     totalBytes,
     usedBytes,
     freeBytes,
-    usePct: Number.isFinite(usePct) ? usePct : 0,
+    // 百分比数值（不是 0~1 的比例）：下游按「90% 以上算快满」在用。
+    usePct: totalBytes > 0 ? Math.round((usedBytes / totalBytes) * 1000) / 10 : 0,
   };
 }
 
 /**
- * 占资源最多的进程。
+ * 要量的磁盘路径：家目录所在的那一个 + 系统盘根。
  *
- * @param {number} limit 取前几个。
- * @returns {Promise<Array<{pid: number, name: string, cpuPct: number, rssBytes: number}>>}
+ * @param {string} home 家目录。
+ * @param {string} platform process.platform。
+ * @returns {string[]} 路径。
  */
-async function readTopProcesses(limit) {
-  const result = await runCommand('ps', ['-Ao', 'pid=,rss=,pcpu=,comm='], { timeoutMs: 8000 });
-  if (!result.ok) return [];
-  const rows = [];
-  for (const line of result.stdout.split('\n')) {
-    const trimmed = line.trim();
-    if (trimmed === '') continue;
-    const parts = trimmed.split(/\s+/);
-    if (parts.length < 4) continue;
-    const pid = Number(parts[0]);
-    const rssBytes = Number(parts[1]) * 1024;
-    const cpuPct = Number(parts[2]);
-    if (!Number.isFinite(pid)) continue;
-    rows.push({
-      pid,
-      name: basename(parts.slice(3).join(' ')),
-      cpuPct: Number.isFinite(cpuPct) ? Math.round(cpuPct * 10) / 10 : 0,
-      rssBytes: Number.isFinite(rssBytes) ? rssBytes : 0,
-    });
+function diskPathsOf(home, platform) {
+  if (platform === 'win32') return [home, parse(home).root];
+  if (platform === 'darwin') return [home, '/System/Volumes/Data'];
+  return [home, '/'];
+}
+
+/**
+ * 采一张「每核累计忙时」的快照（毫秒）。
+ *
+ * @returns {number[]} 每核的累计忙时。
+ */
+function cpuBusySnapshot() {
+  return cpus().map((cpu) => cpu.times.user + cpu.times.sys + cpu.times.nice + cpu.times.irq);
+}
+
+/**
+ * 两张快照之间相当于几个核在忙。
+ *
+ * 累计时间还在涨的核就是正在忙的核，涨了多少就是忙了几分之一 —— 全部加起来
+ * 就是「相当于几个满载核」，跟 Windows 自己报的 CPU 占用率对得上。
+ *
+ * @param {number[]} before 前一次快照。
+ * @param {number[]} after 后一次快照。
+ * @param {number} elapsedMs 两次采样之间的墙钟时间（毫秒）。
+ * @returns {number} 忙碌核数（可带小数）。
+ */
+function busyCoresBetween(before, after, elapsedMs) {
+  if (elapsedMs <= 0) return 0;
+  let sum = 0;
+  for (let index = 0; index < after.length; index += 1) {
+    const delta = after[index] - (before[index] ?? after[index]);
+    if (delta > 0) sum += delta / elapsedMs;
   }
-  rows.sort((a, b) => b.rssBytes - a.rssBytes);
-  return rows.slice(0, limit);
+  return sum;
+}
+
+/** 采两次 CPU 时间的间隔（毫秒）。 */
+const CPU_SAMPLE_MS = 1000;
+
+/**
+ * 采两次 CPU 时间，间隔约一秒，算出「相当于几个核在忙」。
+ *
+ * Windows 上没有 loadavg（os.loadavg() 恒为 [0,0,0]），用累计 CPU 时间的
+ * 增量代替：采样期间还在涨的核就是正在忙的核。
+ *
+ * @param {number} [intervalMs] 两次采样之间的间隔。
+ * @returns {Promise<number>} 忙碌核数（可带小数）。
+ */
+async function measureBusyCores(intervalMs = CPU_SAMPLE_MS) {
+  const before = cpuBusySnapshot();
+  const startedAt = Date.now();
+  await new Promise((resolve) => { setTimeout(resolve, intervalMs); });
+  const after = cpuBusySnapshot();
+  return busyCoresBetween(before, after, Date.now() - startedAt);
 }
 
 /**
@@ -172,11 +287,11 @@ async function readTopProcesses(limit) {
  * @returns {Promise<{home: string, parts: Array<{name: string, bytes: number}>}>}
  */
 async function readDshHome(home, env) {
-  const dshHome = env.DSH_HOME ?? `${home}/.dsh`;
+  const dshHome = env.DSH_HOME ?? join(home, '.dsh');
   const names = ['trash', 'sessions', 'attachments', 'profiles', 'storages'];
   const parts = [];
   for (const name of names) {
-    const bytes = await measureBytes(`${dshHome}/${name}`, { timeoutMs: 20000 });
+    const bytes = await measureBytes(join(dshHome, name), { timeoutMs: 20000 });
     if (bytes === null || bytes <= 0) continue;
     parts.push({ name, bytes });
   }
@@ -184,19 +299,70 @@ async function readDshHome(home, env) {
   return { home: dshHome, parts };
 }
 
-/** 判定「机器空闲」的 1 分钟负载阈值。 */
+/** 判定「机器空闲」的阈值：POSIX 看负载，Windows 看忙碌核数。 */
 export const IDLE_LOAD_THRESHOLD = 2;
+
+/** 两轮 CPU 采样之间的间隔（毫秒）：采样窗口 1 秒，窗口之间留 4 秒空档。 */
+const CPU_SAMPLE_CYCLE_MS = 5000;
+
+/** 读数超过这个年龄就不认了（采样器卡住时别拿旧读数当现状）。 */
+const CPU_READING_MAX_AGE_MS = 15000;
+
+/** 后台采样器读到的数：{cores: 忙碌核数, at: 读数时刻}。 */
+let cpuReading = null;
+
+/** 后台采样器的定时器句柄。 */
+let cpuTimer = null;
+
+/** 后台采样器是否已经起过。 */
+let cpuSamplerStarted = false;
+
+/**
+ * 后台每隔几秒算一次「相当于几个核在忙」。
+ *
+ * isMachineIdle 是**同步**的（自动体检的定时器直接拿它的返回值当判据），
+ *没法在调用里等一次一秒的采样，所以采样放到后台去，读数存在这里。
+ */
+async function sampleCpuBusy() {
+  try {
+    const cores = await measureBusyCores(CPU_SAMPLE_MS);
+    cpuReading = { cores, at: Date.now() };
+  } catch {
+    // 采不到就沿用上一次的读数。
+  }
+  cpuTimer = setTimeout(sampleCpuBusy, CPU_SAMPLE_CYCLE_MS);
+  if (typeof cpuTimer.unref === 'function') cpuTimer.unref();
+}
+
+/**
+ * 保证后台采样器在跑。
+ */
+function ensureCpuSampler() {
+  if (cpuSamplerStarted) return;
+  cpuSamplerStarted = true;
+  sampleCpuBusy();
+}
 
 /**
  * 这台机器现在闲不闲。
  *
  * 体检要读几十 GB 的目录，是 I/O 密集的活儿 —— 抢在用户正忙着的时候跑会让
- * 机器更卡。判据用负载：1 分钟负载低于阈值就算闲。
+ * 机器更卡。判据用负载：POSIX 看 1 分钟负载，Windows 没有 loadavg，改看
+ * 「相当于几个核在忙」，低于阈值就算闲。
  *
- * @param {number} [threshold] 负载阈值。
+ * @param {number} [threshold] 阈值。
  * @returns {boolean} 是否空闲。
  */
 export function isMachineIdle(threshold = IDLE_LOAD_THRESHOLD) {
+  if (process.platform === 'win32') {
+    ensureCpuSampler();
+    const reading = cpuReading;
+    // 还没有读数、或者读数太旧：一概当作「不闲」—— 宁可这一轮不扫，
+    // 也不在用户正忙着的时候开跑。
+    if (reading === null) return false;
+    if (Date.now() - reading.at > CPU_READING_MAX_AGE_MS) return false;
+    return reading.cores < threshold;
+  }
   try {
     return loadavg()[0] < threshold;
   } catch {
@@ -217,14 +383,21 @@ export async function probeSystem(options) {
   const topLimit = options.topLimit ?? 8;
 
   const memory = await readMemory(platform);
-  const load = loadavg();
-  const [homeDisk, rootDisk, top, dsh, sampled] = await Promise.all([
-    readDisk(home),
-    platform === 'darwin' ? readDisk('/System/Volumes/Data') : readDisk('/'),
-    readTopProcesses(topLimit),
+  // Windows 上没有 loadavg：负载代理是「相当于几个核在忙」。
+  const busy = platform === 'win32' ? await measureBusyCores() : null;
+  const load = busy === null ? loadavg() : [busy, busy, busy];
+
+  const [disks, dsh, sampled] = await Promise.all([
+    Promise.all(diskPathsOf(home, platform).map((target) => readDisk(target))),
     readDshHome(home, env),
     sampleProcesses(),
   ]);
+
+  // 进程表只采一次 —— Windows 上采一次要一两秒，采第二次纯属浪费。
+  const top = sampled.processes
+    .map((proc) => ({ pid: proc.pid, name: proc.app, cpuPct: proc.cpuPct, rssBytes: proc.rssBytes }))
+    .sort((a, b) => b.rssBytes - a.rssBytes)
+    .slice(0, topLimit);
 
   const swapTotalBytes = memory === null ? 0 : memory.swapTotalBytes;
   const swapUsedBytes = memory === null ? 0 : Math.max(0, memory.swapTotalBytes - memory.swapFreeBytes);
@@ -249,7 +422,7 @@ export async function probeSystem(options) {
         // 用来在面板上给出一句「内存吃紧」的判断，不是精确的压力指标。
         swapPressure: swapTotalBytes > 0 && swapUsedBytes / swapTotalBytes >= 0.5,
       },
-    disk: [homeDisk, rootDisk].filter((item) => item !== null),
+    disk: disks.filter((item) => item !== null),
     topProcesses: top,
     // 内存按应用聚合（浏览器是几十个进程，逐个列用户没法判断），
     // CPU 是两次采样求差算出来的**瞬时**占用。

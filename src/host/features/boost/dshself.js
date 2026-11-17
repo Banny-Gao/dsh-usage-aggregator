@@ -17,11 +17,22 @@
 
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { spawn } from 'node:child_process';
+import { zstdDecompressSync } from 'node:zlib';
 import { measureBytes } from './probe.js';
 
 /** 会话日志的当前格式。DSH 0.2.x 只读这一种。 */
 const CURRENT_FORMAT = 'session.v4.jsonl.zstd';
+
+/**
+ * 超过这个大小的会话日志不读表头。
+ *
+ * 会话日志是 zstd 压缩的 JSONL，压缩比可以到几十倍 —— 不设上限的话，一个
+ * 几十 MB 的日志解压出来能吃掉几百 MB 内存。
+ */
+const MAX_SESSION_FILE_BYTES = 64 * 1024 * 1024;
+
+/** 解压出来的正文上限（压缩炸弹的兜底）。 */
+const MAX_SESSION_TEXT_BYTES = 256 * 1024 * 1024;
 
 /** 回收站保留几份快照。剩下的都是「早就删掉的东西」的化石。 */
 export const TRASH_KEEP_NEWEST = 3;
@@ -35,43 +46,25 @@ export const OLD_ATTACHMENT_DAYS = 30;
 /**
  * 读一个会话日志的头（第一行）。
  *
+ * 用 node:zlib 解 zstd —— 不依赖系统上装没装 `zstd` 命令（Windows 上通常没有，
+ * 靠外部命令读表头会一个会话都读不出来，孤儿子代理就再也认不出来）。
+ *
  * @param {string} file 会话日志路径。
  * @returns {Promise<object|null>} 头；读不出来就是 null。
  */
-export function readSessionHeader(file) {
-  return new Promise((resolve) => {
-    const child = spawn('zstd', ['-dcq', file], { stdio: ['ignore', 'pipe', 'ignore'] });
-    let buffer = '';
-    let done = false;
-    const finish = (value) => {
-      if (done) return;
-      done = true;
-      try { child.kill(); } catch { /* 已经退了 */ }
-      resolve(value);
-    };
-    child.stdout.on('data', (chunk) => {
-      buffer += chunk.toString('utf8');
-      const index = buffer.indexOf('\n');
-      if (index < 0) return;
-      try {
-        finish(JSON.parse(buffer.slice(0, index)));
-      } catch {
-        finish(null);
-      }
-    });
-    child.on('close', () => {
-      if (buffer.trim() === '') {
-        finish(null);
-        return;
-      }
-      try {
-        finish(JSON.parse(buffer.split('\n')[0]));
-      } catch {
-        finish(null);
-      }
-    });
-    child.on('error', () => finish(null));
-  });
+export async function readSessionHeader(file) {
+  try {
+    const info = await stat(file);
+    if (info.size > MAX_SESSION_FILE_BYTES) return null;
+    const raw = await readFile(file);
+    const text = zstdDecompressSync(raw, { maxOutputLength: MAX_SESSION_TEXT_BYTES }).toString('utf8');
+    const index = text.indexOf('\n');
+    const line = index < 0 ? text : text.slice(0, index);
+    if (line.trim() === '') return null;
+    return JSON.parse(line);
+  } catch {
+    return null;
+  }
 }
 
 /**

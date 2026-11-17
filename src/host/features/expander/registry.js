@@ -1,12 +1,48 @@
 // src/host/features/expander/registry.js
 //
-// 原 dsh-plugin-expander/lib/registry.js —— 逐字搬过来，逻辑一行未改。
+// 原 dsh-plugin-expander/lib/registry.js —— 逐字搬过来，只多了「简写地址还原」
+// 一节（SHORTHAND_HOSTS / resolveShorthand，见下）。
 //
 // 两个纯函数家族：版本比较，和「profile 记录的依赖 spec」的结构化。
 //
 // 版本比较自己写而不引 semver：这个包的依赖表是空的（离线可构建、装进 profile
 // 不拖任何第三方包）。比较规则只覆盖 semver 的主干与 prerelease 先后，
 // 不处理 build metadata —— 那一段不影响「谁更新」，所以忽略。
+
+/**
+ * 仓库地址的简写前缀：pnpm 允许 `github:owner/repo` 这种写法，git 不认。
+ *
+ * 识别与还原都用这一张表 —— 少一张表就会「认得出、还原不出」或反过来。
+ */
+const SHORTHAND_HOSTS = {
+  github: 'github.com',
+  gitlab: 'gitlab.com',
+  bitbucket: 'bitbucket.org',
+};
+
+/** 简写前缀本身（带冒号）。 */
+const SHORTHAND_PREFIX = /^(github|gitlab|bitbucket):/;
+
+/** 简写后面的仓库路径：至少 owner/repo，段内不许有空白。 */
+const SHORTHAND_PATH = /^[^\s/]+\/[^\s/]+(?:\/[^\s/]+)*$/;
+
+/**
+ * 把简写仓库地址还原成真实地址。
+ *
+ * 为什么必须还原：pnpm 认 `github:owner/repo`，git 不认 —— 直接把它喂给
+ * `git ls-remote` 只会得到「仓库不存在」，git 源的插件永远拿不到远端 HEAD，
+ * 于是永远停在「未知」。
+ *
+ * @param {string} url 去掉片段与 git+ 前缀后的地址。
+ * @returns {string} 真实地址；不是简写就原样返回。
+ */
+function resolveShorthand(url) {
+  const match = SHORTHAND_PREFIX.exec(url);
+  if (match === null) return url;
+  const path = url.slice(match[0].length);
+  if (!SHORTHAND_PATH.test(path)) return url;
+  return `https://${SHORTHAND_HOSTS[match[1]]}/${path.replace(/\.git$/, '')}.git`;
+}
 
 /**
  * 拆一个版本号：主版本、次版本、修订号、prerelease 标识符数组。
@@ -92,6 +128,7 @@ export function isUpgrade(installed, latest) {
  * spec 的形态由 DSH 插件管理器写进 profile 的 package.json：
  *   · 注册表版本范围 / 标签 / 别名 → `name@^1.2.3`、`name@latest`、`name@npm:real@^1`
  *   · git 地址 → `git+https://host/repo.git#path:sub`、`git+https://host/repo.git#<commit>`
+ *   · git 地址的简写 → `github:owner/repo`、`gitlab:owner/repo`、`bitbucket:owner/repo`
  *   · 本地路径 → `link:/abs/path`、`file:/abs/path`
  *
  * @param {string|undefined} source profile 记录的 spec。
@@ -103,7 +140,7 @@ export function parseDependencySource(source) {
   if (raw.startsWith('link:') || raw.startsWith('file:')) {
     return { kind: 'local', path: raw.slice(raw.indexOf(':') + 1) };
   }
-  if (raw.includes('://') || raw.startsWith('git+') || raw.startsWith('github:')) {
+  if (raw.includes('://') || raw.startsWith('git+') || SHORTHAND_PREFIX.test(raw)) {
     return parseGitSource(raw);
   }
   // 注册表：包名与范围之间用最后一个 @ 分开（作用域包名的 @ 在最前面，不能用第一个）。
@@ -125,6 +162,9 @@ export function parseDependencySource(source) {
  * `#<提交>&path:sub`。只有 40 位十六进制才算「固定提交」——那种包重装也拿不到
  * 新代码，检测时不该报「有更新」。
  *
+ * 地址本身可能是简写（`github:owner/repo`）—— 片段拆完之后才还原成真实地址，
+ * 否则简写里的冒号会被误当成地址的一部分。
+ *
  * @param {string} raw git spec 原文。
  * @returns {{kind: string, url: string, pinned: string|null, path: string|null, ref: string|null}} 结构化结果。
  */
@@ -137,6 +177,7 @@ function parseGitSource(raw) {
     url = url.slice(0, hash);
   }
   if (url.startsWith('git+')) url = url.slice(4);
+  url = resolveShorthand(url);
   let pinned = null;
   let path = null;
   let ref = null;

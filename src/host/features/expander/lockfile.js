@@ -53,13 +53,21 @@ export function parseLockedVersions(text) {
 /**
  * 取出锁文件里 git 依赖钉住的提交号。
  *
+ * 提交号在锁文件里有两种写法，都要认：
+ *   · `git+https://host/repo.git#bf31095…` —— 片段形式；
+ *   · `https://codeload.github.com/owner/repo/tar.gz/bf31095…` —— pnpm 解析
+ *     github: 简写之后写进锁文件的是**压缩包地址**，提交号是路径最后一段。
+ *     只认片段形式的话，github: 装的插件永远取不到提交号，只能报「未知」。
+ *
  * @param {string} text 锁文件全文。
  * @returns {Map<string, string>} 依赖名 → 提交号。
  */
 export function parseLockedCommits(text) {
   const commits = new Map();
   for (const [name, value] of parseLockedVersions(text)) {
-    const commit = /#([0-9a-f]{40})\b/i.exec(value);
+    // 提交号要么是片段（#sha），要么是路径的最后一段（/sha）。后面不能再跟
+    // 十六进制字符 —— 否则会从更长的哈希里截出前 40 位。
+    const commit = /(?:^|[#/])([0-9a-f]{40})(?![0-9a-f])/i.exec(value);
     if (commit !== null) commits.set(name, commit[1]);
   }
   return commits;

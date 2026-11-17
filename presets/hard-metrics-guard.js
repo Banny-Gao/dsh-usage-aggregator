@@ -42,6 +42,12 @@
  *     origin=subagent 也算子代理;连执行者是谁都读不到才不放行。
  *   - 扣减授权是先验后扣:整条命令需要的动作都拿到可用授权才扣;否则命令本身没有
  *     执行,授权也不能被这一次失败的执行烧掉。
+ *   - 授权管的是「这件事做成」,不是「这条命令跑过」:命令跑了却没做成(提交被
+ *     pre-commit 钩子打回、退出码非零),这次授权不算用掉,重试不用再问用户——
+ *     用户说一次「提交」要能一次提上去,不该因为第一次没成就被迫再授权一次。
+ *     退回的条件是「提交这一步自己没做成」:命令里排在提交之后的 git 子命令
+ *     (比如 push)一旦落地,提交就是真做成了,授权不退;推送失败也不退(远端可能
+ *     已经部分更新,退回了就有重复推送的风险)。
  *   - `agent/pre-step` 是 waterfall 事件:监听器不调用 `next()` 就会截断链条,
  *     外层监听器拿到的 decision 会变成 undefined。因此这里必须把 `next()` 的
  *     结果原样交回,只做「记录授权」这一件事。
@@ -531,6 +537,25 @@ function parseJson(text) {
   }
 }
 
+/**
+ * 这次工具执行是不是失败了。
+ *
+ * 非零退出码就是失败:命令本身没做成。基础设施失败(spawn 报错、中断)由
+ * `isError` 承担;工具只把结果渲染成文本时,退回文本里的退出码标记。
+ *
+ * @param {object} result 工具结果。
+ * @returns {boolean} 是否失败。
+ */
+function failedExecution(result) {
+  if (result?.isError === true) return true;
+  const value = result?.value;
+  if (value !== null && typeof value === 'object' && typeof value.exitCode === 'number') {
+    return value.exitCode !== 0;
+  }
+  const marker = /\[exit code: (-?\d+)\]/.exec(textOf(result));
+  return marker !== null && Number(marker[1]) !== 0;
+}
+
 /** 把 shell 文本切成便于找 git 子命令的片段。 */
 function splitSegments(text) {
   return text
@@ -808,7 +833,7 @@ export function apply(ctx) {
     if (key === undefined || key === null) return undefined;
     let state = states.get(key);
     if (state === undefined) {
-      state = { turn: undefined, grants: new Map() };
+      state = { turn: undefined, grants: new Map(), spent: new Map() };
       states.set(key, state);
     }
     return state;
@@ -817,8 +842,25 @@ export function apply(ctx) {
   /** 进入新一轮:上一轮的授权作废。 */
   const beginTurn = (state, turn) => {
     if (turn === undefined) return;
-    if (state.turn !== undefined && state.turn !== turn) state.grants.clear();
+    if (state.turn !== undefined && state.turn !== turn) {
+      state.grants.clear();
+      state.spent.clear();
+    }
     state.turn = turn;
+  };
+
+  /**
+   * 记下这次执行花掉的授权:命令没做成时原样退回。
+   *
+   * @param {object} state 该 agent 的状态。
+   * @param {string|undefined} callId 工具执行 id。
+   * @param {{action: string, key: string, releasable: boolean}} entry 花掉的授权。
+   */
+  const spend = (state, callId, entry) => {
+    if (typeof callId !== 'string') return;
+    const entries = state.spent.get(callId) ?? [];
+    entries.push(entry);
+    state.spent.set(callId, entries);
   };
 
   /** 记住一次表态;同一 key 重复到达只补齐动作,不会重复计数。 */
@@ -903,6 +945,9 @@ export function apply(ctx) {
     const state = stateOf(execution.agent);
     const invocations = commandTexts(execution).flatMap(gitInvocations);
     if (invocations.some(destroysWorktree)) return DENY_DESTRUCTIVE;
+    // 命令里排在提交之后的 git 子命令一旦落地,提交就是真做成了:只有提交是
+    // 最后一步,失败才能说明提交这一步自己没做成。
+    const commitIsLast = invocations[invocations.length - 1]?.sub === 'commit';
 
     // 重命令:子代理一律不跑;主代理每跑一次都要用户当轮的同意。
     const heavies = heavyCommands(execution, { cwd: execution.agent?.session?.header?.cwd });
@@ -951,8 +996,30 @@ export function apply(ctx) {
     // 都拿到了才扣:命令没执行,授权不能被失败的执行烧掉。
     for (const { key, token } of heavyPlan) state.grants.get(key).used.add(token);
     for (const { action, keys } of gitPlan) {
-      for (const key of keys) state.grants.get(key).used.add(action);
+      for (const key of keys) {
+        state.grants.get(key).used.add(action);
+        // 提交这一步自己没做成时,这次授权原样退回,重试不用再问用户。
+        spend(state, execution.callId, {
+          action,
+          key,
+          releasable: action === 'commit' && commitIsLast,
+        });
+      }
     }
     return undefined;
+  });
+
+  // 命令跑了却没做成:这次授权不算用掉,重试不用再问用户。
+  ctx.on('tools/result', (execution, result) => {
+    const state = stateOf(execution?.agent);
+    if (state === undefined) return;
+    const spent = state.spent.get(execution?.callId);
+    if (spent === undefined) return;
+    state.spent.delete(execution.callId);
+    if (!failedExecution(result)) return;
+    for (const entry of spent) {
+      if (!entry.releasable) continue;
+      state.grants.get(entry.key)?.used.delete(entry.action);
+    }
   });
 }

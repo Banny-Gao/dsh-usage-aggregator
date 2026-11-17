@@ -91,6 +91,8 @@ ctx.tools.register(
     output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
     execute: async (args) => {
       executed.push(args.command);
+      // 约定:命令里带 fail 的返回非零退出码,用来验证「没做成不烧掉授权」。
+      if (args.command.includes('fail')) return '[exit code: 1]';
       return 'ok';
     },
   }),
@@ -339,6 +341,22 @@ userMessage(agentSub, 'm11', '跑一下构建');
   check('包脚本里没有重命令时放行', !dev.isError && dev.text.includes('ok'), dev.text);
 
   fs.rmSync(dir, { recursive: true, force: true });
+}
+
+// 14. 提交命令没做成时授权退回,重试不用再问用户
+{
+  const agentRetry = { id: 'retry' };
+  createScope(ctx, agentRetry, { parent: presetKey });
+
+  userMessage(agentRetry, 'm14', '现在提交');
+  const failed = await runBash(agentRetry, 'git commit -m "fail"');
+  check('提交命令没做成时命令照常执行', !failed.isError, failed.text);
+
+  const retry = await runBash(agentRetry, 'git commit -m "retry"');
+  check('提交没做成时授权退回,重试照样放行', !retry.isError && retry.text.includes('ok'), retry.text);
+
+  const again = await runBash(agentRetry, 'git commit -m "again"');
+  check('重试成功后授权用掉,再提交被拒绝', again.isError && again.text.includes('硬指标禁令'), again.text);
 }
 
 if (failed > 0) {

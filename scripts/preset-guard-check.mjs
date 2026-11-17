@@ -82,8 +82,13 @@ function questionReplyMessage(id, callId, questions, answers) {
 }
 
 /** 工具执行:bash 的命令在 arguments.command 里。 */
-function bashExecution(command, agent = AGENT) {
-  return { name: 'bash', callId: 'call-1', agent, arguments: { command } };
+function bashExecution(command, agent = AGENT, callId = 'call-1') {
+  return { name: 'bash', callId, agent, arguments: { command } };
+}
+
+/** 工具结果:非零退出码表示命令没做成。 */
+function bashResult(exitCode) {
+  return { isError: false, value: { exitCode }, content: [{ type: 'text', text: `[exit code: ${exitCode}]` }] };
 }
 
 /** 工具执行:run_code 的代码在 arguments.code 里。 */
@@ -807,6 +812,73 @@ check('子代理跑静态检查同样被拒绝', async () => {
   const harness = createHarness();
   await startTurn(harness, '跑一下代码检查', 'msg-1', 1);
   assertDenied(harness.guard(bashExecution('pnpm eslint .', SUBAGENT)), '子代理 eslint');
+});
+
+// ------------------------------------------- 命令没做成不烧掉授权(可重试)
+
+check('提交命令失败时授权退回,重试不再被拦', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交', 'msg-1', 1);
+  const first = bashExecution('git commit -m x', AGENT, 'call-commit');
+  assertAllowed(harness.guard(first), '第一次提交');
+  harness.emit('tools/result', first, bashResult(1));
+  const retry = bashExecution('git commit -m x', AGENT, 'call-commit-retry');
+  assertAllowed(harness.guard(retry), '失败后的重试');
+});
+
+check('提交命令成功时授权不退,第二次仍被拒绝', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交', 'msg-1', 1);
+  const first = bashExecution('git commit -m x', AGENT, 'call-commit');
+  assertAllowed(harness.guard(first), '第一次提交');
+  harness.emit('tools/result', first, bashResult(0));
+  assertDenied(harness.guard(bashExecution('git commit -m y', AGENT, 'call-commit-2')), '第二次提交');
+});
+
+check('工具以错误结束(isError)时提交授权退回', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交', 'msg-1', 1);
+  const first = bashExecution('git commit -m x', AGENT, 'call-commit');
+  assertAllowed(harness.guard(first), '第一次提交');
+  harness.emit('tools/result', first, { isError: true, content: [] });
+  assertAllowed(harness.guard(bashExecution('git commit -m x', AGENT, 'call-commit-retry')), '失败后的重试');
+});
+
+check('git add 之后的提交失败,授权同样退回', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交', 'msg-1', 1);
+  const first = bashExecution('git add -A && git commit -m x', AGENT, 'call-add-commit');
+  assertAllowed(harness.guard(first), 'add + 提交');
+  harness.emit('tools/result', first, bashResult(1));
+  assertAllowed(harness.guard(bashExecution('git add -A && git commit -m x', AGENT, 'call-add-commit-2')), '重试');
+});
+
+check('推送失败不退回授权', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交并推送', 'msg-1', 1);
+  const first = bashExecution('git push origin main', AGENT, 'call-push');
+  assertAllowed(harness.guard(first), '推送');
+  harness.emit('tools/result', first, bashResult(1));
+  assertDenied(harness.guard(bashExecution('git push origin main', AGENT, 'call-push-2')), '推送重试');
+});
+
+check('提交后面还跟着 push 的命令失败时不退回提交授权', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交并推送', 'msg-1', 1);
+  const first = bashExecution('git commit -m x && git push origin main', AGENT, 'call-both');
+  assertAllowed(harness.guard(first), '提交并推送');
+  harness.emit('tools/result', first, bashResult(1));
+  assertDenied(harness.guard(bashExecution('git commit -m x', AGENT, 'call-both-2')), '提交重试');
+});
+
+check('换轮之后失败退回不再生效', async () => {
+  const harness = createHarness();
+  await startTurn(harness, '提交', 'msg-1', 1);
+  const first = bashExecution('git commit -m x', AGENT, 'call-commit');
+  assertAllowed(harness.guard(first), '第一次提交');
+  await startTurn(harness, '换个话题', 'msg-2', 2);
+  harness.emit('tools/result', first, bashResult(1));
+  assertDenied(harness.guard(bashExecution('git commit -m x', AGENT, 'call-commit-2')), '换轮后的提交');
 });
 
 await runChecks();

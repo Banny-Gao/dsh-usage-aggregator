@@ -74,6 +74,7 @@
     "smoke:renewal": "node scripts/smoke-renewal.mjs",
     "ui-check": "node scripts/ui-check.mjs",
     "ui-check:dingtalk": "node scripts/ui-check-dingtalk.mjs",
+    "ui-check:dock": "node scripts/ui-check-dock.mjs",
     "ui-check:expander": "node scripts/ui-check-expander.mjs",
     "ui-check:tasks": "node scripts/ui-check-tasks.mjs",
     "render-check": "node scripts/render-check.mjs",

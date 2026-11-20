@@ -7,11 +7,16 @@
 //   入口，这正是本次聚合要消除的问题。所以这里注册**一个** id 为
 //   `usage-aggregator` 的 section，内容是一个页签条 + 当前功能的视图。
 //
+// 同一个聚合层还渲染**页面上那条悬浮栏**（shell.overlay，id `axzo-dock`）：
+// 栏里装的是各功能登记进来的条目（小火箭、钉钉入口）。由聚合层渲染而不是由
+// 某个功能渲染，是因为功能之间零 import —— 谁也不能替谁装这条栏。
+//
 // 页签标签取自**聚合页自己的**字典（tabTheme / tabUsage / tabExpander），
 // 键名由各功能的 meta.hubTabKey 指定 —— 见 src/client/hub/i18n.js 顶部
 // 为什么不从功能的 `hubTab` 取。
 
 import { React, h, useState } from '../runtime.js';
+import { DockHost } from '../shared/dock.js';
 import { makeTranslator } from '../shared/i18n.js';
 import { NS, zh, en } from './i18n.js';
 import { Styles } from './styles.js';
@@ -144,6 +149,24 @@ export function registerHub(ctx, registry, meta = {}) {
       },
       function (slotProps) {
         return h(HubPanel, { t: t, ctx: ctx, views: views, buildAt: meta.buildAt });
+      },
+    );
+  });
+
+  // 悬浮栏：整个插件在页面上只占**这一个**浮层槽。
+  //
+  // 栏里装的是各功能登记进来的条目（小火箭、钉钉入口）—— 功能之间零 import，
+  // 所以由聚合层来渲染这条栏：谁想进来，就自己登记一个条目。
+  ctx.slots.inject('shell.overlay', function () {
+    return ctx.slots.register(
+      {
+        name: 'shell.overlay',
+        id: 'axzo-dock',
+        order: 30,
+        locale: NS,
+      },
+      function (slotProps) {
+        return h(DockHost, { slotProps: slotProps });
       },
     );
   });

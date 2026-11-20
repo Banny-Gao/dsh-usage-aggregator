@@ -282,6 +282,9 @@ export function DingtalkPanel(props) {
         ? h('p', { className: 'dsh-dt-msg is-error' }, t('installFailed', { error: String(installJob.error) }))
         : null,
       h('p', { className: 'dsh-dt-msg' }, t('unread', { count: String(status?.unread ?? 0) })),
+      Number.isFinite(status?.pendingCount) && status.pendingCount > 0
+        ? h('p', { className: 'dsh-dt-msg is-warn' }, t('pending', { count: String(status.pendingCount) }))
+        : null,
       h('p', { className: 'dsh-dt-msg' },
         at === 0
           ? t('neverPolled')

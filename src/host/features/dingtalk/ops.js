@@ -10,11 +10,17 @@
 import { runProcess } from '../../shared/cmd.js';
 import { detectEnvironment, installDws } from './install.js';
 import { explainFailure, runDws } from './dws.js';
-import { collectMessages, collectPeople, idHint } from './shapes.js';
+import { collectChats, collectMessages, collectPeople, idHint } from './shapes.js';
 import { readStored, writePreferences, normalize } from './store.js';
 
 /** 钉钉单聊的正文上限（字符）。超了要分段或改发文档链接。 */
 export const BODY_LIMIT = 5000;
+
+/** 一轮里最多看几个未读会话。 */
+export const UNREAD_CHAT_LIMIT = 8;
+
+/** 每个未读会话取最近几条消息。 */
+export const UNREAD_MESSAGE_LIMIT = 5;
 
 /** 回查时用来定位消息的关键词长度。 */
 const KEYWORD_LENGTH = 18;
@@ -432,7 +438,43 @@ export function createOps(deps = {}) {
   }
 
   /**
-   * 拉一次 @我的 / 未读会话里的消息。
+   * 拉未读会话里的消息。
+   *
+   * 为什么不能只拉 `@我`：`chat +at-me` 搜的是**@我 的**消息，没 @ 你的消息它
+   * 一条都不给 —— 而「没 @ 我但可能也要我处理」的消息恰恰在未读会话里。
+   * 这里先列未读会话（`+unread-chats`），再逐个读最近几条（`+chat-messages`）。
+   *
+   * 只读：不动已读状态，也不标记任何消息。
+   *
+   * @returns {Promise<Array<object>>} 消息列表（拉不到就是空数组）。
+   */
+  async function readUnreadMessages() {
+    const chats = await callDws(['chat', '+unread-chats', '--count', String(UNREAD_CHAT_LIMIT)]);
+    if (!chats.ok) return [];
+    const out = [];
+    for (const chat of collectChats(chats.json)) {
+      const result = await callDws([
+        'chat', '+chat-messages',
+        '--conversation-id', chat.conversationId,
+        '--limit', String(UNREAD_MESSAGE_LIMIT),
+        '--order', 'desc',
+      ]);
+      if (!result.ok) continue;
+      for (const message of collectMessages(result.json)) {
+        out.push({
+          ...message,
+          // 来自未读会话 —— **不一定是 @我 的**。这个标记决定它要不要进待处理清单。
+          at: false,
+          conversationId: message.conversationId !== '' ? message.conversationId : chat.conversationId,
+          chatName: message.chatName !== '' ? message.chatName : chat.name,
+        });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * 拉一次 @我 与未读会话里的消息。
    *
    * @param {{limit?: number, sinceMs?: number}} options 选项。
    * @returns {Promise<{ok: boolean, messages: Array<object>, error?: string}>} 结果。
@@ -440,7 +482,23 @@ export function createOps(deps = {}) {
   async function readMessages(options = {}) {
     const result = await callDws(['chat', '+at-me', '--page-all']);
     if (!result.ok) return { ok: false, messages: [], error: explainFailure(result) };
-    let messages = collectMessages(result.json);
+    // `+at-me` 给的每一条都是**明确 @我 的** —— 这个标记决定它要不要进待处理清单。
+    let messages = collectMessages(result.json).map(function (message) {
+      return { ...message, at: true };
+    });
+    const unread = await readUnreadMessages();
+    if (unread.length > 0) messages = messages.concat(unread);
+    // 同一条消息可能两条路都拉到（@我 的消息所在会话也可能未读）—— 按 id 去重。
+    // @我 的排在前面，所以两条路都有的消息留的是「@我」那一份。
+    const unique = [];
+    const seen = new Set();
+    for (const message of messages) {
+      const key = message.messageId !== '' ? message.messageId : message.text + '@' + message.createTime;
+      if (key === '' || seen.has(key)) continue;
+      seen.add(key);
+      unique.push(message);
+    }
+    messages = unique;
     if (Number.isFinite(options?.sinceMs) && options.sinceMs > 0) {
       messages = messages.filter((message) => message.createTime === 0 || message.createTime >= options.sinceMs);
     }

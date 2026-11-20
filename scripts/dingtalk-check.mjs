@@ -43,7 +43,7 @@ register('data:text/javascript,' + encodeURIComponent([
 const { createSendKind } = await import('../src/host/features/dingtalk/card.js');
 const { explainFailure, runDws } = await import('../src/host/features/dingtalk/dws.js');
 const { detectEnvironment, installDws } = await import('../src/host/features/dingtalk/install.js');
-const { collectMessages, collectPeople } = await import('../src/host/features/dingtalk/shapes.js');
+const { collectChats, collectMessages, collectPeople } = await import('../src/host/features/dingtalk/shapes.js');
 const { createOps } = await import('../src/host/features/dingtalk/ops.js');
 const { classifyMessage, extractReqCodes } = await import('../src/host/features/dingtalk/relevance.js');
 const { createContextReader } = await import('../src/host/features/dingtalk/context.js');
@@ -223,12 +223,30 @@ await check('collectMessages 取消息（id / 发送者 / 正文 / 时间戳）'
   assert.equal(inside.messageId, 'msg-in-0001');
   assert.equal(inside.conversationId, 'conv-1');
   assert.equal(inside.sender, '陈世康');
-  assert.equal(inside.senderId, 'odt-chen-shikang-0001');
+  assert.equal(inside.senderId, '', '真 CLI 的 +at-me 不带 senderId —— 认成空串而不是瞎猜');
   assert.ok(inside.text.includes('REQ-1234'));
   assert.ok(inside.createTime > 0, '时间戳应该是当下的毫秒数，不是写死的旧值');
   assert.equal(outside.messageId, 'msg-out-0001');
   assert.equal(outside.sender, '前台小妹');
   assert.ok(outside.createTime > 0);
+});
+
+await check('真 CLI 给的是时间字符串与会话名数组 —— 都要认出来', async () => {
+  // 桩里的 +at-me 给的是 `time: "2026-11-20 15:16:43"` 与 `conversation: ["项目群"]`，
+  // 不是数字时间戳 —— 真 dws 就是这个形态，认不出来时间就永远是 0。
+  const atme = await runDws(['chat', '+at-me', '--page-all'], { bin: STUB });
+  const [inside] = collectMessages(atme.json);
+  assert.ok(inside.createTime > 0, '字符串时间要能解析成毫秒时间戳');
+  assert.equal(inside.chatName, '项目群', '会话名要从 conversation 数组里认出来');
+  assert.ok(Math.abs(Date.now() - inside.createTime) < 60000, '时间戳应该是当下，不是写死的旧值');
+});
+
+await check('collectChats 取未读会话（会话名 + 会话 id）', async () => {
+  const chats = await runDws(['chat', '+unread-chats', '--count', '3'], { bin: STUB });
+  const list = collectChats(chats.json);
+  assert.equal(list.length, 1);
+  assert.equal(list[0].conversationId, 'conv-3');
+  assert.equal(list[0].name, '安心筑APP错误上报群');
 });
 
 console.log('');
@@ -408,26 +426,80 @@ await check('第一轮 poll 只做基线：不注入提示，项目外消息只�
   assert.equal(result.ok, true, result.error);
   assert.equal(injectCalls.length, 0, '第一轮不该唤醒模型');
   const status = receiver.status();
-  assert.equal(status.unread, 1, '项目外那条消息只该累一个未读');
+  assert.equal(status.unread, 2, '两条项目外的（一条 @我 的 + 一条未读会话的）各累一个未读');
   assert.equal(status.baselined, true);
   assert.equal(status.lastRelevant, 1, 'REQ-1234 那条算项目内');
   assert.equal(status.lastBaselined, 1);
+  assert.equal(status.pendingCount, 0, '基线轮不进待处理清单 —— 打开功能之前就有的消息不算待办');
+});
+
+await check('未读会话里的消息也拉到了（没 @ 我的那条只能靠这条路进来）', async () => {
+  const lines = opsCalls.map((args) => args.join(' '));
+  assert.ok(lines.some((line) => line.includes('+unread-chats')), '应该走过未读会话列表那条路');
+  assert.ok(lines.some((line) => line.includes('+chat-messages')), '应该读过未读会话里的消息');
 });
 
 await check('第二轮 poll：项目内的新消息才注入分析提示', async () => {
   process.env.DWS_STUB_EXTRA_ID = 'msg-in-0002';
   process.env.DWS_STUB_EXTRA_TEXT = 'REQ-1234 的发布申请再确认一下';
+  process.env.DWS_STUB_EXTRA_OUT_ID = 'msg-out-0002';
+  process.env.DWS_STUB_EXTRA_OUT_TEXT = '楼下奶茶店今天买一送一（新的）';
+  process.env.DWS_STUB_EXTRA_CHAT_ID = 'msg-chat-0002';
+  process.env.DWS_STUB_EXTRA_CHAT_TEXT = '@张弦 那个方案我看过了，按你说的改（新的）';
   const result = await receiver.poll();
   delete process.env.DWS_STUB_EXTRA_ID;
   delete process.env.DWS_STUB_EXTRA_TEXT;
+  delete process.env.DWS_STUB_EXTRA_OUT_ID;
+  delete process.env.DWS_STUB_EXTRA_OUT_TEXT;
+  delete process.env.DWS_STUB_EXTRA_CHAT_ID;
+  delete process.env.DWS_STUB_EXTRA_CHAT_TEXT;
   assert.equal(result.ok, true, result.error);
-  assert.equal(result.count, 1, '只有那条新消息算新的');
-  assert.equal(injectCalls.length, 1, '第二轮应该注入一次分析提示');
+  assert.equal(result.count, 3, '三条新消息（@我 的两条 + 未读会话里的一条）都算新的');
+  assert.equal(injectCalls.length, 1, '第二轮应该注入一次分析提示（只有项目内那条）');
   const text = injectCalls[0];
   assert.ok(text.includes('REQ-1234 的发布申请再确认一下'), '注入文本里要有消息原文');
   assert.ok(text.includes('只做分析'), '注入文本里要说明「只做分析，不要动手」');
   assert.ok(text.includes('ask_user_question'), '注入文本里要教模型用 ask_user_question 问用户');
-  assert.equal(receiver.status().unread, 1, '项目外那条不该重复计数');
+  assert.equal(receiver.status().unread, 4, '两条新的项目外消息各累一个未读');
+});
+
+console.log('');
+console.log('→ 待处理清单：@我 的 + 命中项目判据的才进，忽略能去掉');
+await check('项目内的记下了路由会话，@我 但项目外的没有', async () => {
+  const pending = receiver.pending();
+  assert.ok(pending.count > 0, '新消息该进清单');
+  const inside = pending.items.find((item) => item.excerpt.includes('REQ-1234'));
+  assert.ok(inside !== undefined, '项目内那条该在清单里');
+  assert.equal(inside.sessionId, 'agent-1', '项目内的要记下当初路由到的会话');
+  assert.equal(inside.inProject, true);
+  assert.equal(inside.at, true, '它也是 @我 的');
+  const outside = pending.items.find((item) => item.excerpt.includes('奶茶店'));
+  assert.ok(outside !== undefined, '@我 的那条即使项目外也要进清单（有人在找我）');
+  assert.equal(outside.sessionId, '', '项目外的没有路由会话');
+  assert.equal(outside.inProject, false);
+  assert.equal(outside.at, true, '要标出它是 @我 的');
+});
+
+await check('没 @ 我、也不命中项目判据的：只累未读，不进清单', async () => {
+  const pending = receiver.pending();
+  const noise = pending.items.find((item) => item.excerpt.includes('张弦'));
+  assert.ok(noise === undefined, '群里别人回复别人的那条不该进清单（清单会被噪声淹掉）');
+});
+
+await check('清单里带会话名与时间（要能看出是谁、什么时候、哪个群）', async () => {
+  const item = receiver.pending().items[0];
+  assert.ok(item.chatName !== '', '要带会话名');
+  assert.ok(item.at > 0, '要带时间');
+  assert.ok(item.excerpt !== '', '要带一句摘要');
+});
+
+await check('ignore：把一条从清单里去掉', () => {
+  const before = receiver.pending().count;
+  const target = receiver.pending().items[0];
+  const result = receiver.ignore(target.id);
+  assert.equal(result.ok, true);
+  assert.equal(result.removed, 1);
+  assert.equal(receiver.pending().count, before - 1);
 });
 
 console.log('');

@@ -579,6 +579,13 @@ else
   tail -20 "$SYNTAX_TMP/ui-boost.log" | sed 's/^/    /'
 fi
 
+if node "$PLUGIN_DIR/scripts/ui-check-dock.mjs" >"$SYNTAX_TMP/ui-dock.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/ui-dock.log")"
+else
+  bad "scripts/ui-check-dock.mjs 未通过（跑 node scripts/ui-check-dock.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/ui-dock.log" | sed 's/^/    /'
+fi
+
 echo ""
 echo "→ 加速清理的护栏（路径合法 / 在用即跳过 / 目录表 / 诊断兜底）"
 if node "$PLUGIN_DIR/scripts/boost-check.mjs" >"$SYNTAX_TMP/boost.log" 2>&1; then

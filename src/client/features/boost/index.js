@@ -9,20 +9,21 @@
 //   HubView(props) —— 聚合设置页里渲染的视图
 //
 // 两个入口，一份体检结果：
-//   · 右下角的小火箭 —— 挂在 shell.overlay（root scope 的浮层槽），DSH 自己的
-//     设置弹窗与日程提醒都走这个槽；
+//   · 悬浮栏里的小火箭 —— 登记进共享层的 dock（src/client/shared/dock.js），
+//     由聚合层渲染成一条窄窄的浮层栏；
 //   · 聚合设置页的「加速」页签 —— 同一份清单的整页视图。
 //
 // ⚠️ 模块顶层不要调用 h(...)：共享 runtime 的 React 要等聚合入口的 factory 里
 //   installRuntime(require) 之后才就绪。顶层只声明函数与常量。
 
 import { h } from '../../runtime.js';
+import { registerDockEntry } from '../../shared/dock.js';
 import { NS, en, zh } from './i18n.js';
 import { BoostPanel } from './panel.js';
 import { useHandoff } from './view.js';
 import { DiagnosisBlock, ItemList } from './parts.js';
 import { BOOST_RUNTIME } from './ref.js';
-import { BoostWidget } from './widget.js';
+import { BoostEntry } from './widget.js';
 
 /**
  * 功能标识。
@@ -48,26 +49,27 @@ export const dictionaries = { zh, en };
 export function apply(ctx, t) {
   const translator = typeof t === 'function' ? t : (key) => (zh[key] !== undefined ? zh[key] : key);
 
-  // 小火箭浮层。
+  // 悬浮栏里的小火箭。
   //
-  // shell.overlay 是 root scope 的 list 槽 —— 它那一层本身是 click-through 的
-  // （点不中的），所以浮层里的按钮要自己把 pointer-events 要回来（样式里有）。
+  // 登记进共享层的 dock（src/client/shared/dock.js）—— 功能之间零 import，
+  // 所以不能自己注册 shell.overlay 槽（那会跟钉钉入口各占一个浮层，凑不成一条栏）。
   //
-  // 标准属性（useSessions 等）随组件 props 一起送到：浮层据此算出「用户当前
-  // 正在看的那个会话」，交�� Agent 时消息才会落到用户眼前这个对话里。
-  ctx.slots.inject('shell.overlay', function () {
-    return ctx.slots.register({
-      name: 'shell.overlay',
-      id: 'axzo-boost',
-      order: 30,
-      locale: NS,
-    }, function (slotProps) {
-      return h(BoostWidget, {
+  // 标准属性（useSessions）由 dock 透传：据此算出「用户当前正在看的那个会话」，
+  // 交给 Agent 时消息才会落到用户眼前这个对话里。
+  registerDockEntry({
+    id: 'axzo-boost',
+    order: 30,
+    t: translator,
+    Component: function (entryProps) {
+      return h(BoostEntry, {
         t: translator,
         runtime: BOOST_RUNTIME,
-        useSessions: slotProps !== undefined && slotProps !== null ? slotProps.useSessions : undefined,
+        open: entryProps.open,
+        onToggle: entryProps.onToggle,
+        onClose: entryProps.onClose,
+        slotProps: entryProps.slotProps,
       });
-    });
+    },
   });
 
   // 客户端的 sessions 服务（可选注入）：交给 Agent 时要拿会话 scope。
@@ -94,7 +96,7 @@ export const HubView = (props) => h(BoostPanel, props);
  * 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
  */
 export const __ui = {
-  BoostWidget: BoostWidget,
+  BoostEntry: BoostEntry,
   BoostPanel: BoostPanel,
   DiagnosisBlock: DiagnosisBlock,
   ItemList: ItemList,

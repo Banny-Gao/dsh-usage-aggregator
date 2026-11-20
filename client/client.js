@@ -3795,7 +3795,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-11-20 14:09:59";
+		return "2026-11-20 18:07:40";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -3942,7 +3942,7 @@ var dshUsageAggregator = (function(exports) {
 		}), h("p", { className: "duq-foot" }, "数据与登录态只存在本机（$DSH_HOME/dsh-usage-query/store.json，仅本人可读）。" + (state === null || state.autoRefresh === void 0 || state.autoRefresh.enabled === false ? "" : "自动查询 " + intervalText(state.autoRefresh.intervalSeconds, t) + "一轮。") + (BUILD_AT$1 === "" ? "" : "　客户端构建于 " + BUILD_AT$1 + "。")));
 	}
 	// src/client/features/usage/styles.js
-	var CSS$5 = [
+	var CSS$6 = [
 		".duq-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary,#111827);}",
 		".duq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".duq-headtext{flex:1 1 auto;min-width:0;}",
@@ -4126,7 +4126,7 @@ var dshUsageAggregator = (function(exports) {
 	function Styles$5() {
 		return h("style", {
 			"data-dsh-usage-query": STYLE_ID$1,
-			dangerouslySetInnerHTML: { __html: CSS$5 }
+			dangerouslySetInnerHTML: { __html: CSS$6 }
 		});
 	}
 	/**
@@ -4915,7 +4915,7 @@ var dshUsageAggregator = (function(exports) {
 			return callApi("POST", EXPANDER_ENDPOINT + "/update", payload);
 		}
 	};
-	var CSS$4 = [
+	var CSS$5 = [
 		".dpe-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
 		".dpe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".dpe-headtext{flex:1 1 auto;min-width:0;}",
@@ -4970,7 +4970,7 @@ var dshUsageAggregator = (function(exports) {
 	function Styles$4() {
 		return h("style", {
 			"data-dsh-plugin-expander": STYLE_ID,
-			dangerouslySetInnerHTML: { __html: CSS$4 }
+			dangerouslySetInnerHTML: { __html: CSS$5 }
 		});
 	}
 	/**
@@ -5297,6 +5297,309 @@ var dshUsageAggregator = (function(exports) {
 		zh: zh$4,
 		en: en$4
 	};
+	// src/client/shared/dock-style.js
+	/** 样式表正文。 */
+	var CSS$4 = [
+		".dsh-dock{position:fixed;right:24px;bottom:24px;z-index:2147483000;pointer-events:auto;}",
+		".dsh-dock-rail{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2,var(--dsw-alias-border-l1));background:var(--dsw-alias-bg-layer-1);box-shadow:0 8px 24px rgba(0,0,0,.18);transition:box-shadow .15s ease;}",
+		".dsh-dock.is-dragging .dsh-dock-rail{box-shadow:0 12px 30px rgba(0,0,0,.26);}",
+		".dsh-dock-item{position:relative;display:flex;}",
+		".dsh-dock-btn{position:relative;display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid transparent;background:transparent;color:var(--dsw-alias-label-primary);cursor:pointer;transition:background .15s ease,transform .15s ease,box-shadow .15s ease;user-select:none;touch-action:none;-webkit-user-select:none;}",
+		".dsh-dock-btn:hover{background:var(--dsw-alias-interactive-bg-hover);transform:translateY(-1px);}",
+		".dsh-dock-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;}",
+		".dsh-dock-btn.is-open{background:var(--dsw-alias-bg-layer-2);}",
+		".dsh-dock-btn svg{width:19px;height:19px;display:block;pointer-events:none;}",
+		".dsh-dock-count{position:absolute;top:-2px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--dsw-alias-state-error-primary,#b42318);color:#fff;font-size:10px;line-height:16px;text-align:center;pointer-events:none;}",
+		".dsh-dock-panel{position:absolute;right:calc(100% + 10px);bottom:0;width:min(400px,calc(100vw - 32px));max-height:min(72vh,600px);display:flex;flex-direction:column;border-radius:14px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);box-shadow:0 16px 44px rgba(0,0,0,.26);overflow:hidden;}",
+		".dsh-dock.is-high .dsh-dock-panel{bottom:auto;top:0;}"
+	].join("\n");
+	/**
+	* 样式组件。
+	*
+	* @returns {object} React 元素。
+	*/
+	function DockStyles() {
+		return h("style", {
+			"data-dsh-usage-aggregator": "dock",
+			dangerouslySetInnerHTML: { __html: CSS$4 }
+		});
+	}
+	// src/client/shared/dock.js
+	/** 栏的位置记在哪。 */
+	var POS_KEY = "dsh-usage-aggregator:dock:pos";
+	/** 离屏幕边缘的距离。 */
+	var EDGE = 16;
+	/** 栏的尺寸估算（只用来夹位置，不参与布局）。 */
+	var DOCK_WIDTH = 46;
+	var DOCK_HEIGHT = 88;
+	/** 已登记的条目（按 order 排）。 */
+	var entries = [];
+	/** 条目变化时的通知者。 */
+	var listeners = /* @__PURE__ */ new Set();
+	/**
+	* 通知所有订阅者：条目表变了，得重渲染。
+	*/
+	function notify() {
+		for (const listener of [...listeners]) try {
+			listener();
+		} catch (err) {}
+	}
+	/**
+	* 登记一个条目。
+	*
+	* 同一个 id 重复登记（热重载）会替换掉旧的。
+	*
+	* @param {{id: string, order?: number, t?: Function, Component: Function}} entry 条目。
+	* @returns {Function} 注销函数。
+	*/
+	function registerDockEntry(entry) {
+		if (entry === null || typeof entry !== "object") return () => {};
+		if (typeof entry.Component !== "function") return () => {};
+		const id = typeof entry.id === "string" && entry.id !== "" ? entry.id : null;
+		if (id === null) return () => {};
+		const existing = entries.findIndex((row) => row.id === id);
+		if (existing >= 0) entries.splice(existing, 1);
+		entries.push({
+			id,
+			order: Number.isFinite(entry.order) ? entry.order : 0,
+			t: typeof entry.t === "function" ? entry.t : (key) => key,
+			Component: entry.Component
+		});
+		entries.sort((a, b) => a.order - b.order);
+		notify();
+		return function() {
+			const index = entries.findIndex((row) => row.id === id);
+			if (index < 0) return;
+			entries.splice(index, 1);
+			notify();
+		};
+	}
+	/**
+	* 订阅条目表的变化。
+	*
+	* @param {Function} listener 回调。
+	* @returns {Function} 退订函数。
+	*/
+	function subscribeDock(listener) {
+		listeners.add(listener);
+		return function() {
+			listeners.delete(listener);
+		};
+	}
+	/**
+	* 取当前所有条目（按 order 排）。
+	*
+	* @returns {Array<object>} 条目表。
+	*/
+	function getDockEntries() {
+		return entries.slice();
+	}
+	/**
+	* 读记住的位置。
+	*
+	* @returns {{x: number, y: number}|null} 位置；没有就是 null。
+	*/
+	function readPos() {
+		try {
+			const raw = window.localStorage.getItem(POS_KEY);
+			if (raw === null || raw === "") return null;
+			const value = JSON.parse(raw);
+			if (value === null || typeof value !== "object") return null;
+			if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) return null;
+			return {
+				x: value.x,
+				y: value.y
+			};
+		} catch {
+			return null;
+		}
+	}
+	/**
+	* 记住位置。
+	*
+	* @param {{x: number, y: number}} pos 位置。
+	*/
+	function writePos(pos) {
+		try {
+			window.localStorage.setItem(POS_KEY, JSON.stringify(pos));
+		} catch {}
+	}
+	/**
+	* 把位置夹回屏幕内。
+	*
+	* @param {{x: number, y: number}} pos 位置。
+	* @returns {{x: number, y: number}} 夹好之后的位置。
+	*/
+	function clampPos(pos) {
+		const maxX = Math.max(EDGE, window.innerWidth - DOCK_WIDTH - EDGE);
+		const maxY = Math.max(EDGE, window.innerHeight - DOCK_HEIGHT - EDGE);
+		return {
+			x: Math.min(Math.max(EDGE, pos.x), maxX),
+			y: Math.min(Math.max(EDGE, pos.y), maxY)
+		};
+	}
+	/**
+	* 悬浮栏容器。
+	*
+	* @param {{slotProps?: object}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function DockHost(props) {
+		const slotProps = props.slotProps ?? null;
+		const [, setVersion] = useState(0);
+		useEffect(function() {
+			return subscribeDock(function() {
+				setVersion(function(value) {
+					return value + 1;
+				});
+			});
+		}, []);
+		const list = getDockEntries();
+		const [openId, setOpenId] = useState(null);
+		const [pos, setPos] = useState(null);
+		const [dragging, setDragging] = useState(false);
+		const dockRef = useRef(null);
+		const dragRef = useRef(null);
+		const suppressClickRef = useRef(false);
+		useEffect(function() {
+			const saved = readPos();
+			if (saved !== null) setPos(clampPos(saved));
+			const onResize = function() {
+				setPos(function(current) {
+					return current === null ? current : clampPos(current);
+				});
+			};
+			window.addEventListener("resize", onResize);
+			return function() {
+				window.removeEventListener("resize", onResize);
+			};
+		}, []);
+		const onPointerMove = useCallback(function(event) {
+			const drag = dragRef.current;
+			if (drag === null) return;
+			const dx = event.clientX - drag.startX;
+			const dy = event.clientY - drag.startY;
+			if (!drag.moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+			drag.moved = true;
+			setDragging(true);
+			setPos(clampPos({
+				x: drag.baseX + dx,
+				y: drag.baseY + dy
+			}));
+		}, []);
+		const onPointerUp = useCallback(function(event) {
+			window.removeEventListener("pointermove", onPointerMove);
+			window.removeEventListener("pointerup", onPointerUp);
+			window.removeEventListener("pointercancel", onPointerUp);
+			const drag = dragRef.current;
+			dragRef.current = null;
+			setDragging(false);
+			if (drag !== null && drag.moved) {
+				suppressClickRef.current = true;
+				setPos(function(current) {
+					if (current !== null) writePos(current);
+					return current;
+				});
+			}
+		}, [onPointerMove]);
+		const onPointerDown = useCallback(function(event) {
+			if (event.button !== 0) return;
+			const target = event.target;
+			if (target !== null && target !== void 0 && typeof target.closest === "function" && target.closest("[data-dock-panel]") !== null) return;
+			const node = dockRef.current;
+			if (node === null) return;
+			const rect = node.getBoundingClientRect();
+			suppressClickRef.current = false;
+			dragRef.current = {
+				startX: event.clientX,
+				startY: event.clientY,
+				baseX: rect.left,
+				baseY: rect.top,
+				moved: false
+			};
+			window.addEventListener("pointermove", onPointerMove);
+			window.addEventListener("pointerup", onPointerUp);
+			window.addEventListener("pointercancel", onPointerUp);
+		}, [onPointerMove, onPointerUp]);
+		const onClickCapture = useCallback(function(event) {
+			if (suppressClickRef.current !== true) return;
+			suppressClickRef.current = false;
+			event.stopPropagation();
+			event.preventDefault();
+		}, []);
+		const toggle = useCallback(function(id) {
+			setOpenId(function(current) {
+				return current === id ? null : id;
+			});
+		}, []);
+		const close = useCallback(function() {
+			setOpenId(null);
+		}, []);
+		const style = pos === null ? void 0 : {
+			left: `${pos.x}px`,
+			top: `${pos.y}px`,
+			right: "auto",
+			bottom: "auto"
+		};
+		const high = pos !== null && pos.y < 320;
+		return h("div", {
+			ref: dockRef,
+			className: "dsh-dock" + (dragging ? " is-dragging" : "") + (high ? " is-high" : ""),
+			style,
+			onPointerDown,
+			onClickCapture
+		}, h(DockStyles, null), h("div", { className: "dsh-dock-rail" }, list.map(function(entry) {
+			return h("div", {
+				className: "dsh-dock-item",
+				key: entry.id
+			}, h(entry.Component, {
+				open: openId === entry.id,
+				onToggle: function() {
+					toggle(entry.id);
+				},
+				onClose: close,
+				t: entry.t,
+				slotProps
+			}));
+		})));
+	}
+	/**
+	* 栏里的入口按钮。
+	*
+	* 外观由栏统一（这样几个入口看起来是一套的），条目只管图标与状态 class。
+	*
+	* @param {{className?: string, title?: string, onClick?: Function, children?: unknown}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function DockButton(props) {
+		const className = "dsh-dock-btn" + (typeof props.className === "string" && props.className !== "" ? " " + props.className : "") + (props.open === true ? " is-open" : "");
+		return h("button", {
+			type: "button",
+			className,
+			title: typeof props.title === "string" ? props.title : void 0,
+			"aria-label": typeof props.title === "string" ? props.title : void 0,
+			onClick: typeof props.onClick === "function" ? props.onClick : void 0
+		}, props.children);
+	}
+	/**
+	* 栏里的面板外壳。
+	*
+	* 外壳统一（尺寸、边框、阴影、定位），内容由条目自己出。
+	*
+	* @param {{children?: unknown, label?: string}} props 属性。
+	*   label 给了就把面板标成对话框（role + aria-label）—— 读屏的人才知道
+	*   这块浮出来的东西叫什么。
+	* @returns {object} React 元素。
+	*/
+	function DockPanel(props) {
+		const label = typeof props.label === "string" && props.label !== "" ? props.label : null;
+		return h("div", {
+			className: "dsh-dock-panel",
+			"data-dock-panel": "1",
+			role: label === null ? void 0 : "dialog",
+			"aria-label": label
+		}, props.children);
+	}
 	// src/client/features/boost/i18n.js
 	/** locale 命名空间。新功能，没有历史包袱，取一个不会与别的包撞的名字。 */
 	var NS$3 = "pcBoost";
@@ -5448,7 +5751,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} state 会话列表快照。
 	* @returns {string|null} 会话 id。
 	*/
-	function currentSessionId(state) {
+	function currentSessionId$1(state) {
 		if (state === null || state === void 0 || typeof state !== "object") return null;
 		const byId = state.byId;
 		if (byId === null || byId === void 0 || typeof byId !== "object") return null;
@@ -5904,14 +6207,6 @@ var dshUsageAggregator = (function(exports) {
 	// src/client/features/boost/styles.js
 	/** 样式表正文。 */
 	var CSS$3 = [
-		".dsh-boost{position:fixed;right:24px;bottom:24px;z-index:2147483000;pointer-events:auto;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
-		".dsh-boost-launch{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease,background .15s ease;user-select:none;touch-action:none;-webkit-user-select:none;}",
-		".dsh-boost-launch:hover{background:var(--dsw-alias-interactive-bg-hover);box-shadow:0 8px 22px rgba(0,0,0,.24);}",
-		".dsh-boost-launch:active{cursor:grabbing;}",
-		".dsh-boost-launch.is-dragging{cursor:grabbing;transform:scale(1.06);box-shadow:0 10px 26px rgba(0,0,0,.28);}",
-		".dsh-boost-launch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;}",
-		".dsh-boost-launch svg{width:26px;height:26px;display:block;pointer-events:none;}",
-		".dsh-boost.is-dragging .dsh-boost-launch{border-color:var(--dsw-alias-brand-primary);}",
 		"@keyframes dsh-boost-rise{0%{transform:translateY(0) scale(1);opacity:1;}18%{transform:translateY(4px) scale(.92);opacity:1;}100%{transform:translateY(-220px) scale(.55);opacity:0;}}",
 		".dsh-boost-launch.is-launching{animation:dsh-boost-rise .85s cubic-bezier(.28,.72,.35,1) forwards;pointer-events:none;}",
 		"@keyframes dsh-boost-flame{0%,100%{transform:scaleY(1);opacity:.95;}50%{transform:scaleY(1.45) translateY(1px);opacity:.7;}}",
@@ -5922,8 +6217,6 @@ var dshUsageAggregator = (function(exports) {
 		"@keyframes dsh-boost-smoke{0%{transform:translate(0,0) scale(.4);opacity:.55;}100%{transform:translate(-6px,16px) scale(1.5);opacity:0;}}",
 		".dsh-boost-smoke{opacity:0;}",
 		".dsh-boost-launch.is-launching .dsh-boost-smoke{animation:dsh-boost-smoke .7s ease-out infinite;}",
-		".dsh-boost-panel{position:absolute;bottom:calc(100% + 12px);right:0;width:min(420px,calc(100vw - 32px));max-height:min(72vh,620px);display:flex;flex-direction:column;border-radius:14px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);box-shadow:0 16px 44px rgba(0,0,0,.26);overflow:hidden;}",
-		".dsh-boost.is-high .dsh-boost-panel{bottom:auto;top:calc(100% + 12px);}",
 		".dsh-boost-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--dsw-alias-border-l1);}",
 		".dsh-boost-title{margin:0;font-size:15px;font-weight:600;}",
 		".dsh-boost-sub{margin:3px 0 0;font-size:11px;color:var(--dsw-alias-label-secondary);}",
@@ -6099,12 +6392,6 @@ var dshUsageAggregator = (function(exports) {
 		}));
 	}
 	// src/client/features/boost/widget.js
-	/** 按钮位置记在哪。 */
-	var POS_KEY = "dsh-usage-aggregator:boost:pos";
-	/** 按钮边长（与样式里的 48px 对齐）。 */
-	var BUTTON_SIZE = 48;
-	/** 离屏幕边缘的距离。 */
-	var EDGE = 24;
 	/** 发射动画时长（毫秒），与样式里的 .85s 对齐。 */
 	var LAUNCH_MS = 850;
 	/**
@@ -6113,74 +6400,28 @@ var dshUsageAggregator = (function(exports) {
 	* @param {Function} selector 选择器。
 	* @returns {null} 永远没有会话。
 	*/
-	function noSessions(selector) {
+	function noSessions$1(selector) {
 		return selector(null);
 	}
 	/**
-	* 读记住的位置。
+	* 悬浮栏里的小火箭。
 	*
-	* @returns {{x: number, y: number}|null} 位置；没有就是 null。
-	*/
-	function readPos() {
-		try {
-			const raw = window.localStorage.getItem(POS_KEY);
-			if (raw === null || raw === "") return null;
-			const value = JSON.parse(raw);
-			if (value === null || typeof value !== "object") return null;
-			if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) return null;
-			return {
-				x: value.x,
-				y: value.y
-			};
-		} catch {
-			return null;
-		}
-	}
-	/**
-	* 记住位置。
-	*
-	* @param {{x: number, y: number}} pos 位置。
-	*/
-	function writePos(pos) {
-		try {
-			window.localStorage.setItem(POS_KEY, JSON.stringify(pos));
-		} catch {}
-	}
-	/**
-	* 把位置夹回屏幕内。
-	*
-	* @param {{x: number, y: number}} pos 位置。
-	* @returns {{x: number, y: number}} 夹好之后的位置。
-	*/
-	function clampPos(pos) {
-		const maxX = Math.max(EDGE, window.innerWidth - BUTTON_SIZE - EDGE);
-		const maxY = Math.max(EDGE, window.innerHeight - BUTTON_SIZE - EDGE);
-		return {
-			x: Math.min(Math.max(EDGE, pos.x), maxX),
-			y: Math.min(Math.max(EDGE, pos.y), maxY)
-		};
-	}
-	/**
-	* 小火箭浮层。
-	*
-	* @param {{t: Function, runtime: {sessions: object|null}, useSessions?: Function}} props 属性。
+	* @param {{t: Function, runtime: {sessions: object|null}, open?: boolean, onToggle?: Function, onClose?: Function, slotProps?: object|null, initialJob?: object|null}} props 属性。
+	*   initialJob 只给离线渲染自检用。
 	* @returns {object} React 元素。
 	*/
-	function BoostWidget(props) {
+	function BoostEntry(props) {
 		const t = props.t;
 		const runtime = props.runtime ?? { sessions: null };
-		const sessionId = currentSessionId((typeof props.useSessions === "function" ? props.useSessions : noSessions)(function(all) {
+		const open = props.open === true;
+		const slotProps = props.slotProps ?? null;
+		const sessionId = currentSessionId$1((slotProps !== null && typeof slotProps.useSessions === "function" ? slotProps.useSessions : noSessions$1)(function(all) {
 			return all;
 		}));
-		const [open, setOpen] = useState(props.initialOpen === true);
 		const [launching, setLaunching] = useState(false);
 		const [landing, setLanding] = useState(false);
-		const [pos, setPos] = useState(null);
-		const [dragging, setDragging] = useState(false);
-		const buttonRef = useRef(null);
-		const dragRef = useRef(null);
-		const suppressClickRef = useRef(false);
 		const launchTimerRef = useRef(null);
+		const wasOpenRef = useRef(open);
 		const { job, error, scanning, start } = useBoostJob(t, props.initialJob);
 		const items = Array.isArray(job?.items) ? job.items : [];
 		const { selected, toggle, setAll } = useSelection(items);
@@ -6188,93 +6429,23 @@ var dshUsageAggregator = (function(exports) {
 			BOOST_RUNTIME.sessionId = sessionId;
 		}, [sessionId]);
 		useEffect(function() {
-			const saved = readPos();
-			if (saved !== null) setPos(clampPos(saved));
-			const onResize = function() {
-				setPos(function(current) {
-					return current === null ? current : clampPos(current);
-				});
-			};
-			window.addEventListener("resize", onResize);
-			return function() {
-				window.removeEventListener("resize", onResize);
-			};
-		}, []);
+			if (open === wasOpenRef.current) return;
+			wasOpenRef.current = open;
+			if (open !== true) return;
+			setLaunching(true);
+			setLanding(false);
+			launchTimerRef.current = window.setTimeout(function() {
+				launchTimerRef.current = null;
+				setLaunching(false);
+				setLanding(true);
+				start(false);
+			}, LAUNCH_MS);
+		}, [open, start]);
 		useEffect(function() {
 			return function() {
 				if (launchTimerRef.current !== null) window.clearTimeout(launchTimerRef.current);
 			};
 		}, []);
-		/**
-		* 发射：火箭升空 → 落回原位 → 展开清单。
-		*/
-		const launch = useCallback(function() {
-			setLaunching(true);
-			setLanding(false);
-			setOpen(false);
-			launchTimerRef.current = window.setTimeout(function() {
-				launchTimerRef.current = null;
-				setLaunching(false);
-				setLanding(true);
-				setOpen(true);
-				start(false);
-			}, LAUNCH_MS);
-		}, [start]);
-		const onPointerDown = useCallback(function(event) {
-			if (event.button !== 0) return;
-			const node = buttonRef.current;
-			if (node === null) return;
-			const rect = node.getBoundingClientRect();
-			dragRef.current = {
-				startX: event.clientX,
-				startY: event.clientY,
-				baseX: rect.left,
-				baseY: rect.top,
-				moved: false
-			};
-			try {
-				node.setPointerCapture(event.pointerId);
-			} catch {}
-		}, []);
-		const onPointerMove = useCallback(function(event) {
-			const drag = dragRef.current;
-			if (drag === null) return;
-			const dx = event.clientX - drag.startX;
-			const dy = event.clientY - drag.startY;
-			if (!drag.moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
-			drag.moved = true;
-			setDragging(true);
-			setPos(clampPos({
-				x: drag.baseX + dx,
-				y: drag.baseY + dy
-			}));
-		}, []);
-		const onPointerUp = useCallback(function(event) {
-			const drag = dragRef.current;
-			dragRef.current = null;
-			setDragging(false);
-			try {
-				buttonRef.current?.releasePointerCapture(event.pointerId);
-			} catch {}
-			if (drag !== null && drag.moved) {
-				suppressClickRef.current = true;
-				setPos(function(current) {
-					if (current !== null) writePos(current);
-					return current;
-				});
-			}
-		}, []);
-		const onClick = useCallback(function() {
-			if (suppressClickRef.current) {
-				suppressClickRef.current = false;
-				return;
-			}
-			if (open) {
-				setOpen(false);
-				return;
-			}
-			launch();
-		}, [open, launch]);
 		const handoff = useHandoff({
 			t,
 			job,
@@ -6290,27 +6461,17 @@ var dshUsageAggregator = (function(exports) {
 		}, 0);
 		const analysis = job?.analysis ?? null;
 		const ageLabel = scanAgeLabel(t, job);
-		const high = pos !== null && pos.y < 320;
-		const style = pos === null ? void 0 : {
-			left: `${pos.x}px`,
-			top: `${pos.y}px`,
-			right: "auto",
-			bottom: "auto"
-		};
-		return h("div", {
-			className: "dsh-boost" + (dragging ? " is-dragging" : "") + (high ? " is-high" : ""),
-			style
-		}, h(Styles$3, null), open ? h("div", {
-			className: "dsh-boost-panel",
-			role: "dialog",
-			"aria-label": t("title")
-		}, h("div", { className: "dsh-boost-head" }, h("div", null, h("h2", { className: "dsh-boost-title" }, t("title")), h("p", { className: "dsh-boost-sub" }, t("subtitle")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null), h("button", {
+		const onButtonClick = useCallback(function() {
+			if (typeof props.onToggle === "function") props.onToggle();
+		}, [props.onToggle]);
+		const onClose = useCallback(function() {
+			if (typeof props.onClose === "function") props.onClose();
+		}, [props.onClose]);
+		return h("div", { className: "dsh-dock-entry" }, h(Styles$3, null), open && launching === false ? h(DockPanel, { label: t("title") }, h("div", { className: "dsh-boost-head" }, h("div", null, h("h2", { className: "dsh-boost-title" }, t("title")), h("p", { className: "dsh-boost-sub" }, t("subtitle")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null), h("button", {
 			type: "button",
 			className: "dsh-boost-close",
 			"aria-label": t("close"),
-			onClick: function() {
-				setOpen(false);
-			}
+			onClick: onClose
 		}, "×")), h("div", { className: "dsh-boost-body" }, scanning === true || job === null && error === "" ? h("div", { className: "dsh-boost-empty" }, h("span", null, t("scanning")), h("span", null, t("scanningHint"))) : null, error !== "" ? h("div", { className: "dsh-boost-msg is-error" }, error) : null, h(DiagnosisBlock, {
 			analysis,
 			t
@@ -6344,18 +6505,12 @@ var dshUsageAggregator = (function(exports) {
 			done: handoff.progress.done,
 			total: handoff.progress.total,
 			label: handoff.progress.label
-		}))) : null) : null) : null, h("button", {
-			ref: buttonRef,
-			type: "button",
+		}))) : null) : null) : null, h(DockButton, {
 			className: "dsh-boost-launch" + (launching ? " is-launching" : "") + (landing ? " is-landing" : ""),
 			title: t("entryTitle"),
-			"aria-label": t("entryTitle"),
-			onPointerDown,
-			onPointerMove,
-			onPointerUp,
-			onPointerCancel: onPointerUp,
-			onClick
-		}, h(RocketIcon, { size: 26 })));
+			onClick: onButtonClick,
+			open
+		}, h(RocketIcon, { size: 19 })));
 	}
 	// src/client/features/boost/index.js
 	var boost_exports = /* @__PURE__ */ __exportAll({
@@ -6394,19 +6549,20 @@ var dshUsageAggregator = (function(exports) {
 	*/
 	function apply$3(ctx, t) {
 		const translator = typeof t === "function" ? t : (key) => zh$3[key] !== void 0 ? zh$3[key] : key;
-		ctx.slots.inject("shell.overlay", function() {
-			return ctx.slots.register({
-				name: "shell.overlay",
-				id: "axzo-boost",
-				order: 30,
-				locale: NS$3
-			}, function(slotProps) {
-				return h(BoostWidget, {
+		registerDockEntry({
+			id: "axzo-boost",
+			order: 30,
+			t: translator,
+			Component: function(entryProps) {
+				return h(BoostEntry, {
 					t: translator,
 					runtime: BOOST_RUNTIME,
-					useSessions: slotProps !== void 0 && slotProps !== null ? slotProps.useSessions : void 0
+					open: entryProps.open,
+					onToggle: entryProps.onToggle,
+					onClose: entryProps.onClose,
+					slotProps: entryProps.slotProps
 				});
-			});
+			}
 		});
 		ctx.inject(["sessions"], function(scope) {
 			BOOST_RUNTIME.sessions = scope.sessions;
@@ -6428,7 +6584,7 @@ var dshUsageAggregator = (function(exports) {
 	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
 	*/
 	var __ui$2 = {
-		BoostWidget,
+		BoostEntry,
 		BoostPanel,
 		DiagnosisBlock,
 		ItemList,
@@ -7646,7 +7802,30 @@ var dshUsageAggregator = (function(exports) {
 		methodNpm: "npm 全局",
 		methodBrew: "Homebrew",
 		methodScript: "官方安装脚本",
+		close: "关闭",
+		panelTitle: "钉钉待处理（{count} 条）",
+		empty: "现在没有待处理的钉钉消息。",
+		unknownSender: "（未知发送者）",
+		atTag: "@我",
+		handle: "处理",
+		ignore: "忽略",
+		routed: "这条判定为项目内，处理时会回到当初那个会话。",
+		toCurrent: "处理到当前会话",
+		toNew: "新开会话处理",
+		handled: "已经把这条交给会话了。",
+		handledNew: "已经新开一个会话并把这条交过去了。",
+		handleFailed: "处理失败：{error}",
+		noCurrent: "当前没有正在看的会话 —— 先打开一个，或者选「新开会话处理」。",
+		noSessions: "宿主没提供会话服务，这条没法直接交过去。",
+		noSession: "那个会话已经不在了，换一种处理方式试试。",
+		taskTitle: "【钉钉消息待处理】",
+		taskFrom: "发送者",
+		taskChat: "会话",
+		taskTime: "时间",
+		taskText: "原文",
+		taskHint: "请先分析这条消息与当前项目的关系并给出建议；要回钉钉时走卡片确认，不要直接发送。",
 		unread: "项目外未读：{count} 条",
+		pending: "待处理清单：{count} 条（右下角悬浮栏里的钉钉入口可点开处理）",
 		lastPoll: "最近一次拉取：{at}（{count} 条）",
 		neverPolled: "还没拉过",
 		baseline: "首次同步只做基线：{count} 条历史消息没有逐条分析（问「钉钉有什么新消息」可以随时看）。",
@@ -7659,7 +7838,7 @@ var dshUsageAggregator = (function(exports) {
 		intervalHint: "默认 180 秒；拉得越勤越容易打扰，也越吃 dws 的额度。",
 		sectionRules: "规矩",
 		rules: "发消息必须由你在卡片上点【发送】；同名多人由你选；收到消息先分析，要不要处理由你定。",
-		foot: "项目外的钉钉消息只累一个未读计数，不会来打扰会话。",
+		foot: "项目外的钉钉消息也进待处理清单（悬浮栏里的钉钉入口会闪），但不会唤醒模型、不打断当前会话。",
 		save: "保存",
 		saved: "已保存",
 		saveFailed: "保存失败：{error}",
@@ -7721,7 +7900,30 @@ var dshUsageAggregator = (function(exports) {
 		methodNpm: "npm global",
 		methodBrew: "Homebrew",
 		methodScript: "official script",
+		close: "Close",
+		panelTitle: "DingTalk pending ({count})",
+		empty: "No pending DingTalk messages.",
+		unknownSender: "(unknown sender)",
+		atTag: "@me",
+		handle: "Handle",
+		ignore: "Ignore",
+		routed: "Judged in-project — handling goes back to the session it was routed to.",
+		toCurrent: "Handle in the current session",
+		toNew: "Handle in a new session",
+		handled: "Handed to the session.",
+		handledNew: "Opened a new session and handed it over.",
+		handleFailed: "Could not hand it over: {error}",
+		noCurrent: "No session is open — open one, or pick “Handle in a new session”.",
+		noSessions: "The host provides no session service, so this cannot be handed over directly.",
+		noSession: "That session is gone — try another way to handle it.",
+		taskTitle: "【DingTalk message to handle】",
+		taskFrom: "From",
+		taskChat: "Chat",
+		taskTime: "Time",
+		taskText: "Message",
+		taskHint: "First analyse how this message relates to the current project and suggest what to do; to reply on DingTalk, go through the card confirmation — do not send directly.",
 		unread: "Out-of-project unread: {count}",
+		pending: "Pending list: {count} (open it from the DingTalk entry in the bottom-right dock)",
 		lastPoll: "Last poll: {at} ({count} messages)",
 		neverPolled: "never polled",
 		baseline: "The first sync only sets a baseline: {count} older messages were not analysed one by one (ask “what is new in DingTalk” any time).",
@@ -7734,12 +7936,80 @@ var dshUsageAggregator = (function(exports) {
 		intervalHint: "180 by default; polling more often interrupts more and spends more of the dws quota.",
 		sectionRules: "Rules",
 		rules: "Sending needs your click on 【Send】; same-name recipients are picked by you; incoming messages are analysed first and you decide what happens next.",
-		foot: "Messages outside the current project only raise an unread count — they never interrupt the session.",
+		foot: "Messages outside the current project also join the pending list (the dock entry blinks), but they never wake the model or interrupt the current session.",
 		save: "Save",
 		saved: "Saved",
 		saveFailed: "Save failed: {error}",
 		loadFailed: "Could not load the settings: {error}"
 	};
+	// src/client/features/dingtalk/api.js
+	var api = {
+		/** 读设置与状态。 */
+		status: function() {
+			return callApi("GET", DINGTALK_ENDPOINT + "/settings");
+		},
+		/** 保存设置（只传要改的字段）。 */
+		saveSettings: function(patch) {
+			return callApi("POST", DINGTALK_ENDPOINT + "/settings/save", patch);
+		},
+		/** 手动拉一次钉钉消息。 */
+		poll: function() {
+			return callApi("POST", DINGTALK_ENDPOINT + "/poll", {});
+		},
+		/** 启动一次 dws 安装（后台跑，进度靠 status 轮询）。 */
+		install: function() {
+			return callApi("POST", DINGTALK_ENDPOINT + "/install", {});
+		},
+		/** 读待处理清单（页面上的小徽标按它提示）。 */
+		pending: function() {
+			return callApi("GET", DINGTALK_ENDPOINT + "/pending");
+		},
+		/** 把一条从待处理清单里去掉（用户点【忽略】）。 */
+		ignore: function(id) {
+			return callApi("POST", DINGTALK_ENDPOINT + "/ignore", { id: String(id ?? "") });
+		}
+	};
+	// src/client/features/dingtalk/icon.js
+	/**
+	* 消息气泡图标。
+	*
+	* @param {{size?: number}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function BubbleIcon(props) {
+		const size = typeof props.size === "number" ? props.size : 19;
+		return h("svg", {
+			viewBox: "0 0 32 32",
+			width: size,
+			height: size,
+			"aria-hidden": "true",
+			focusable: "false"
+		}, h("path", {
+			d: "M16 3.8c-6.6 0-12 4.5-12 10.1 0 3 1.5 5.7 3.9 7.5l-1.4 5.4 5.9-3.1c1.1.2 2.3.3 3.6.3 6.6 0 12-4.5 12-10.1S22.6 3.8 16 3.8z",
+			fill: "var(--dsw-alias-bg-layer-2)",
+			stroke: "currentColor",
+			strokeWidth: "1.4",
+			strokeLinejoin: "round"
+		}), h("circle", {
+			cx: "10.6",
+			cy: "13.9",
+			r: "1.35",
+			fill: "currentColor",
+			opacity: "0.85"
+		}), h("circle", {
+			cx: "16",
+			cy: "13.9",
+			r: "1.35",
+			fill: "currentColor",
+			opacity: "0.85"
+		}), h("circle", {
+			cx: "21.4",
+			cy: "13.9",
+			r: "1.35",
+			fill: "currentColor",
+			opacity: "0.85"
+		}));
+	}
 	// src/client/features/dingtalk/styles.js
 	var CSS$1 = [
 		".dsh-dt-root{display:flex;flex-direction:column;}",
@@ -7794,7 +8064,28 @@ var dshUsageAggregator = (function(exports) {
 		".dsh-dt-msg.is-error{color:var(--dsw-alias-state-error-primary);}",
 		".dsh-dt-msg.is-ok{color:var(--dsw-alias-state-success-primary);}",
 		".dsh-dt-msg.is-warn{color:var(--dsw-alias-state-warn-primary);}",
-		".dsh-dt-foot-note{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}"
+		".dsh-dt-foot-note{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-badge-blinking{animation:dsh-dt-badge-pulse 1.8s ease-in-out infinite;}",
+		"@keyframes dsh-dt-badge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(47,111,237,.45);}50%{box-shadow:0 0 0 8px rgba(47,111,237,0);}}",
+		".dsh-dt-badge-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--dsw-alias-border-l1);}",
+		".dsh-dt-badge-title{font-size:12px;font-weight:600;}",
+		".dsh-dt-badge-close{border:0;background:transparent;color:var(--dsw-alias-label-secondary);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;}",
+		".dsh-dt-badge-list{display:flex;flex-direction:column;gap:8px;padding:10px 12px;overflow-y:auto;}",
+		".dsh-dt-badge-item{display:flex;flex-wrap:wrap;gap:8px;padding:10px;border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-2);}",
+		".dsh-dt-badge-item-main{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:4px;}",
+		".dsh-dt-badge-item-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12px;}",
+		".dsh-dt-badge-at{padding:0 5px;border-radius:999px;background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-secondary);font-size:10px;}",
+		".dsh-dt-badge-chat{color:var(--dsw-alias-label-secondary);}",
+		".dsh-dt-badge-time{color:var(--dsw-alias-label-tertiary);font-size:11px;}",
+		".dsh-dt-badge-excerpt{margin:0;font-size:12px;color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;}",
+		".dsh-dt-badge-routed{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-badge-actions{display:flex;align-items:center;gap:6px;margin-left:auto;}",
+		".dsh-dt-badge-choice{display:flex;align-items:center;gap:6px;flex:1 1 100%;padding-top:4px;border-top:1px dashed var(--dsw-alias-border-l1);}",
+		".dsh-dt-badge-btn{height:26px;padding:0 10px;border-radius:var(--dsw-radius-sm);border:.5px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;cursor:pointer;}",
+		".dsh-dt-badge-btn.is-primary{background:var(--dsw-alias-button-primary-fill);color:var(--dsw-alias-label-primary-foreground);border-color:transparent;}",
+		".dsh-dt-badge-btn:disabled{opacity:.5;cursor:not-allowed;}",
+		".dsh-dt-badge-empty{margin:0;padding:16px 14px;font-size:12px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-badge-note{margin:0;padding:8px 14px 12px;font-size:11px;color:var(--dsw-alias-label-secondary);}"
 	].join("\n");
 	/**
 	* 样式组件。
@@ -7806,6 +8097,310 @@ var dshUsageAggregator = (function(exports) {
 			"data-dsh-usage-aggregator": "dingtalk",
 			dangerouslySetInnerHTML: { __html: CSS$1 }
 		});
+	}
+	// src/client/features/dingtalk/badge.js
+	/** 入口多久查一次待处理清单（毫秒）。 */
+	var POLL_MS = 2e4;
+	/**
+	* 没有 useSessions 时的占位（保持 Hook 调用顺序稳定）。
+	*
+	* @param {Function} selector 选择器。
+	* @returns {null} 永远没有会话。
+	*/
+	function noSessions(selector) {
+		return selector(null);
+	}
+	/**
+	* 找出用户当前正在看的那个会话。
+	*
+	* 判据跟 DSH 自己的一致：会话列表里 **retainedBy.mainView > 0** 的那个。
+	* 子代理的会话没有这个标记，天然被排除在外。
+	*
+	* @param {object} state 会话列表快照。
+	* @returns {string|null} 会话 id。
+	*/
+	function currentSessionId(state) {
+		if (state === null || state === void 0 || typeof state !== "object") return null;
+		const byId = state.byId;
+		if (byId === null || byId === void 0 || typeof byId !== "object") return null;
+		for (const row of Object.values(byId)) {
+			if (row === null || typeof row !== "object") continue;
+			const retained = row.retainedBy;
+			let count = 0;
+			if (typeof retained === "number") count = retained;
+			else if (retained !== null && typeof retained === "object" && typeof retained.mainView === "number") count = retained.mainView;
+			if (count > 0) return typeof row.id === "string" ? row.id : null;
+		}
+		return null;
+	}
+	/**
+	* 把时间戳变成一句能读的时间。
+	*
+	* @param {number} ms 毫秒时间戳。
+	* @returns {string} 文本。
+	*/
+	function stamp$1(ms) {
+		if (!Number.isFinite(ms) || ms <= 0) return "";
+		const date = new Date(ms);
+		const pad = (n) => String(n).padStart(2, "0");
+		return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + " " + pad(date.getHours()) + ":" + pad(date.getMinutes());
+	}
+	/**
+	* 造交给 Agent 的那段话。
+	*
+	* 原文**整段**带上：Agent 要判断这条消息要怎么处理，光看一句摘要不够。
+	* 正文只在内存里（Host 侧的清单不落盘），这里只是把它转成一条会话消息。
+	*
+	* @param {Function} t 翻译函数。
+	* @param {object} item 待处理条目。
+	* @returns {string} 交给 Agent 的正文。
+	*/
+	function buildTask(t, item) {
+		const lines = [t("taskTitle"), ""];
+		lines.push("- " + t("taskFrom") + "：" + (item.sender === "" ? t("unknownSender") : item.sender));
+		if (typeof item.chatName === "string" && item.chatName !== "") lines.push("- " + t("taskChat") + "：" + item.chatName);
+		const at = stamp$1(item.at);
+		if (at !== "") lines.push("- " + t("taskTime") + "：" + at);
+		lines.push("- " + t("taskText") + "：" + String(item.text ?? item.excerpt ?? ""));
+		lines.push("");
+		lines.push(t("taskHint"));
+		return lines.join("\n");
+	}
+	/**
+	* 悬浮栏里的钉钉入口（图标 + 待处理清单）。
+	*
+	* @param {{t: Function, open?: boolean, onToggle?: Function, onClose?: Function, slotProps?: object|null, sessions?: object|null, initialItems?: Array<object>, initialBlinking?: boolean}} props 属性。
+	*   initialItems / initialBlinking 只给离线渲染自检用。
+	* @returns {object} React 元素。
+	*/
+	function DingtalkEntry(props) {
+		const t = props.t;
+		const open = props.open === true;
+		const sessions = props.sessions ?? null;
+		const slotProps = props.slotProps ?? null;
+		const currentId = currentSessionId((slotProps !== null && typeof slotProps.useSessions === "function" ? slotProps.useSessions : noSessions)(function(all) {
+			return all;
+		}));
+		const [items, setItems] = useState(Array.isArray(props.initialItems) ? props.initialItems : []);
+		const [blinking, setBlinking] = useState(props.initialBlinking === true);
+		const [busy, setBusy] = useState(false);
+		const [note, setNote] = useState("");
+		const [choice, setChoice] = useState("");
+		/** 见过的消息 id —— 用来判断哪条是「新的」。 */
+		const seenRef = useRef(/* @__PURE__ */ new Set());
+		/** 第一轮只记不闪（页面刚打开就闪一下没意义）。 */
+		const primedRef = useRef(false);
+		useEffect(function() {
+			let alive = true;
+			const tick = function() {
+				api.pending().then(function(result) {
+					if (!alive || result === null || typeof result !== "object") return;
+					const list = Array.isArray(result.items) ? result.items : [];
+					setItems(list);
+					const fresh = list.filter((item) => seenRef.current.has(item.id) === false);
+					for (const item of list) seenRef.current.add(item.id);
+					if (primedRef.current === false) {
+						primedRef.current = true;
+						return;
+					}
+					if (fresh.length > 0) setBlinking(true);
+				}).catch(function() {});
+			};
+			tick();
+			const timer = window.setInterval(tick, POLL_MS);
+			return function() {
+				alive = false;
+				window.clearInterval(timer);
+			};
+		}, []);
+		/**
+		* 把一条消息投进某个会话。
+		*
+		* @param {string} sessionId 会话 id。
+		* @param {object} item 待处理条目。
+		* @returns {Promise<void>} 投递完成。
+		*/
+		const deliverTo = useCallback(function(sessionId, item) {
+			const service = sessions;
+			if (service === null || typeof service.scope !== "function") return Promise.reject(new Error(t("noSessions")));
+			const scope = service.scope(sessionId);
+			const conversation = scope === void 0 || scope === null ? void 0 : scope.conversation;
+			if (conversation === void 0 || conversation === null || typeof conversation.send !== "function") return Promise.reject(new Error(t("noSession")));
+			return conversation.send(buildTask(t, item));
+		}, [sessions, t]);
+		/**
+		* 新开一个会话，把消息投进去。
+		*
+		* 开在消息判定时那个项目的工作目录里 —— 这就是「找到合适的项目再处理」。
+		*
+		* @param {object} item 待处理条目。
+		* @returns {Promise<void>} 投递完成。
+		*/
+		const openNewSession = useCallback(function(item) {
+			const service = sessions;
+			if (service === null || typeof service.create !== "function") return Promise.reject(new Error(t("noSessions")));
+			const opts = typeof item.cwd === "string" && item.cwd !== "" ? { cwd: item.cwd } : {};
+			return service.create(opts).then(function(id) {
+				if (typeof service.using !== "function") return deliverTo(id, item);
+				return service.using(id, { source: "controllerOperation" }, function() {
+					return deliverTo(id, item);
+				});
+			});
+		}, [
+			sessions,
+			t,
+			deliverTo
+		]);
+		/**
+		* 处理完一条：从清单里去掉，停止闪烁。
+		*
+		* @param {object} item 待处理条目。
+		* @returns {void}
+		*/
+		const done = useCallback(function(item) {
+			setItems((current) => current.filter((row) => row.id !== item.id));
+			seenRef.current.add(item.id);
+			setChoice("");
+			setBusy(false);
+			api.ignore(item.id).catch(function() {});
+		}, []);
+		/**
+		* 点【处理】。
+		*
+		* @param {object} item 待处理条目。
+		* @returns {void}
+		*/
+		const handle = useCallback(function(item) {
+			setNote("");
+			if (typeof item.sessionId === "string" && item.sessionId !== "") {
+				setBusy(true);
+				deliverTo(item.sessionId, item).then(function() {
+					done(item);
+					setNote(t("handled"));
+				}).catch(function(failure) {
+					setBusy(false);
+					setNote(t("handleFailed", { error: String(failure && failure.message ? failure.message : failure) }));
+				});
+				return;
+			}
+			setChoice(item.id);
+		}, [
+			deliverTo,
+			done,
+			t
+		]);
+		/**
+		* 忽略一条。
+		*
+		* @param {object} item 待处理条目。
+		* @returns {void}
+		*/
+		const ignore = useCallback(function(item) {
+			setBusy(true);
+			api.ignore(item.id).then(function() {
+				done(item);
+			}).catch(function(failure) {
+				setBusy(false);
+				setNote(t("handleFailed", { error: String(failure && failure.message ? failure.message : failure) }));
+			});
+		}, [done, t]);
+		/**
+		* 投到当前会话。
+		*
+		* @param {object} item 待处理条目。
+		* @returns {void}
+		*/
+		const toCurrent = useCallback(function(item) {
+			if (currentId === null) {
+				setNote(t("noCurrent"));
+				return;
+			}
+			setBusy(true);
+			deliverTo(currentId, item).then(function() {
+				done(item);
+				setNote(t("handled"));
+			}).catch(function(failure) {
+				setBusy(false);
+				setNote(t("handleFailed", { error: String(failure && failure.message ? failure.message : failure) }));
+			});
+		}, [
+			currentId,
+			deliverTo,
+			done,
+			t
+		]);
+		/**
+		* 新开会话处理。
+		*
+		* @param {object} item 待处理条目。
+		* @returns {void}
+		*/
+		const toNew = useCallback(function(item) {
+			setBusy(true);
+			openNewSession(item).then(function() {
+				done(item);
+				setNote(t("handledNew"));
+			}).catch(function(failure) {
+				setBusy(false);
+				setNote(t("handleFailed", { error: String(failure && failure.message ? failure.message : failure) }));
+			});
+		}, [
+			openNewSession,
+			done,
+			t
+		]);
+		const count = items.length;
+		const onButtonClick = useCallback(function() {
+			setBlinking(false);
+			if (typeof props.onToggle === "function") props.onToggle();
+		}, [props.onToggle]);
+		return h("div", { className: "dsh-dock-entry" }, h(Styles$1, null), open ? h(DockPanel, { label: t("panelTitle", { count: String(count) }) }, h("div", { className: "dsh-dt-badge-head" }, h("span", { className: "dsh-dt-badge-title" }, t("panelTitle", { count: String(count) })), h("button", {
+			type: "button",
+			className: "dsh-dt-badge-close",
+			"aria-label": t("close"),
+			onClick: function() {
+				if (typeof props.onClose === "function") props.onClose();
+			}
+		}, "×")), count === 0 ? h("p", { className: "dsh-dt-badge-empty" }, t("empty")) : h("div", { className: "dsh-dt-badge-list" }, items.map(function(item) {
+			const at = stamp$1(item.at);
+			return h("div", {
+				className: "dsh-dt-badge-item",
+				key: item.id
+			}, h("div", { className: "dsh-dt-badge-item-main" }, h("span", { className: "dsh-dt-badge-item-head" }, h("strong", null, item.sender === "" ? t("unknownSender") : item.sender), item.at === true ? h("span", { className: "dsh-dt-badge-at" }, t("atTag")) : null, item.chatName !== void 0 && item.chatName !== "" ? h("span", { className: "dsh-dt-badge-chat" }, item.chatName) : null, at !== "" ? h("span", { className: "dsh-dt-badge-time" }, at) : null), h("p", { className: "dsh-dt-badge-excerpt" }, String(item.excerpt ?? "")), item.sessionId !== void 0 && item.sessionId !== "" ? h("p", { className: "dsh-dt-badge-routed" }, t("routed")) : null), h("div", { className: "dsh-dt-badge-actions" }, h("button", {
+				type: "button",
+				className: "dsh-dt-badge-btn is-primary",
+				disabled: busy === true,
+				onClick: function() {
+					handle(item);
+				}
+			}, t("handle")), h("button", {
+				type: "button",
+				className: "dsh-dt-badge-btn",
+				disabled: busy === true,
+				onClick: function() {
+					ignore(item);
+				}
+			}, t("ignore"))), choice === item.id ? h("div", { className: "dsh-dt-badge-choice" }, h("button", {
+				type: "button",
+				className: "dsh-dt-badge-btn is-primary",
+				disabled: busy === true || currentId === null,
+				onClick: function() {
+					toCurrent(item);
+				}
+			}, t("toCurrent")), h("button", {
+				type: "button",
+				className: "dsh-dt-badge-btn",
+				disabled: busy === true,
+				onClick: function() {
+					toNew(item);
+				}
+			}, t("toNew"))) : null);
+		})), note !== "" ? h("p", { className: "dsh-dt-badge-note" }, note) : null) : null, h(DockButton, {
+			className: blinking === true ? "dsh-dt-badge-blinking" : "",
+			title: t("panelTitle", { count: String(count) }),
+			onClick: onButtonClick,
+			open
+		}, h(BubbleIcon, { size: 19 }), count > 0 ? h("span", { className: "dsh-dock-count" }, String(count)) : null));
 	}
 	// src/client/features/dingtalk/card.js
 	/** 卡片里各类拒绝原因对应的文案键。 */
@@ -8010,25 +8605,6 @@ var dshUsageAggregator = (function(exports) {
 			onClick: () => run("send")
 		}, pending === "send" ? t("working") : phase === "failed" ? t("retry") : t("send")))));
 	}
-	// src/client/features/dingtalk/api.js
-	var api = {
-		/** 读设置与状态。 */
-		status: function() {
-			return callApi("GET", DINGTALK_ENDPOINT + "/settings");
-		},
-		/** 保存设置（只传要改的字段）。 */
-		saveSettings: function(patch) {
-			return callApi("POST", DINGTALK_ENDPOINT + "/settings/save", patch);
-		},
-		/** 手动拉一次钉钉消息。 */
-		poll: function() {
-			return callApi("POST", DINGTALK_ENDPOINT + "/poll", {});
-		},
-		/** 启动一次 dws 安装（后台跑，进度靠 status 轮询）。 */
-		install: function() {
-			return callApi("POST", DINGTALK_ENDPOINT + "/install", {});
-		}
-	};
 	// src/client/features/dingtalk/panel.js
 	/**
 	* 把毫秒时间戳变成一句能读的时间。
@@ -8235,7 +8811,7 @@ var dshUsageAggregator = (function(exports) {
 			hint: t("enabledHint"),
 			checked: settings.enabled === true,
 			onChange: (value) => change("enabled", value)
-		})), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionStatus")), h("p", { className: "dsh-dt-msg" }, availability.installed === true ? t("dwsReady") + (availability.version !== "" ? "（" + t("dwsVersion", { version: availability.version }) + "）" : "") : t("dwsMissing")), availability.installed === true && availability.path !== "" && availability.path !== "dws" ? h("p", { className: "dsh-dt-msg" }, t("dwsPath", { path: availability.path })) : null, availability.installed === true ? h("p", { className: "dsh-dt-msg" + (availability.loggedIn === "no" ? " is-warn" : "") }, availability.loggedIn === "yes" ? t("dwsLoginOk") : availability.loggedIn === "no" ? t("dwsLoginNo") : t("dwsLoginUnknown")) : null, availability.installed === false ? h("p", { className: "dsh-dt-msg" }, t("dwsInstallHint")) : null, availability.installed === false && installers.length === 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("dwsInstallNone")) : null, installJob.running === true ? h("p", { className: "dsh-dt-msg" }, methodLabel === "" ? t("installingShort") : t("installing", { method: methodLabel })) : null, installJob.running === false && installJob.ok === true ? h("p", { className: "dsh-dt-msg is-ok" }, t("installDone", { method: methodLabel })) : null, installJob.running === false && installJob.error !== "" ? h("p", { className: "dsh-dt-msg is-error" }, t("installFailed", { error: String(installJob.error) })) : null, h("p", { className: "dsh-dt-msg" }, t("unread", { count: String(status?.unread ?? 0) })), h("p", { className: "dsh-dt-msg" }, at === 0 ? t("neverPolled") : t("lastPoll", {
+		})), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionStatus")), h("p", { className: "dsh-dt-msg" }, availability.installed === true ? t("dwsReady") + (availability.version !== "" ? "（" + t("dwsVersion", { version: availability.version }) + "）" : "") : t("dwsMissing")), availability.installed === true && availability.path !== "" && availability.path !== "dws" ? h("p", { className: "dsh-dt-msg" }, t("dwsPath", { path: availability.path })) : null, availability.installed === true ? h("p", { className: "dsh-dt-msg" + (availability.loggedIn === "no" ? " is-warn" : "") }, availability.loggedIn === "yes" ? t("dwsLoginOk") : availability.loggedIn === "no" ? t("dwsLoginNo") : t("dwsLoginUnknown")) : null, availability.installed === false ? h("p", { className: "dsh-dt-msg" }, t("dwsInstallHint")) : null, availability.installed === false && installers.length === 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("dwsInstallNone")) : null, installJob.running === true ? h("p", { className: "dsh-dt-msg" }, methodLabel === "" ? t("installingShort") : t("installing", { method: methodLabel })) : null, installJob.running === false && installJob.ok === true ? h("p", { className: "dsh-dt-msg is-ok" }, t("installDone", { method: methodLabel })) : null, installJob.running === false && installJob.error !== "" ? h("p", { className: "dsh-dt-msg is-error" }, t("installFailed", { error: String(installJob.error) })) : null, h("p", { className: "dsh-dt-msg" }, t("unread", { count: String(status?.unread ?? 0) })), Number.isFinite(status?.pendingCount) && status.pendingCount > 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("pending", { count: String(status.pendingCount) })) : null, h("p", { className: "dsh-dt-msg" }, at === 0 ? t("neverPolled") : t("lastPoll", {
 			at: stamp(at),
 			count: String(status?.lastPollCount ?? 0)
 		})), Number.isFinite(status?.lastBaselined) && status.lastBaselined > 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("baseline", { count: String(status.lastBaselined) })) : null, status?.lastError ? h("p", { className: "dsh-dt-msg is-error" }, String(status.lastError)) : null, h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-control" }, availability.installed === false ? h("button", {
@@ -8274,6 +8850,13 @@ var dshUsageAggregator = (function(exports) {
 	/** 卡片动作名（与 Host 侧 card.js 里的 ACTION 一致）。 */
 	var CARD_ACTION = "dingtalk.send";
 	/**
+	* 跨组件的一小块共享状态。
+	*
+	* sessions 服务是**后注入**的（ctx.inject），而徽标可能先渲染 —— 所以渲染时
+	* 现读现用，不能在 apply() 里把当时的值捕获进闭包。
+	*/
+	var RUNTIME = { sessions: null };
+	/**
 	* 功能元信息。
 	*
 	* namespace 'pcDingtalk' —— 新功能，没有历史包袱，但规矩一样：定了就不改。
@@ -8298,6 +8881,28 @@ var dshUsageAggregator = (function(exports) {
 	* @param {Function} t 本功能命名空间的 translator。
 	*/
 	function apply$1(ctx, t) {
+		const translator = typeof t === "function" ? t : (key) => zh$1[key] !== void 0 ? zh$1[key] : key;
+		registerDockEntry({
+			id: "axzo-dingtalk-badge",
+			order: 31,
+			t: translator,
+			Component: function(entryProps) {
+				return h(DingtalkEntry, {
+					t: translator,
+					open: entryProps.open,
+					onToggle: entryProps.onToggle,
+					onClose: entryProps.onClose,
+					slotProps: entryProps.slotProps,
+					sessions: RUNTIME.sessions
+				});
+			}
+		});
+		ctx.inject(["sessions"], function(scope) {
+			RUNTIME.sessions = scope.sessions;
+			return function() {
+				RUNTIME.sessions = null;
+			};
+		});
 		ctx.inject(["actionCards"], (scope) => {
 			ctx.effect(() => scope.actionCards.register({
 				action: CARD_ACTION,
@@ -8321,6 +8926,7 @@ var dshUsageAggregator = (function(exports) {
 	var __ui = {
 		DingtalkCardBody,
 		DingtalkPanel,
+		DingtalkEntry,
 		Styles: Styles$1,
 		readDetails,
 		idHint,
@@ -8477,6 +9083,16 @@ var dshUsageAggregator = (function(exports) {
 				});
 			});
 		});
+		ctx.slots.inject("shell.overlay", function() {
+			return ctx.slots.register({
+				name: "shell.overlay",
+				id: "axzo-dock",
+				order: 30,
+				locale: NS
+			}, function(slotProps) {
+				return h(DockHost, { slotProps });
+			});
+		});
 	}
 	// src/client/index.js
 	/** 插件 id。必须与 package.json 的 name 一致。 */
@@ -8487,7 +9103,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-11-20 14:09:59";
+	var BUILD_AT = "2026-11-20 18:07:40";
 	/**
 	* 声明要等的服务。
 	*

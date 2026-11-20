@@ -11,24 +11,9 @@ import { h } from '../../runtime.js';
 
 /** 样式表正文。 */
 export const CSS = [
-  // ── 浮层容器 ────────────────────────────────────────────────
-  // shell.overlay 这一层本身是 click-through 的（点不中的），
-  // 所以这里必须显式把指针事件要回来，否则按钮点不动。
-  // 默认停在内容区域右下角；用户拖过之后由内联样式接管（left/top + right/bottom:auto）。
-  '.dsh-boost{position:fixed;right:24px;bottom:24px;z-index:2147483000;pointer-events:auto;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}',
-
-  // ── 发射按钮 ────────────────────────────────────────────────
-  '.dsh-boost-launch{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease,background .15s ease;user-select:none;touch-action:none;-webkit-user-select:none;}',
-  '.dsh-boost-launch:hover{background:var(--dsw-alias-interactive-bg-hover);box-shadow:0 8px 22px rgba(0,0,0,.24);}',
-  '.dsh-boost-launch:active{cursor:grabbing;}',
-  '.dsh-boost-launch.is-dragging{cursor:grabbing;transform:scale(1.06);box-shadow:0 10px 26px rgba(0,0,0,.28);}',
-  '.dsh-boost-launch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;}',
-  '.dsh-boost-launch svg{width:26px;height:26px;display:block;pointer-events:none;}',
-
-  // 拖动时的落点提示
-  '.dsh-boost.is-dragging .dsh-boost-launch{border-color:var(--dsw-alias-brand-primary);}',
-
   // ── 发射动画 ────────────────────────────────────────────────
+  // 按钮长什么样、悬浮栏停在哪，都由悬浮栏统一（src/client/shared/dock-style.js）；
+  // 这里只管火箭自己的动作：飞起来、落地、尾焰。
   '@keyframes dsh-boost-rise{0%{transform:translateY(0) scale(1);opacity:1;}18%{transform:translateY(4px) scale(.92);opacity:1;}100%{transform:translateY(-220px) scale(.55);opacity:0;}}',
   '.dsh-boost-launch.is-launching{animation:dsh-boost-rise .85s cubic-bezier(.28,.72,.35,1) forwards;pointer-events:none;}',
   '@keyframes dsh-boost-flame{0%,100%{transform:scaleY(1);opacity:.95;}50%{transform:scaleY(1.45) translateY(1px);opacity:.7;}}',
@@ -41,9 +26,7 @@ export const CSS = [
   '.dsh-boost-launch.is-launching .dsh-boost-smoke{animation:dsh-boost-smoke .7s ease-out infinite;}',
 
   // ── 清单面板 ────────────────────────────────────────────────
-  '.dsh-boost-panel{position:absolute;bottom:calc(100% + 12px);right:0;width:min(420px,calc(100vw - 32px));max-height:min(72vh,620px);display:flex;flex-direction:column;border-radius:14px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);box-shadow:0 16px 44px rgba(0,0,0,.26);overflow:hidden;}',
-  // 按钮被拖到屏幕上方时，面板改挂在下面，不然会顶出屏幕外。
-  '.dsh-boost.is-high .dsh-boost-panel{bottom:auto;top:calc(100% + 12px);}',
+  // 面板的外壳（尺寸、边框、定位）由悬浮栏统一，这里从标题条开始。
   '.dsh-boost-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--dsw-alias-border-l1);}',
   '.dsh-boost-title{margin:0;font-size:15px;font-weight:600;}',
   '.dsh-boost-sub{margin:3px 0 0;font-size:11px;color:var(--dsw-alias-label-secondary);}',

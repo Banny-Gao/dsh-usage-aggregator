@@ -17,4 +17,8 @@ export const api = {
   poll: function () { return callApi('POST', DINGTALK_ENDPOINT + '/poll', {}); },
   /** 启动一次 dws 安装（后台跑，进度靠 status 轮询）。 */
   install: function () { return callApi('POST', DINGTALK_ENDPOINT + '/install', {}); },
+  /** 读待处理清单（页面上的小徽标按它提示）。 */
+  pending: function () { return callApi('GET', DINGTALK_ENDPOINT + '/pending'); },
+  /** 把一条从待处理清单里去掉（用户点【忽略】）。 */
+  ignore: function (id) { return callApi('POST', DINGTALK_ENDPOINT + '/ignore', { id: String(id ?? '') }); },
 };

@@ -2,16 +2,37 @@
 //
 // 收钉钉消息的那一半：拉取 → 粗筛 → 注入分析 → 让模型问你要不要处理。
 //
-// 关键取舍：**项目外的消息不打扰**。项目外的只累一个未读计数（面板上看得到），
-// 不唤醒模型、不挂卡片；用户主动问「钉钉有什么新消息」时再用 dingtalk_read 拉。
+// 关键取舍：**项目外的消息不打扰模型**。项目外的进「待处理清单」，由页面上的
+// 小徽标提示你；要不要处理由你点。真正唤醒模型只发生在项目内的消息上。
 //
-// 消息正文不落盘：seen 里只留 messageId 集合，未读只留计数。
+// 清单里收什么（用户定的规矩）：**明确 @我 的** + **命中项目判据的**。
+// 群里别人回复别人、机器人自动播报都不进清单 —— 只累未读计数。
+//
+// 消息正文不落盘：seen 里只留 messageId 集合；待处理清单里的正文**只在内存里**
+// 留一句摘要，处理掉或忽略后即从清单里消失。
 
 import { classifyMessage } from './relevance.js';
 import { formatTime } from './shapes.js';
 
 /** seen 集合的上限 —— 免得长时间运行把它撑大。 */
 const SEEN_LIMIT = 2000;
+
+/** 待处理清单的上限 —— 多了页面上的徽标就没法一眼看完。 */
+const PENDING_LIMIT = 50;
+
+/** 清单里留多长的正文摘要。 */
+const EXCERPT_LIMIT = 80;
+
+/**
+ * 取一句摘要。
+ *
+ * @param {string} text 正文。
+ * @returns {string} 摘要。
+ */
+function excerptOf(text) {
+  const flat = String(text ?? '').replace(/\s+/g, ' ').trim();
+  return flat.length <= EXCERPT_LIMIT ? flat : flat.slice(0, EXCERPT_LIMIT) + '…';
+}
 
 /**
  * 造一个消息接收器。
@@ -33,6 +54,8 @@ export function createReceiver(deps) {
   const activity = new Map();
   /** 项目外消息的未读计数。 */
   let unread = 0;
+  /** 待处理清单：页面上的小徽标按它提示你。 */
+  let pending = [];
   /** 最近一次拉取的结果摘要。 */
   let lastPoll = { at: 0, count: 0, relevant: 0, baselined: 0, error: '' };
   /** 正在跑的轮询（避免叠轮询）。 */
@@ -146,23 +169,40 @@ export function createReceiver(deps) {
         ? { cwd: '', project: '', branch: '', reqCodes: [], keywords: [], recent: '' }
         : await contextReader.read(agent);
 
-      const relevant = [];
-      for (const message of fresh) {
-        const verdict = classifyMessage(message, context);
-        if (verdict.inProject !== true) {
-          unread += 1;
-          continue;
-        }
-        relevant.push({
-          label: message.sender === '' ? '（未知发送者）' : message.sender,
-          kind: message.conversationId === '' ? '单聊' : '会话',
-          time: formatTime(message.createTime),
-          text: message.text,
-        });
-      }
-
+      // 第一轮只做基线：历史消息不该在一打开功能时就变成一屏分析，
+      // 也不该一开就把徽标点亮 —— 那一屏是你打开功能之前就有的。
       const first = baselined === false;
       baselined = true;
+
+      const relevant = [];
+      const added = [];
+      for (const message of fresh) {
+        const verdict = classifyMessage(message, context);
+        const inProject = verdict.inProject === true;
+        if (!inProject) unread += 1;
+        if (inProject) {
+          relevant.push({
+            label: message.sender === '' ? '（未知发送者）' : message.sender,
+            kind: message.conversationId === '' ? '单聊' : '会话',
+            time: formatTime(message.createTime),
+            text: message.text,
+          });
+        }
+        // 什么进「待处理清单」（用户定的规矩）：
+        //   · 明确 @我 的 —— 有人在找我，一定要我看见；
+        //   · 命中项目判据的（需求号 / 分支 / 协议名）—— 哪怕没 @ 我，也可能是我的活。
+        // 群里别人回复别人、机器人自动播报这类，**不进清单**，只累未读计数 ——
+        // 否则清单会被噪声淹掉，真正的 @我 反而看不见。
+        if (!first && (message.at === true || inProject)) {
+          added.push(pendingItem(message, context, verdict, agent, inProject));
+        }
+      }
+
+      if (added.length > 0) {
+        pending = pending.concat(added);
+        if (pending.length > PENDING_LIMIT) pending = pending.slice(pending.length - PENDING_LIMIT);
+      }
+
       lastPoll = {
         at: now(),
         count: fresh.length,
@@ -171,8 +211,6 @@ export function createReceiver(deps) {
         error: '',
       };
 
-      // 第一轮只做基线：历史消息不该在一打开功能时就变成一屏分析。
-      // 想知道历史消息，用户主动问「钉钉有什么新消息」（dingtalk_read）。
       if (!first && relevant.length > 0 && agent !== null) {
         await inject(agent, analysisPrompt(relevant, context));
         markActive(agent.id);
@@ -195,15 +233,63 @@ export function createReceiver(deps) {
     unread = 0;
   }
 
+  /**
+   * 造一条待处理条目。
+   *
+   * 记下「当初这条消息被路由到了哪个会话」—— 点【处理】时好回到那个会话去；
+   * 项目外的消息没有路由，记下来的是当时那个会话的项目上下文（cwd / 分支），
+   * 供「新开会话处理」时把新会话开在正确的目录里。
+   *
+   * @param {object} message 消息。
+   * @param {object} context 判定时的会话上下文。
+   * @param {{reasons: string[]}} verdict 粗筛结论。
+   * @param {object|null} agent 判定时的会话。
+   * @param {boolean} inProject 是否项目内。
+   * @returns {object} 待处理条目。
+   */
+  function pendingItem(message, context, verdict, agent, inProject) {
+    const id = message.messageId !== ''
+      ? message.messageId
+      : 'x-' + excerptOf(message.text).slice(0, 24) + '@' + message.createTime;
+    return {
+      id,
+      sender: message.sender === '' ? '（未知发送者）' : message.sender,
+      excerpt: excerptOf(message.text),
+      at: message.createTime,
+      chatName: message.chatName,
+      conversationId: message.conversationId,
+      inProject,
+      // 是不是明确 @我 的（清单里的「@我」标记）。
+      at: message.at === true,
+      reasons: Array.isArray(verdict?.reasons) ? verdict.reasons : [],
+      sessionId: inProject && agent !== null ? agent.id : '',
+      cwd: typeof context?.cwd === 'string' ? context.cwd : '',
+      branch: typeof context?.branch === 'string' ? context.branch : '',
+      reqCodes: Array.isArray(context?.reqCodes) ? context.reqCodes : [],
+    };
+  }
+
   return {
     poll,
     markActive,
     clearUnread,
     pickAgent,
+    /** 待处理清单（页面上的小徽标按它提示）。 */
+    pending() {
+      return { items: pending.map((item) => ({ ...item })), count: pending.length };
+    },
+    /** 把一条从清单里去掉（用户点【忽略】或已经处理完）。 */
+    ignore(id) {
+      const key = String(id ?? '');
+      const before = pending.length;
+      pending = pending.filter((item) => item.id !== key);
+      return { ok: true, removed: before - pending.length };
+    },
     status() {
       return {
         unread,
         baselined,
+        pendingCount: pending.length,
         lastPollAt: lastPoll.at,
         lastPollCount: lastPoll.count,
         lastRelevant: lastPoll.relevant,

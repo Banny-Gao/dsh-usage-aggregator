@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 import { installRuntime } from '../src/client/runtime.js';
 import { DingtalkCardBody } from '../src/client/features/dingtalk/card.js';
+import { DingtalkEntry } from '../src/client/features/dingtalk/badge.js';
 import { DingtalkPanel } from '../src/client/features/dingtalk/panel.js';
 import { zh } from '../src/client/features/dingtalk/i18n.js';
 
@@ -254,6 +255,96 @@ check('装了但没登录：提示用户自己扫码（插件不碰凭据）', (
   }));
   assert.ok(html.includes('dws auth login'), '要给出登录命令');
   assert.ok(!html.includes('自动安装 dws'), '已经装了就不该再显示安装按钮');
+});
+
+/* ── 全局小徽标：待处理清单 ── */
+
+const badgeItems = [
+  {
+    id: 'msg-1',
+    sender: '钟鹏',
+    excerpt: '@张弦 明天细聊一下，看一下这儿需不需要调整一下。',
+    text: '@张弦 明天细聊一下，看一下这儿需不需要调整一下。',
+    at: Date.now(),
+    chatName: '安心筑APP错误上报群',
+    conversationId: 'conv-3',
+    inProject: true,
+    at: true,
+    sessionId: 'agent-1',
+    cwd: '/Users/u/work/app',
+    branch: 'feature/x',
+    reqCodes: [],
+  },
+  {
+    id: 'msg-2',
+    sender: '前台小妹',
+    excerpt: '楼下奶茶店今天买一送一',
+    text: '楼下奶茶店今天买一送一',
+    at: Date.now(),
+    chatName: '前台',
+    conversationId: 'conv-2',
+    inProject: false,
+    at: true,
+    sessionId: '',
+    cwd: '',
+    branch: '',
+    reqCodes: [],
+  },
+];
+
+/**
+ * 渲染小徽标。
+ *
+ * @param {object} overrides 要覆盖的属性。
+ * @returns {string} 渲染结果。
+ */
+function renderBadge(overrides) {
+  return ReactDOMServer.renderToStaticMarkup(
+    React.createElement(DingtalkEntry, { t, ...overrides })
+  );
+}
+
+check('徽标渲染得出来', () => assert.ok(renderBadge({ initialItems: badgeItems }).length > 0));
+check('本功能的样式跟着组件渲染（漏了面板就是一堆裸元素）', () => {
+  // 用**原始** HTML —— markup() 会把 <style> 剥掉，正好把要断言的东西抹了。
+  const html = renderBadge({ initialItems: badgeItems });
+  assert.ok(html.includes('data-dsh-usage-aggregator="dingtalk"'), '缺本功能的样式表');
+});
+check('徽标有条数时显示数字', () => {
+  const html = markup(renderBadge({ initialItems: badgeItems }));
+  assert.ok(html.includes('class="dsh-dock-count"'), '要有条数角标');
+  assert.ok(html.includes('2'), '条数是 2');
+});
+check('有新消息时带闪烁类（常驻但不打断）', () => {
+  const html = markup(renderBadge({ initialItems: badgeItems, initialBlinking: true }));
+  assert.ok(html.includes('class="dsh-dock-btn dsh-dt-badge-blinking"'), '要有闪烁标记');
+  const calm = markup(renderBadge({ initialItems: badgeItems }));
+  assert.ok(!calm.includes('dsh-dt-badge-blinking"'), '没有新消息时不该闪');
+});
+check('入口挂在悬浮栏里，是自绘的气泡图标', () => {
+  const html = markup(renderBadge({ initialItems: badgeItems }));
+  assert.ok(html.includes('class="dsh-dock-btn'), '要挂在悬浮栏的按钮位上');
+  assert.ok(html.includes('<svg'), '图标要自己画（SVG），不是文字');
+  assert.ok(!html.includes('>钉<'), '不该再拿一个汉字当图标');
+});
+check('面板里每条都有【处理】【忽略】', () => {
+  // 面板默认收起，这里渲染展开态：用一个带面板结构的初始状态。
+  const html = markup(renderBadge({ initialItems: badgeItems, open: true }));
+  assert.ok(html.includes('处理'), '要有处理按钮');
+  assert.ok(html.includes('忽略'), '要有忽略按钮');
+  assert.ok(html.includes('钟鹏'), '要显示发送者');
+  assert.ok(html.includes('安心筑APP错误上报群'), '要显示会话名');
+  assert.ok(html.includes('楼下奶茶店今天买一送一'), '要显示摘要');
+});
+check('@我 的条目标出「@我」（好判断这条是不是在找我）', () => {
+  const html = markup(renderBadge({ initialItems: badgeItems, open: true }));
+  assert.ok(html.includes('dsh-dt-badge-at'), '要有「@我」标记');
+  assert.ok(html.includes('@我'), '标记里要写「@我」');
+});
+
+check('项目内那条标明会回到当初那个会话', () => {
+  const html = markup(renderBadge({ initialItems: badgeItems, open: true }));
+  assert.ok(html.includes('回到当初那个会话'), '要说明处理去向');
 });
 
 /* ───────────────────────────── 报告 ───────────────────────────── */

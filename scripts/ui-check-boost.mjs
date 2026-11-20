@@ -23,6 +23,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { installRuntime } from '../src/client/runtime.js';
+import { getDockEntries } from '../src/client/shared/dock.js';
 import * as boost from '../src/client/features/boost/index.js';
 import {
   api,
@@ -163,22 +164,27 @@ check('夹具是真实形状：每个条目都有 id / 分组 / 动作 / 命令'
 });
 
 check('浮层（收起来时）：只画那个火箭按钮', () => {
-  const markup = html(React.createElement(boost.__ui.BoostWidget, { t: t, runtime: { sessions: null } }));
-  assert.ok(markup.includes('class="dsh-boost-launch"'), '缺火箭按钮');
+  const markup = html(React.createElement(boost.__ui.BoostEntry, { t: t, runtime: { sessions: null } }));
+  assert.ok(markup.includes('class="dsh-dock-btn dsh-boost-launch"'), '缺火箭按钮');
   assert.ok(markup.includes(zh.entryTitle), '缺入口标题');
   // 断言**元素**而不是类名 —— 类名也出现在 <style> 的 CSS 文本里，
   // 那样断言在收起来时也会通过（自检空转，等于没测）。
-  assert.ok(!markup.includes('class="dsh-boost-panel"'), '没打开时不该画面板');
+  assert.ok(!markup.includes('class="dsh-dock-panel"'), '没打开时不该画面板');
+});
+
+check('本功能的样式跟着组件渲染（漏了面板就是一堆裸元素）', () => {
+  const markup = html(React.createElement(boost.__ui.BoostEntry, { t: t, runtime: { sessions: null } }));
+  assert.ok(markup.includes('data-dsh-boost'), '缺本功能的样式表');
 });
 
 check('浮层（展开时）：画出结论、逐项清单与勾选框', () => {
-  const markup = html(React.createElement(boost.__ui.BoostWidget, {
+  const markup = html(React.createElement(boost.__ui.BoostEntry, {
     t: t,
     runtime: { sessions: null },
-    initialOpen: true,
+    open: true,
     initialJob: fixture,
   }));
-  assert.ok(markup.includes('class="dsh-boost-panel"'), '缺面板');
+  assert.ok(markup.includes('class="dsh-dock-panel"'), '缺面板');
   assert.ok(markup.includes(fixture.analysis.diagnosis), '缺体检结论');
   assert.ok(markup.includes(fixture.items[0].label), '缺第一条清单');
   assert.ok(markup.includes('class="dsh-boost-check"'), '缺勾选框');
@@ -186,10 +192,10 @@ check('浮层（展开时）：画出结论、逐项清单与勾选框', () => {
 });
 
 check('默认勾选：有代价的条目默认不勾，其余默认勾上', () => {
-  const markup = html(React.createElement(boost.__ui.BoostWidget, {
+  const markup = html(React.createElement(boost.__ui.BoostEntry, {
     t: t,
     runtime: { sessions: null },
-    initialOpen: true,
+    open: true,
     initialJob: fixture,
   }));
   const boxes = markup.match(/<input[^>]*class="dsh-boost-check"[^>]*>/g) ?? [];
@@ -211,10 +217,10 @@ check('默认勾选：有代价的条目默认不勾，其余默认勾上', () =
 });
 
 check('清单按组分段：三个分组标题都在', () => {
-  const markup = html(React.createElement(boost.__ui.BoostWidget, {
+  const markup = html(React.createElement(boost.__ui.BoostEntry, {
     t: t,
     runtime: { sessions: null },
-    initialOpen: true,
+    open: true,
     initialJob: fixture,
   }));
   assert.ok(markup.includes('class="dsh-boost-group-title"'), '缺分组标题');
@@ -365,7 +371,7 @@ check('体积格式化：字节 → 人话', () => {
   assert.equal(formatBytes(1024 ** 3 * 2), '2 GB');
 });
 
-check('槽位注册：只注册 shell.overlay 一个浮层，id 是 axzo-boost', () => {
+check('浮层由聚合层渲染，本功能只登记一个 dock 条目', () => {
   const registered = [];
   const fakeCtx = {
     effect: (fn) => { fn(); return () => {}; },
@@ -380,11 +386,12 @@ check('槽位注册：只注册 shell.overlay 一个浮层，id 是 axzo-boost',
     },
   };
   boost.apply(fakeCtx, t);
-  assert.equal(registered.length, 1, `注册了 ${registered.length} 个槽位`);
-  assert.equal(registered[0].name, 'shell.overlay');
-  const entry = registered[0].callback();
-  assert.equal(entry.options.id, 'axzo-boost');
-  assert.equal(entry.options.name, 'shell.overlay');
+  // 自己注册浮层槽 = 页面上多出一条栏（小火箭那条 + 聚合层那条）。
+  assert.equal(registered.length, 0, `本功能不该自己注册槽位（注册了 ${registered.length} 个）`);
+  const entries = getDockEntries();
+  const mine = entries.find((entry) => entry.id === 'axzo-boost');
+  assert.ok(mine !== undefined, '没有登记 dock 条目');
+  assert.equal(mine.order, 30, '条目顺序不是 30');
 });
 
 check('功能模块不注册 settings.section（设置入口只能有一个）', () => {

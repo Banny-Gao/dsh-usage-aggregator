@@ -99,6 +99,66 @@ export function idHint(person) {
 }
 
 /**
+ * 把 dws 给的时间变成毫秒时间戳。
+ *
+ * dws 的时间有两种形态：`+at-me` 给的是 `time` 字段，`+chat-messages` 给的是
+ * `createTime` 字段 —— **两者都是「2026-11-18 17:32:07」这样的本地钟面字符串**，
+ * 不是毫秒数字。另有版本给的是数字。
+ *
+ * 字符串按**本地时区**解析：CLI 自己就是按本地时区算的时间窗（`--days` 那些），
+ * 拿 UTC 去解会差一个时区。这里显式构造本地时刻，不依赖 `Date.parse` 对非 ISO
+ * 串的猜测（它在不同引擎上行为不一致）。
+ *
+ * @param {unknown} value 时间字段的值。
+ * @returns {number} 毫秒时间戳；认不出就是 0。
+ */
+export function parseTime(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    // 1e11 是个分界：现在的秒级时间戳约 1.7e9，毫秒级约 1.7e12。
+    return value >= 1e11 ? value : value * 1000;
+  }
+  if (typeof value !== 'string') return 0;
+  const text = value.trim();
+  if (text === '') return 0;
+  const matched = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/.exec(text);
+  if (matched === null) {
+    // 带时区偏移的 ISO 串交给引擎解（那种串自带时区，语义明确）。
+    const parsed = Date.parse(text);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return new Date(
+    Number(matched[1]),
+    Number(matched[2]) - 1,
+    Number(matched[3]),
+    Number(matched[4]),
+    Number(matched[5]),
+    Number(matched[6]),
+  ).getTime();
+}
+
+/**
+ * 取会话名。
+ *
+ * `+at-me` 把会话名放在 `conversation` 里，形态是**数组**（["群名"]，留着扩展位）；
+ * `+chat-messages` 不带会话名（要从未读会话列表补）。
+ *
+ * @param {object} item 一个消息对象。
+ * @returns {string} 会话名；没有就是空串。
+ */
+function pickChatName(item) {
+  const direct = pickString(item, ['chatName', 'conversationName', 'groupName']);
+  if (direct !== '') return direct;
+  const conversation = item.conversation;
+  if (typeof conversation === 'string') return conversation.trim();
+  if (Array.isArray(conversation)) {
+    for (const entry of conversation) {
+      if (typeof entry === 'string' && entry.trim() !== '') return entry.trim();
+    }
+  }
+  return '';
+}
+
+/**
  * 深度遍历，找出所有「像消息」的数组。
  *
  * @param {unknown} node 当前节点。
@@ -151,15 +211,65 @@ export function collectMessages(json) {
       const message = {
         messageId: pickString(item, ['messageId', 'openMessageId', 'msgId']),
         conversationId: pickString(item, ['conversationId', 'openConversationId']),
+        chatName: pickChatName(item),
         sender: pickString(item, ['sender', 'senderName', 'senderNick']),
         senderId: pickString(item, ['senderId', 'senderOpenDingTalkId']),
         text: pickString(item, ['text', 'content', 'title']),
-        createTime: Number.isFinite(item.createTime) ? item.createTime : 0,
+        createTime: parseTime(item.createTime ?? item.time),
       };
       const key = message.messageId || message.text + '@' + message.createTime;
       if (key === '' || seen.has(key)) continue;
       seen.add(key);
       out.push(message);
+    }
+  }
+  return out;
+}
+
+/**
+ * 深度遍历，找出所有「像会话」的数组。
+ *
+ * @param {unknown} node 当前节点。
+ * @param {Array<Array<object>>} found 收集到的数组。
+ * @param {number} depth 当前深度。
+ */
+function walkChats(node, found, depth) {
+  if (depth > 6 || node === null || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    const chats = node.filter((item) => item !== null && typeof item === 'object' && !Array.isArray(item)
+      && pickString(item, ['conversationId', 'openConversationId']) !== '');
+    if (chats.length > 0) found.push(chats);
+    for (const item of node) walkChats(item, found, depth + 1);
+    return;
+  }
+  for (const key of Object.keys(node)) walkChats(node[key], found, depth + 1);
+}
+
+/**
+ * 把 dws 的未读会话列表整理成插件要的形状。
+ *
+ * `+unread-chats` 给的是 `{ conversations: [{ conversationId, name }] }`；
+ * 契约外的形态容错地找，但**找不到会话 id 就丢掉这条** —— 没有 id 没法读它的消息。
+ *
+ * @param {unknown} json dws 返回的 JSON。
+ * @returns {Array<{conversationId: string, name: string}>} 会话列表。
+ */
+export function collectChats(json) {
+  const groups = [];
+  if (json !== null && typeof json === 'object' && !Array.isArray(json) && Array.isArray(json.conversations)) {
+    groups.push(json.conversations);
+  }
+  if (groups.length === 0) walkChats(json, groups, 0);
+
+  const out = [];
+  const seen = new Set();
+  for (const group of groups) {
+    for (const item of group) {
+      const conversationId = pickString(item, ['conversationId', 'openConversationId']);
+      if (conversationId === '' || seen.has(conversationId)) continue;
+      seen.add(conversationId);
+      const name = pickChatName(item) !== '' ? pickChatName(item) : pickString(item, ['name', 'title', 'groupName']);
+      out.push({ conversationId, name });
     }
   }
   return out;

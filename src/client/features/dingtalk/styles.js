@@ -77,6 +77,32 @@ const CSS = [
   '.dsh-dt-msg.is-ok{color:var(--dsw-alias-state-success-primary);}',
   '.dsh-dt-msg.is-warn{color:var(--dsw-alias-state-warn-primary);}',
   '.dsh-dt-foot-note{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}',
+
+  // ── 悬浮栏里的钉钉入口（待处理清单）────────────────────────────────────
+  // 入口按钮与面板外壳由悬浮栏统一（src/client/shared/dock-style.js），
+  // 这里只管这个入口自己的样子：闪烁的光晕、清单里的排版。
+  // 有新消息时呼吸式闪：只动光晕，不动位置 —— 常驻但不影响页面。
+  '.dsh-dt-badge-blinking{animation:dsh-dt-badge-pulse 1.8s ease-in-out infinite;}',
+  '@keyframes dsh-dt-badge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(47,111,237,.45);}50%{box-shadow:0 0 0 8px rgba(47,111,237,0);}}',
+  '.dsh-dt-badge-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--dsw-alias-border-l1);}',
+  '.dsh-dt-badge-title{font-size:12px;font-weight:600;}',
+  '.dsh-dt-badge-close{border:0;background:transparent;color:var(--dsw-alias-label-secondary);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;}',
+  '.dsh-dt-badge-list{display:flex;flex-direction:column;gap:8px;padding:10px 12px;overflow-y:auto;}',
+  '.dsh-dt-badge-item{display:flex;flex-wrap:wrap;gap:8px;padding:10px;border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-2);}',
+  '.dsh-dt-badge-item-main{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:4px;}',
+  '.dsh-dt-badge-item-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12px;}',
+  '.dsh-dt-badge-at{padding:0 5px;border-radius:999px;background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-secondary);font-size:10px;}',
+  '.dsh-dt-badge-chat{color:var(--dsw-alias-label-secondary);}',
+  '.dsh-dt-badge-time{color:var(--dsw-alias-label-tertiary);font-size:11px;}',
+  '.dsh-dt-badge-excerpt{margin:0;font-size:12px;color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;}',
+  '.dsh-dt-badge-routed{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}',
+  '.dsh-dt-badge-actions{display:flex;align-items:center;gap:6px;margin-left:auto;}',
+  '.dsh-dt-badge-choice{display:flex;align-items:center;gap:6px;flex:1 1 100%;padding-top:4px;border-top:1px dashed var(--dsw-alias-border-l1);}',
+  '.dsh-dt-badge-btn{height:26px;padding:0 10px;border-radius:var(--dsw-radius-sm);border:.5px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;cursor:pointer;}',
+  '.dsh-dt-badge-btn.is-primary{background:var(--dsw-alias-button-primary-fill);color:var(--dsw-alias-label-primary-foreground);border-color:transparent;}',
+  '.dsh-dt-badge-btn:disabled{opacity:.5;cursor:not-allowed;}',
+  '.dsh-dt-badge-empty{margin:0;padding:16px 14px;font-size:12px;color:var(--dsw-alias-label-tertiary);}',
+  '.dsh-dt-badge-note{margin:0;padding:8px 14px 12px;font-size:11px;color:var(--dsw-alias-label-secondary);}',
 ].join('\n');
 
 /**

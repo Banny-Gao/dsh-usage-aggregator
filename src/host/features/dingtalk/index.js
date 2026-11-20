@@ -210,6 +210,12 @@ export function apply(ctx, featureConfig = {}, shared) {
         async install() {
           return ops.startInstall();
         },
+        async pending() {
+          return { ok: true, ...receiverOf().pending() };
+        },
+        async ignore(body) {
+          return receiverOf().ignore(body?.id ?? '');
+        },
         async pollNow() {
           if (enabled === false) return { ok: false, error: '功能没开' };
           const result = await receiverOf().poll();

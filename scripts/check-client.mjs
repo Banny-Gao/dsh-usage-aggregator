@@ -83,12 +83,18 @@ const EXPECTED_SLOTS = {
   'sidebar.brand.mark': { priority: -1 },
   'sidebar.brand.name': { priority: -1 },
   'conversation.hero.brand.mark': { priority: -1 },
-  // 小火箭浮层：挂在 root scope 的浮层槽上。
-  'shell.overlay': { id: 'axzo-boost' },
+  // 悬浮栏：整条栏由聚合层渲染（id `axzo-dock`），栏里装着各功能的入口。
+  'shell.overlay': { id: 'axzo-dock' },
   // AI 自动补全：输入框上方的提示条 + 输入框卡片里的下拉列表与行内灰字。
   'conversation.input.dock': { id: 'axzo-autocomplete-bar' },
   'conversation.input.overlay': { id: 'axzo-autocomplete' },
 };
+
+/** 期望在 shell.overlay 上注册的项：id 列表。 */
+/**
+ * 悬浮栏只注册**一次**（聚合层渲染的那条栏）—— 注册两次就是页面上冒出两条栏。
+ */
+const EXPECTED_OVERLAY_IDS = ['axzo-dock'];
 
 /** 期望在 sidebar.footer.action 上注册的项：id → order。 */
 const EXPECTED_FOOTER_ACTIONS = [
@@ -398,11 +404,16 @@ for (const [name, expected] of Object.entries(EXPECTED_SLOTS)) {
   }
 }
 
-// 小火箭只能占一个浮层槽，且 id 固定 —— 它是「内容区域右下角那个入口」，
-// 注册两次就是页面上冒出两个火箭。
+// 浮层可以有多项（各占一个角），但 id 不能重复 —— 小火箭只能有一个，
+// 重复注册就是页面上冒出两个一样的入口。
 const overlays = byName('shell.overlay');
-if (overlays.length === 1) ok('shell.overlay 只注册一次（小火箭浮层）');
-else bad(`shell.overlay 注册了 ${overlays.length} 次`);
+const overlayIds = overlays.map((spec) => spec.id);
+const duplicated = [...new Set(overlayIds.filter((id, i) => overlayIds.indexOf(id) !== i))];
+if (duplicated.length > 0) bad(`shell.overlay 的 id 重复注册：${duplicated.join(', ')}`);
+else ok('shell.overlay 的 id 没有重复注册');
+const missingOverlays = EXPECTED_OVERLAY_IDS.filter((id) => !overlayIds.includes(id));
+if (missingOverlays.length > 0) bad(`shell.overlay 缺少 id：${missingOverlays.join(', ')}`);
+else ok(`shell.overlay 注册了 ${EXPECTED_OVERLAY_IDS.length} 个入口（${EXPECTED_OVERLAY_IDS.join(' / ')}）`);
 
 // 聚合页必须是**唯一**的 settings.section 入口。
 const sections = byName('settings.section');

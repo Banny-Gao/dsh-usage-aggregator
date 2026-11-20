@@ -102,6 +102,25 @@ check_file "src/client/features/autocomplete/complete.js"
 check_file "src/client/features/autocomplete/api.js"
 check_file "src/client/features/autocomplete/i18n.js"
 check_file "src/client/features/autocomplete/styles.js"
+check_file "src/host/features/dingtalk/index.js"
+check_file "src/host/features/dingtalk/ops.js"
+check_file "src/host/features/dingtalk/card.js"
+check_file "src/host/features/dingtalk/receiver.js"
+check_file "src/host/features/dingtalk/relevance.js"
+check_file "src/host/features/dingtalk/context.js"
+check_file "src/host/features/dingtalk/shapes.js"
+check_file "src/host/features/dingtalk/dws.js"
+check_file "src/host/features/dingtalk/skill.js"
+check_file "src/host/features/dingtalk/store.js"
+check_file "src/host/features/dingtalk/tool.js"
+check_file "src/host/features/dingtalk/server.js"
+check_file "src/client/features/dingtalk/index.js"
+check_file "src/client/features/dingtalk/card.js"
+check_file "src/client/features/dingtalk/panel.js"
+check_file "src/client/features/dingtalk/api.js"
+check_file "src/client/features/dingtalk/i18n.js"
+check_file "src/client/features/dingtalk/styles.js"
+check_file "skills/dingtalk-sofa/SKILL.md"
 check_file "scripts/check-host.mjs"
 check_file "scripts/check-client.mjs"
 check_file "scripts/smoke.mjs"
@@ -113,6 +132,9 @@ check_file "scripts/ui-check-boost.mjs"
 check_file "scripts/boost-check.mjs"
 check_file "scripts/ui-check-autocomplete.mjs"
 check_file "scripts/autocomplete-check.mjs"
+check_file "scripts/dingtalk-check.mjs"
+check_file "scripts/ui-check-dingtalk.mjs"
+check_file "scripts/fixtures/dws-stub.sh"
 check_file "scripts/preset-check.mjs"
 check_file "scripts/preset-guard-check.mjs"
 check_file "scripts/preset-guard-real.mjs"
@@ -368,6 +390,7 @@ const specs = [
   ['expander', path.join(dir, 'src/client/features/expander/index.js'), 'pluginExpander'],
   ['boost', path.join(dir, 'src/client/features/boost/i18n.js'), 'pcBoost'],
   ['autocomplete', path.join(dir, 'src/client/features/autocomplete/i18n.js'), 'pcAutocomplete'],
+  ['dingtalk', path.join(dir, 'src/client/features/dingtalk/i18n.js'), 'pcDingtalk'],
 ]
 const found = []
 for (const [name, file, want] of specs) {
@@ -383,7 +406,7 @@ check('各命名空间互不相同', new Set(found).size === found.length, found
 //   · 功能的字典里**不再有** hubTab —— 同一个命名空间同时只能被一个包注册，
 //     标签放在功能自己的命名空间下时，新旧插件并存会探不到，页签上显示裸的 key。
 const hubDict = read(path.join(dir, 'src/client/hub/i18n.js'))
-for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost', 'tabAutocomplete']) {
+for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost', 'tabAutocomplete', 'tabDingtalk']) {
   check('聚合页字典有 ' + key, new RegExp(key + "\\s*:\\s*['\"][^'\"]+['\"]").test(hubDict))
 }
 const tabSpecs = [
@@ -392,6 +415,7 @@ const tabSpecs = [
   ['expander', path.join(dir, 'src/client/features/expander/index.js'), path.join(dir, 'src/client/features/expander/index.js'), 'tabExpander'],
   ['boost', path.join(dir, 'src/client/features/boost/index.js'), path.join(dir, 'src/client/features/boost/i18n.js'), 'tabBoost'],
   ['autocomplete', path.join(dir, 'src/client/features/autocomplete/index.js'), path.join(dir, 'src/client/features/autocomplete/i18n.js'), 'tabAutocomplete'],
+  ['dingtalk', path.join(dir, 'src/client/features/dingtalk/index.js'), path.join(dir, 'src/client/features/dingtalk/i18n.js'), 'tabDingtalk'],
 ]
 for (const [name, metaFile, dictFile, want] of tabSpecs) {
   const metaSrc = read(metaFile)
@@ -447,6 +471,9 @@ const expanderTool = fs.readFileSync(path.join(dir, 'src/host/features/expander/
 check('插件更新的工具名仍是 plugin_update', /name:\s*'plugin_update'/.test(expanderTool))
 const boostTool = fs.readFileSync(path.join(dir, 'src/host/features/boost/tool.js'), 'utf8')
 check('加速清理的工具名是 system_boost', /name:\s*'system_boost'/.test(boostTool))
+const dingtalkTool = fs.readFileSync(path.join(dir, 'src/host/features/dingtalk/tool.js'), 'utf8')
+check('钉钉读消息的工具名是 dingtalk_read', /name:\s*'dingtalk_read'/.test(dingtalkTool))
+check('钉钉找人的工具名是 dingtalk_find', /name:\s*'dingtalk_find'/.test(dingtalkTool))
 process.exit(bad === 0 ? 0 : 1)
 NODE
 then ok "工具名没变"; else bad "工具名被改了"; fi
@@ -575,6 +602,24 @@ if node "$PLUGIN_DIR/scripts/ui-check-autocomplete.mjs" >"$SYNTAX_TMP/ui-autocom
 else
   bad "scripts/ui-check-autocomplete.mjs 未通过（跑 node scripts/ui-check-autocomplete.mjs 看详情）"
   tail -20 "$SYNTAX_TMP/ui-autocomplete.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 钉钉沙发（假 dws 的离线冒烟：解析 / 发信 / 回执 / 收信 / 粗筛）"
+if node "$PLUGIN_DIR/scripts/dingtalk-check.mjs" >"$SYNTAX_TMP/dingtalk.log" 2>&1; then
+  ok "$(tail -1 "$SYNTAX_TMP/dingtalk.log")"
+else
+  bad "scripts/dingtalk-check.mjs 未通过（跑 node scripts/dingtalk-check.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/dingtalk.log" | sed 's/^/    /'
+fi
+
+echo ""
+echo "→ 钉钉沙发（离线渲染：卡片正文与设置页）"
+if node "$PLUGIN_DIR/scripts/ui-check-dingtalk.mjs" >"$SYNTAX_TMP/ui-dingtalk.log" 2>&1; then
+  ok "$(grep -E '^✓ 钉钉沙发渲染自检通过' "$SYNTAX_TMP/ui-dingtalk.log" | tail -1)"
+else
+  bad "scripts/ui-check-dingtalk.mjs 未通过（跑 node scripts/ui-check-dingtalk.mjs 看详情）"
+  tail -20 "$SYNTAX_TMP/ui-dingtalk.log" | sed 's/^/    /'
 fi
 
 echo ""

@@ -27,7 +27,8 @@ export const zh = {
   tabExpander: '插件更新',
   tabBoost: '加速',
   tabAutocomplete: 'AI 补全',
-  hint: '五块能力在同一个插件里。左侧切换，下方是当前功能的设置。',
+  tabDingtalk: '钉钉',
+  hint: '六块能力在同一个插件里。左侧切换，下方是当前功能的设置。',
   empty: '没有可用的功能。',
   buildAt: '客户端构建于 {at}',
 };
@@ -39,7 +40,8 @@ export const en = {
   tabExpander: 'Plugin Updates',
   tabBoost: 'Boost',
   tabAutocomplete: 'AI Complete',
-  hint: 'Five capabilities in one plugin. Switch below to configure each one.',
+  tabDingtalk: 'DingTalk',
+  hint: 'Six capabilities in one plugin. Switch below to configure each one.',
   empty: 'No capability available.',
   buildAt: 'Client built at {at}',
 };

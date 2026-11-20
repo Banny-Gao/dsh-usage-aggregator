@@ -2,7 +2,7 @@
   "name": "dsh-usage-aggregator",
   "version": "0.5.3",
   "private": true,
-  "description": "DSH 聚合插件：把多件能力收进一个插件 —— 插件管理器只占一行、设置面板只占一个入口，功能持续增补。 · One DSH plugin that bundles multiple capabilities behind a single Plugin Manager row and a single Settings entry, and keeps growing.",
+  "description": "DSH 聚合插件：把多件能力收进一个插件 —— 插件管理器只占一行、设置面板只占一个入口，功能持续增补（含钉钉消息收发）。 · One DSH plugin that bundles multiple capabilities behind a single Plugin Manager row and a single Settings entry, and keeps growing (DingTalk send/receive included).",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -25,12 +25,14 @@
     "./preset-guard": "./presets/hard-metrics-guard.js",
     "./package.json": "./package.json",
     "./locale/*.json": "./locale/*.json",
+    "./skills/*.md": "./skills/*.md",
     "./icon": "./icon.svg"
   },
   "files": [
     "src/host",
     "client/client.js",
     "locale",
+    "skills",
     "icon.svg",
     "cordis.patch.yml",
     "presets",
@@ -54,7 +56,8 @@
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-client-ui-theme",
-        "@deepseek-ai/dsh-client-ui-plugin-manager"
+        "@deepseek-ai/dsh-client-ui-plugin-manager",
+        "@deepseek-ai/dsh-client-ui-action-cards"
       ]
     }
   },
@@ -67,8 +70,10 @@
     "check:client": "node scripts/check-client.mjs",
     "check:routes": "node scripts/check-routes.mjs",
     "smoke": "node scripts/smoke.mjs",
+    "check:dingtalk": "node scripts/dingtalk-check.mjs",
     "smoke:renewal": "node scripts/smoke-renewal.mjs",
     "ui-check": "node scripts/ui-check.mjs",
+    "ui-check:dingtalk": "node scripts/ui-check-dingtalk.mjs",
     "ui-check:expander": "node scripts/ui-check-expander.mjs",
     "ui-check:tasks": "node scripts/ui-check-tasks.mjs",
     "render-check": "node scripts/render-check.mjs",

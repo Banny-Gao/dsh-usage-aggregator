@@ -147,7 +147,7 @@ async function prepare(command, args, env) {
  * @param {string} command 可执行文件名或路径。
  * @param {string[]} args 参数列表。
  * @param {{cwd?: string, env?: Record<string, string|undefined>, timeoutMs?: number}} options 运行选项。
- * @returns {Promise<{ok: boolean, code: number|null, stdout: string, stderr: string, timedOut: boolean}>} 运行结果。
+ * @returns {Promise<{ok: boolean, code: number|null, stdout: string, stderr: string, timedOut: boolean, missing: boolean}>} 运行结果。
  */
 export function runProcess(command, args, options = {}) {
   const list = Array.isArray(args) ? args.map((item) => String(item)) : [];
@@ -179,6 +179,9 @@ export function runProcess(command, args, options = {}) {
           stdout: typeof stdout === 'string' ? stdout : '',
           stderr: typeof stderr === 'string' ? stderr : '',
           timedOut,
+          // 可执行文件不存在（ENOENT）与「跑起来了但退出码非零」是两回事：
+          // 调用方常据此改话术（没装 vs 装错了），所以单独标出来。
+          missing: error !== null && error !== undefined && error.code === 'ENOENT',
         });
       },
     );

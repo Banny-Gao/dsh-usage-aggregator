@@ -32,6 +32,7 @@ import * as usage from './usage/index.js';
 import * as expander from './expander/index.js';
 import * as boost from './boost/index.js';
 import * as autocomplete from './autocomplete/index.js';
+import * as dingtalk from './dingtalk/index.js';
 
 /** 全部客户端功能。顺序不影响渲染，页签顺序由 meta.hubOrder 决定。 */
-export const features = [theme, usage, expander, boost, autocomplete];
+export const features = [theme, usage, expander, boost, autocomplete, dingtalk];

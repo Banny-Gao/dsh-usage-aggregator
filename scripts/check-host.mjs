@@ -28,6 +28,8 @@
  */
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
@@ -60,7 +62,7 @@ const EXPECTED_NAME = 'dsh-usage-aggregator';
 const EXPECTED_INJECT = ['tools'];
 
 /** 期望注册出来的 Agent 工具名。改名会打断已有会话里的工具调用。 */
-const EXPECTED_TOOLS = ['usage_query', 'plugin_update'];
+const EXPECTED_TOOLS = ['usage_query', 'plugin_update', 'dingtalk_read', 'dingtalk_find'];
 
 /**
  * 一份覆盖全部功能的 config。
@@ -87,7 +89,21 @@ const FULL_CONFIG = {
     checkTimeoutMs: 20000,
     gitTimeoutMs: 15000,
   },
+  // 钉钉沙发：这里显式打开 —— 它默认是关的（用户自己在设置页里拨），
+  // 关着的时候不会注册工具，自检就抓不到那两个工具名了。
+  dingtalk: {
+    enabled: true,
+    pollIntervalSeconds: 180,
+  },
 };
+
+/**
+ * 临时 DSH_HOME：钉钉沙发的开关落在 $DSH_HOME 里，自检不能去读用户真实的偏好
+ * （读到了就变成「这台机器上到底开没开」的随机结果）。用完删掉。
+ */
+const tempHome = await mkdtemp(join(tmpdir(), 'dua-host-'));
+const realDshHome = process.env.DSH_HOME;
+process.env.DSH_HOME = tempHome;
 
 const failures = [];
 const notes = [];
@@ -439,6 +455,10 @@ if (mod !== null) {
       bad('cordis 装载 5 秒内没有 settle —— entry 会永远 pending');
     }
 
+    // 钉钉沙发的工具是在**读完开关之后**异步注册的（开关在磁盘上），
+    // 等它一下再断言，否则会误报「没注册」。
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
     const toolNames = registeredTools.map((tool) => tool?.name).filter(Boolean);
     for (const expected of EXPECTED_TOOLS) {
       if (toolNames.includes(expected)) ok(`注册了工具 ${expected}`);
@@ -467,6 +487,10 @@ if (mod !== null) {
   await ctx.stop?.().catch?.(() => {});
   ctx.fiber?.dispose?.();
 }
+
+await rm(tempHome, { recursive: true, force: true });
+if (realDshHome === undefined) delete process.env.DSH_HOME;
+else process.env.DSH_HOME = realDshHome;
 
 console.log('');
 if (failures.length > 0) {

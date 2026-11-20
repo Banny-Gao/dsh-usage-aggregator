@@ -26,6 +26,7 @@
         #   /dsh-usage-aggregator/expander/*     —— 插件更新
         #   /dsh-usage-aggregator/boost/*        —— 电脑加速与清理
         #   /dsh-usage-aggregator/autocomplete/*  —— AI 自动补全
+        #   /dsh-usage-aggregator/dingtalk/*      —— 钉钉沙发
         # 主题功能没有 Host 路由，也没有 Host 配置（它的可调项走 localStorage）。
         endpoint: /dsh-usage-aggregator
         # 只有本机（回环地址）能访问插件路由。除非你确实要远程访问，别打开。
@@ -111,3 +112,16 @@
             inlineHint: true
             # 输入框为空时给「你可能想问」的几条候选。
             placeholderHint: true
+
+        # ── 钉钉沙发 ───────────────────────────────────────────────────────
+        # 在 DSH 会话里发钉钉消息、收钉钉消息。默认**关着** —— 装了插件不改变任何
+        # 行为，用户在聚合设置页的「钉钉」页签里打开才生效。
+        #   · 发送一律走卡片：模型提议一次外发 → 用户点【发送】/【改一下】/【不用了】；
+        #   · 接收只做分析：项目内的消息唤醒模型给三段结论，要不要处理由用户点；
+        #   · 项目外的消息只累一个未读计数，不唤醒、不挂卡片。
+        dingtalk:
+          # 默认开关。用户改过以后以设置页里的为准（存在
+          # $DSH_HOME/dsh-usage-aggregator/dingtalk.json）。
+          enabled: false
+          # 后台拉取间隔（秒）。用户可以在设置页里改。
+          pollIntervalSeconds: 180

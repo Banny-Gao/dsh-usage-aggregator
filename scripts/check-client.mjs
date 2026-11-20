@@ -70,7 +70,7 @@ const EXPECTED_AXZO_COUNT = 17;
  * 聚合页自己还有一个命名空间（src/client/hub/i18n.js 的 NS），它放设置入口的
  * 标签，不需要 hubTab —— 见 HUB_NAMESPACE。
  */
-const EXPECTED_NAMESPACES = ['settings.axzoTheme', 'usage-query', 'pluginExpander', 'pcBoost', 'pcAutocomplete'];
+const EXPECTED_NAMESPACES = ['settings.axzoTheme', 'usage-query', 'pluginExpander', 'pcBoost', 'pcAutocomplete', 'pcDingtalk'];
 
 /** 聚合页自己的命名空间（设置入口的标签在这里）。 */
 const HUB_NAMESPACE = 'dsh-usage-aggregator';
@@ -256,6 +256,8 @@ console.log('→ apply(ctx) 与槽位注册');
 const ALLOWED = new Set([...(inject || []), 'effect', 'on', 'config', 'provide', 'logger', 'inject']);
 const slotRegs = [];
 const injectedSlots = [];
+/** 注册到卡片框架里的卡片正文。 */
+const cardBodies = [];
 const themeCalls = { register: [], overrideTokens: [] };
 const dictionaries = new Map();
 
@@ -295,6 +297,15 @@ const ctx = new Proxy(
           const scope = {};
           for (const name of deps) {
             if (name === 'sessions') scope.sessions = sessions;
+            // 卡片框架（actionCards）：钉钉沙发把卡片正文注册进去。
+            else if (name === 'actionCards') {
+              scope.actionCards = {
+                register(spec) {
+                  cardBodies.push(spec);
+                  return () => {};
+                },
+              };
+            }
             else scope[name] = {};
           }
           const dispose = cb(scope);
@@ -425,6 +436,19 @@ for (const spec of slotRegs) {
   }
 }
 
+/* ─────────────────── 4.5 卡片正文 ─────────────────── */
+
+const dingtalkBody = cardBodies.find((spec) => spec.action === 'dingtalk.send');
+if (dingtalkBody === undefined) {
+  bad('没有向卡片框架注册 dingtalk.send 的正文 —— 会话里点不动那张卡片');
+} else {
+  ok('注册了 dingtalk.send 的卡片正文');
+  if (dingtalkBody.locale === 'pcDingtalk') ok('卡片正文的 locale 是 pcDingtalk');
+  else bad(`卡片正文的 locale 是 ${dingtalkBody.locale}，必须是 pcDingtalk`);
+  if (typeof dingtalkBody.Body === 'function') ok('卡片正文是一个组件');
+  else bad('卡片正文不是组件');
+}
+
 /* ─────────────────── 5. theme 契约 ─────────────────── */
 
 console.log('');
@@ -495,7 +519,7 @@ const hubDict = dictionaries.get(HUB_NAMESPACE);
 if (hubDict === undefined) {
   bad(`聚合页的命名空间 '${HUB_NAMESPACE}' 没注册 —— 设置入口与页签标签没有出处`);
 } else {
-  for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost', 'tabAutocomplete']) {
+  for (const key of ['tab', 'tabTheme', 'tabUsage', 'tabExpander', 'tabBoost', 'tabAutocomplete', 'tabDingtalk']) {
     const zhText = hubDict.zh ? hubDict.zh[key] : undefined;
     const enText = hubDict.en ? hubDict.en[key] : undefined;
     if (typeof zhText !== 'string' || zhText === '') bad(`聚合页 zh 字典缺 '${key}'`);
@@ -505,7 +529,7 @@ if (hubDict === undefined) {
 }
 
 const unexpected = [...dictionaries.keys()].filter((ns) => !EXPECTED_NAMESPACES.includes(ns) && ns !== HUB_NAMESPACE);
-if (unexpected.length === 0) ok(`命名空间总数正确（5 个功能 + 1 个聚合页）`);
+if (unexpected.length === 0) ok(`命名空间总数正确（${EXPECTED_NAMESPACES.length} 个功能 + 1 个聚合页）`);
 else bad(`出现了多余的 locale 命名空间：${unexpected.join(', ')}`);
 
 /* ─────────────────── 报告 ─────────────────── */

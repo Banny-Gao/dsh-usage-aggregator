@@ -2,7 +2,7 @@
 
 ## 定位
 
-一个 DSH 插件，装下多件能力（当前五项）：
+一个 DSH 插件，装下多件能力（当前六项）：
 
 | 能力 | 做什么 |
 |---|---|
@@ -11,8 +11,9 @@
 | **插件更新** | 检测并安装 profile 里已装插件的新版本（官方「插件」页只管官方 bundle） |
 | **电脑加速与清理** | 右下角一枚可拖动的「小火箭」：体检这台机器为什么慢，列出**本机实际装了**的包管理器缓存、DSH 自己的冗余数据、占内存/占 CPU 的进程与浏览器里非活跃的窗口，让你勾选，交给 Agent 执行。体检在**后台自动做**（机器空闲时每天两次），点开即见结果；执行完自动重扫，清掉的条目从清单里消失 |
 | **AI 自动补全** | 在**会话输入框**里自动补全：打字停顿后由本地模型结合对话上下文给出候选，按 **Tab** 采纳第一条，提示条上的「更多」展开下拉列表换一条。行内还有一段灰字，标出将要补上的内容 |
+| **钉钉沙发** | 在会话里**发**钉钉消息、**收**钉钉消息。发：模型提议一次外发 → 用户在卡片上点【发送】/【改一下】/【不用了】—— 模型不能自己发。收：后台拉 @我 与未读会话，插件先粗筛（需求号 / 分支 / 协议名），项目内的消息唤醒模型给三段结论（说了什么 / 和项目的关系 / 建议做什么），要不要处理由用户点；项目外的只累一个未读计数，不打扰 |
 
-**插件管理器里占一行，设置面板里占一个入口**（`Aggregator`，内含五个页签）。
+**插件管理器里占一行，设置面板里占一个入口**（`Aggregator`，内含六个页签）。
 这是本包存在的理由：此前三个插件各占一行、各占一个设置入口。
 
 此外本包还**携带一个 Agent 预设**：`硬指标`（预设 id `hard-metrics`）——
@@ -28,15 +29,16 @@ PTC 基座 +《硬指标手册》全文作为人格约束，并把手册的「�
 
 ```
 src/client/          客户端半边
-  index.js           装配层：注册 5 个 locale 命名空间 → 建 5 个 translator → 依次 apply
-  hub/               聚合设置页：一个 settings.section + 五个页签
+  index.js           装配层：注册 6 个 locale 命名空间 → 建 6 个 translator → 依次 apply
+  hub/               聚合设置页：一个 settings.section + 六个页签
   shared/            i18n / api / constants
-  features/          theme · usage · expander · boost · autocomplete（互不 import）
+  features/          theme · usage · expander · boost · autocomplete · dingtalk（互不 import）
 src/host/            Host 半边
   index.js           装配层：遍历功能，交给各功能的 apply
   shared/            http（统一的路由与安全网关）· context（配置与端点）· llm（收模型正文）
-  features/          theme（空座位）· usage · expander · boost · autocomplete
+  features/          theme（空座位）· usage · expander · boost · autocomplete · dingtalk
 client/client.js     构建产物（DSH 加载它）
+skills/              随包附带的 Agent 技能（dingtalk-sofa：模型什么时候该提议外发）
 presets/             本包携带的 Agent 预设（预设补丁 + 守卫模块）
 vite.config.mjs      构建链（必须在仓库根）
 scripts/             验证套件
@@ -58,6 +60,8 @@ docs/adr/            架构决策记录
 | `usage_query` | `list` · `refresh` · `renew` · `import` · `remove` |
 | `plugin_update` | `check`（只读）· `update` |
 | `system_boost` | `scan`（体检，只读）· `execute`（清理勾选的缓存） |
+| `dingtalk_read` | 拉 @我 / 未读会话的消息（只读；拉回来不自动处理） |
+| `dingtalk_find` | 按姓名解析钉钉收件人，返回候选（姓名 + 唯一标识片段） |
 
 **Agent 预设**（本包携带，基座取自官方 PTC 预设）：
 
@@ -65,7 +69,7 @@ docs/adr/            架构决策记录
 |---|---|
 | `hard-metrics`（显示名「硬指标」） | PTC 基座（与官方 `preset-ptc` 差四处：人格约束换成《硬指标手册》全文、多一个守卫行、多 `name`/`description`、`order` 为 5）；追加 `hard-metrics-guard`，把「永不自动提交或推送」落到工具执行层 —— 提交 / 推送必须有用户**当轮**的显式授权，每个动作各只够用一次；提交命令没做成（退出码非零）时这次授权不算用掉，重试不用再问用户；复合指令（如「提交，然后继续 X」）里的「提交」同样算当轮授权；`git checkout --` / `git reset --hard` / `git clean -f` 一律拒绝；重命令（类型检查 / 静态检查 / 全量测试 / 端到端测试 / 构建）子代理一律不跑，主代理每跑一次都要用户当轮同意；项目自己的包脚本按脚本链内容判定 |
 
-**HTTP 路由**（21 条，全部在 `/dsh-usage-aggregator/` 之下）：
+**HTTP 路由**（24 条，全部在 `/dsh-usage-aggregator/` 之下）：
 
 | 前缀 | 条数 | 用途 |
 |---|---|---|
@@ -73,6 +77,7 @@ docs/adr/            架构决策记录
 | `/expander` | 2 | `state`（已装清单与更新状态）· `update`（执行更新） |
 | `/boost` | 4 | `scan`（开始体检）· `status`（轮询体检进度）· `execute`（起清理任务）· `execute-status`（轮询清理进度） |
 | `/autocomplete` | 4 | `settings`（读设置）· `settings/save`（存设置）· `models`（可选模型）· `suggest`（要候选） |
+| `/dingtalk` | 3 | `settings`（读设置与状态）· `settings/save`（存设置）· `poll`（手动拉一次） |
 
 **配置**：写在 profile 的 `cordis.patch.yml` 里，**只对 Host 半边生效**。
 
@@ -152,6 +157,25 @@ Agent 会先说明要做什么再动手；会话不可用时面板直接执行�
 可选项在设置页的「AI 补全」页签里：推荐条数、分析模型、最少触发字数、
 触发延迟、上下文条数、最长输入、多行输入要不要补全、行内灰字、空输入提示。
 
+**钉钉沙发**（默认**关着**，在设置页的「钉钉」页签里打开）：
+
+```
+把这段发给陈世康：<要发的内容>
+```
+
+- 模型解析收件人（同名多人时列候选让你选），拟好正文（结论先行 → 复现步骤 →
+  期望/实际 → 需要对方确认什么），然后**在回答下面挂一张卡片**；
+- 卡片上有【发送】/【改一下】/【不用了】：点【发送】才真发，插件发完会回查
+  真实的 messageId —— 回查不到就显示「已提交，未确认送达」，不报成功；
+- 点【改一下】可以在卡片里写一句修改要求，插件把它连同原文注入回会话，
+  模型改完再出一张新卡片，**仍要再点一次【发送】**；
+- 收消息：后台按间隔拉 @我 与未读会话，插件用需求号 / 分支 / 协议名粗筛，
+  项目内的消息才唤醒模型给三段结论，再由你点「处理 / 忽略」；
+  项目外的只累未读计数。想看全部随时说「钉钉有什么新消息」。
+
+> 需要本机装好官方 `dws` CLI 并完成钉钉登录 —— 登录态由它管，插件不碰凭据。
+> 卡片由 DSH 自带的 `actionCards` 框架渲染，profile 里需要「个性化推荐」那个 bundle。
+
 ## 关系
 
 - **DSH**：作为普通插件装进 profile。客户端半边是浏览器里的 IIFE 产物，Host 半边是 Node 里的 cordis 插件；两者都靠 `cordis.patch.yml` 的一行 insert 接入。
@@ -159,7 +183,8 @@ Agent 会先说明要做什么再动手；会话不可用时面板直接执行�
 - **预设依赖谁提供**：预设里引用的 30 个 `@deepseek-ai/*` 官方包**由宿主 DSH 的安装作用域提供**（DSH 自带的那些包），本包不声明它们 —— npm 上同名的官方包版本远低于本机 DSH 实际安装的版本，装进来只会版本错配。本包自己只多一个 `js-yaml` 开发依赖（补丁 YAML 的解析校验用，与装载器同款方言）。
 - **取代** `dsh-axzo-theme` / `dsh-usage-query` / `dsh-plugin-expander` 三个插件。功能、数据路径、locale 命名空间、工具名、槽位 id 全部原样保留 —— 已接入的接口与主题设置接着用。
 - **依赖 DSH 官方能力**：已装清单走官方 `pluginManager.listBundles()`，安装动作走官方 `removeBundle` + `installBundle`（继承 profile 写锁、失败回滚、HMR 重载、构建脚本审批）。本包不自己碰 pnpm。
-- **数据落本机**：用量凭证在 `$DSH_HOME/dsh-usage-query/store.json`（0600），**永不发往浏览器**；主题偏好在 `localStorage` 的 `dsh-axzo-theme:*`；补全的设置在 `$DSH_HOME/dsh-usage-aggregator/autocomplete.json`（0600）。
+- **数据落本机**：用量凭证在 `$DSH_HOME/dsh-usage-query/store.json`（0600），**永不发往浏览器**；主题偏好在 `localStorage` 的 `dsh-axzo-theme:*`；补全的设置在 `$DSH_HOME/dsh-usage-aggregator/autocomplete.json`（0600）；钉钉沙发的开关在 `$DSH_HOME/dsh-usage-aggregator/dingtalk.json`（0600）。
+- **钉钉消息不落盘**：只包官方 `dws` CLI（登录态、多账号 profile、消歧规则都在它那里），插件不重写 API 客户端、不碰凭据；拉回来的消息正文只在内存里过一遍（给模型分析用），**不写盘**，看过的只留 messageId 集合，未读只留计数。
 - **安全边界**：路由默认只接受回环地址 + 同源，POST 要求 `application/json`。`plugin_update` 的 update 动作、`system_boost` 的 execute 动作都要求 danger-full-access。
 - **补全只碰输入框，不碰别人的东西**：候选由本 profile 已配置的模型分析（对话上下文 + 输入框里的字），不落盘、不外传；写回草稿走官方 `inputActions`，官方 placeholder 与编辑器 DOM 一律不改（行内灰字是**画在自己那一层**的叠加）。模型不可用时安静退成「没有建议」，绝不弹错误打断打字。
 - **清理分三类，代价不同的默认状态也不同**：**工具链缓存**（在运行时按本机实际装的工具现场发现：探测工具 → 问工具要自己的缓存目录 → 用工具官方的清理命令）默认全勾；**DSH 自己的数据**（回收站、旧格式日志、孤儿子代理会话、过期会话、已归档会话、投影缓存残留、旧附件、续期用的浏览器配置）里可重建/已删除的默认勾，**会删用户历史的不勾**；**进程与窗口**（占内存的应用与单个进程、高占 CPU 的任务、浏览器里非聚焦的窗口）里无损的（降优先级、结束崩掉的残留进程）默认勾，**会关程序/关窗口的不勾**。

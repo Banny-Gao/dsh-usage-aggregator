@@ -20,6 +20,7 @@ import * as usage from './usage/index.js';
 import * as expander from './expander/index.js';
 import * as boost from './boost/index.js';
 import * as autocomplete from './autocomplete/index.js';
+import * as dingtalk from './dingtalk/index.js';
 
 /** 全部 Host 功能。 */
-export const features = [theme, usage, expander, boost, autocomplete];
+export const features = [theme, usage, expander, boost, autocomplete, dingtalk];

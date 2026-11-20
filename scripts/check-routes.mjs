@@ -65,6 +65,8 @@ try {
     usage: { autoRefresh: { enabled: false } },
     expander: {},
     boost: {},
+    // 钉钉沙发：这里必须**关着** —— 开着会起后台轮询定时器，自检脚本会不退出。
+    dingtalk: { enabled: false },
   });
 
   /** 收集到的路由：path → 来自哪个功能。 */
@@ -161,6 +163,8 @@ try {
     // AI 自动补全：读设置 / 存设置 / 模型清单 / 要候选。
     //   读与存分成两条路径 —— 同一个路径挂两条路由，webserver 会直接 throw。
     autocomplete: ['/autocomplete/settings', '/autocomplete/settings/save', '/autocomplete/models', '/autocomplete/suggest'],
+    // 钉钉沙发：读设置 / 存设置 / 手动拉一次。
+    dingtalk: ['/dingtalk/settings', '/dingtalk/settings/save', '/dingtalk/poll'],
   };
   for (const [featureId, suffixes] of Object.entries(EXPECTED)) {
     const actual = routes

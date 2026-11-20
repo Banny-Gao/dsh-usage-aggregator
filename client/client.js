@@ -118,7 +118,7 @@ var dshUsageAggregator = (function(exports) {
 	* locale 命名空间。**保持不变**：改名会让新旧命名空间并存（locale 服务按命名
 	* 空间存字典，旧的不注销就一直占着）。
 	*/
-	var NS$5 = "settings.axzoTheme";
+	var NS$6 = "settings.axzoTheme";
 	var STYLE_ID$2 = "dsh-axzo-theme-style";
 	var PANEL_STYLE_ID = "dsh-axzo-theme-panel-style";
 	/** localStorage key —— **保持不变**：改了用户已保存的主色 / 开关 / 品牌名全丢。 */
@@ -901,7 +901,7 @@ var dshUsageAggregator = (function(exports) {
 		};
 	}
 	// src/client/features/theme/i18n.js
-	var zh$5 = {
+	var zh$6 = {
 		tab: "AxzoTheme",
 		sectionPreset: "预设色板",
 		sectionColor: "主色微调",
@@ -963,7 +963,7 @@ var dshUsageAggregator = (function(exports) {
 		sbGrainLabel: "磨砂纹理",
 		fontLabel: "字体"
 	};
-	var en$5 = {
+	var en$6 = {
 		tab: "AxzoTheme",
 		sectionPreset: "Presets",
 		sectionColor: "Fine-tune",
@@ -1039,7 +1039,7 @@ var dshUsageAggregator = (function(exports) {
 	* 旧调用点全都只传 key，行为不变。
 	*/
 	function makeTranslator(locale) {
-		return makeTranslator$1(locale, NS$5, zh$5);
+		return makeTranslator$1(locale, NS$6, zh$6);
 	}
 	// src/client/features/theme/panel.js
 	function sliderTrack(field, primary) {
@@ -2293,10 +2293,10 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/theme/index.js
 	var theme_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$4,
-		apply: () => apply$5,
-		dictionaries: () => dictionaries$4,
-		meta: () => meta$4
+		HubView: () => HubView$5,
+		apply: () => apply$6,
+		dictionaries: () => dictionaries$5,
+		meta: () => meta$5
 	});
 	/**
 	* 功能标识。
@@ -2309,9 +2309,9 @@ var dshUsageAggregator = (function(exports) {
 	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
 	* 页签上会显示裸的 key 名。
 	*/
-	var meta$4 = {
+	var meta$5 = {
 		id: "theme",
-		namespace: NS$5,
+		namespace: NS$6,
 		hubOrder: 10,
 		hubTabKey: "tabTheme"
 	};
@@ -2319,9 +2319,9 @@ var dshUsageAggregator = (function(exports) {
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
 	*/
-	var dictionaries$4 = {
-		zh: zh$5,
-		en: en$5
+	var dictionaries$5 = {
+		zh: zh$6,
+		en: en$6
 	};
 	/**
 	* 命名空间是否已被注册。
@@ -2355,7 +2355,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {(key: string, vars?: object) => string} t 本功能命名空间的 translator。
 	*/
-	function apply$5(ctx, t) {
+	function apply$6(ctx, t) {
 		ctx.effect(function() {
 			startOsPrefs();
 			return function() {
@@ -2466,7 +2466,7 @@ var dshUsageAggregator = (function(exports) {
 			if (namespaceRegistered(ctx.locale, "settings.axzoTheme")) return void 0;
 			var dispose = null;
 			try {
-				dispose = ctx.locale.register(NS$5, dictionaries$4);
+				dispose = ctx.locale.register(NS$6, dictionaries$5);
 			} catch (err) {
 				console.warn("[" + PLUGIN_ID$1 + "] locale register failed", err);
 			}
@@ -2485,7 +2485,7 @@ var dshUsageAggregator = (function(exports) {
 	* 聚合页用 h(View, { t, ctx }) 渲染，而原 Panel 收到的正是 { t, ctx } ——
 	* 原样透传即可。
 	*/
-	var HubView$4 = (props) => h(Panel$1, props);
+	var HubView$5 = (props) => h(Panel$1, props);
 	// src/client/features/usage/constants.js
 	/**
 	* locale 命名空间。
@@ -2493,7 +2493,7 @@ var dshUsageAggregator = (function(exports) {
 	* ⚠️ 保持 'usage-query' 不变 —— 改名会让「已注册的旧命名空间」与「新命名空间」并存，
 	* 字典被注册两次，切换语言时会出现两套文案。
 	*/
-	var NS$4 = "usage-query";
+	var NS$5 = "usage-query";
 	/**
 	* 样式元素的 data 属性值。
 	*
@@ -2508,7 +2508,7 @@ var dshUsageAggregator = (function(exports) {
 	*/
 	var PANEL_ID = "usage-query";
 	// src/client/features/usage/i18n.js
-	var zh$4 = {
+	var zh$5 = {
 		tab: "用量查询",
 		title: "用量查询",
 		emptyTitle: "还没有接入任何接口",
@@ -2618,7 +2618,7 @@ var dshUsageAggregator = (function(exports) {
 		chipUnpin: "取消顶部显示",
 		autoSoon: "即将"
 	};
-	var en$4 = {
+	var en$5 = {
 		tab: "Usage",
 		title: "Usage query",
 		emptyTitle: "No provider yet",
@@ -2773,6 +2773,8 @@ var dshUsageAggregator = (function(exports) {
 	var BOOST_ENDPOINT = ENDPOINT_BASE + "/boost";
 	/** AI 自动补全的路由前缀。 */
 	var AUTOCOMPLETE_ENDPOINT = ENDPOINT_BASE + "/autocomplete";
+	/** 钉钉沙发的路由前缀。 */
+	var DINGTALK_ENDPOINT = ENDPOINT_BASE + "/dingtalk";
 	// src/client/features/usage/api.js
 	/**
 	* 用量查询的全部接口。
@@ -2791,7 +2793,7 @@ var dshUsageAggregator = (function(exports) {
 	* | setAnalysisModel | POST /usage/analysis-model |
 	* | raw | GET  /usage/raw?id=… |
 	*/
-	var api$3 = {
+	var api$4 = {
 		state: function() {
 			return callApi("GET", USAGE_ENDPOINT);
 		},
@@ -3244,7 +3246,7 @@ var dshUsageAggregator = (function(exports) {
 			setStatus(t("fieldOrderSaving"));
 			setTone("idle");
 			setRows(next);
-			api$3.setFieldOrder(provider.id, next.map(function(row) {
+			api$4.setFieldOrder(provider.id, next.map(function(row) {
 				return row.path;
 			})).then(function() {
 				setStatus(t("fieldOrderSaved"));
@@ -3262,7 +3264,7 @@ var dshUsageAggregator = (function(exports) {
 		var reset = function() {
 			setStatus(t("fieldOrderSaving"));
 			setTone("idle");
-			api$3.setFieldOrder(provider.id, []).then(function() {
+			api$4.setFieldOrder(provider.id, []).then(function() {
 				setStatus(t("fieldOrderSaved"));
 				setTone("ok");
 				return props.onChanged();
@@ -3383,7 +3385,7 @@ var dshUsageAggregator = (function(exports) {
 			});
 		})();
 		var loadRaw = function() {
-			api$3.raw(provider.id).then(function(result) {
+			api$4.raw(provider.id).then(function(result) {
 				setRawText(typeof result.text === "string" ? result.text : JSON.stringify(result.data, null, 2));
 			}).catch(function(error) {
 				setRawError(String(error.message || error));
@@ -3554,7 +3556,7 @@ var dshUsageAggregator = (function(exports) {
 				data: image.data,
 				mediaType: image.mediaType
 			};
-			api$3.importRequest(payload).then(function(result) {
+			api$4.importRequest(payload).then(function(result) {
 				setBusy(false);
 				setPhase("");
 				setText("");
@@ -3641,7 +3643,7 @@ var dshUsageAggregator = (function(exports) {
 		var wrapRef = useRef(null);
 		var panelRef = useRef(null);
 		var load = function() {
-			return api$3.models().then(function(next) {
+			return api$4.models().then(function(next) {
 				setData(next);
 			}).catch(function(failure) {
 				setError(String(failure.message || failure));
@@ -3688,7 +3690,7 @@ var dshUsageAggregator = (function(exports) {
 		var apply = function(providerId, modelId) {
 			setBusy(true);
 			setError("");
-			api$3.setAnalysisModel(providerId, modelId).then(function(result) {
+			api$4.setAnalysisModel(providerId, modelId).then(function(result) {
 				setBusy(false);
 				setOpen(false);
 				setData(function(prev) {
@@ -3793,7 +3795,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-11-17 00:36:35";
+		return "2026-11-20 10:40:12";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -3811,7 +3813,7 @@ var dshUsageAggregator = (function(exports) {
 		var [busy, setBusy] = useState(false);
 		var [message, setMessage] = useState("");
 		var load = function() {
-			return api$3.state().then(function(next) {
+			return api$4.state().then(function(next) {
 				setState(next);
 				setError("");
 				setSelectedId(function(current) {
@@ -3858,7 +3860,7 @@ var dshUsageAggregator = (function(exports) {
 			setBusy(true);
 			setMessage("");
 			Promise.all(queryable.map(function(item) {
-				return api$3.refresh(item.id).catch(function() {
+				return api$4.refresh(item.id).catch(function() {
 					return null;
 				});
 			})).then(function() {
@@ -3919,16 +3921,16 @@ var dshUsageAggregator = (function(exports) {
 			busy,
 			onReload: load,
 			onRefresh: function(id) {
-				run(api$3.refresh(id));
+				run(api$4.refresh(id));
 			},
 			onRenew: function(id) {
-				run(api$3.renew(id, true), t("renewDone"));
+				run(api$4.renew(id, true), t("renewDone"));
 			},
 			onReanalyze: function(id, image) {
-				run(api$3.reanalyze(id, image === void 0 ? void 0 : image));
+				run(api$4.reanalyze(id, image === void 0 ? void 0 : image));
 			},
 			onRemove: function(id) {
-				run(api$3.remove(id));
+				run(api$4.remove(id));
 			},
 			onUpdate: function(provider) {
 				setPreset({
@@ -3940,7 +3942,7 @@ var dshUsageAggregator = (function(exports) {
 		}), h("p", { className: "duq-foot" }, "数据与登录态只存在本机（$DSH_HOME/dsh-usage-query/store.json，仅本人可读）。" + (state === null || state.autoRefresh === void 0 || state.autoRefresh.enabled === false ? "" : "自动查询 " + intervalText(state.autoRefresh.intervalSeconds, t) + "一轮。") + (BUILD_AT$1 === "" ? "" : "　客户端构建于 " + BUILD_AT$1 + "。")));
 	}
 	// src/client/features/usage/styles.js
-	var CSS$4 = [
+	var CSS$5 = [
 		".duq-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary,#111827);}",
 		".duq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".duq-headtext{flex:1 1 auto;min-width:0;}",
@@ -4121,10 +4123,10 @@ var dshUsageAggregator = (function(exports) {
 	* 设置页带一份，会话头芯片就会在「设置没打开」时以裸 DOM 出现。同一份 CSS
 	* 重复出现是幂等的，用 data 属性标记而不是 id，避免重复 id。
 	*/
-	function Styles$4() {
+	function Styles$5() {
 		return h("style", {
 			"data-dsh-usage-query": STYLE_ID$1,
-			dangerouslySetInnerHTML: { __html: CSS$4 }
+			dangerouslySetInnerHTML: { __html: CSS$5 }
 		});
 	}
 	/**
@@ -4134,7 +4136,7 @@ var dshUsageAggregator = (function(exports) {
 	* 一处打开时，另一处也得有样式可用。
 	*/
 	function PanelShell(props) {
-		return h(React.Fragment, null, h(Styles$4, null), h(Panel, props));
+		return h(React.Fragment, null, h(Styles$5, null), h(Panel, props));
 	}
 	// src/client/features/usage/hover.js
 	/**
@@ -4448,7 +4450,7 @@ var dshUsageAggregator = (function(exports) {
 		});
 		var load = function() {
 			loadedAt.current = Date.now();
-			return api$3.state().then(function(next) {
+			return api$4.state().then(function(next) {
 				setState(next);
 			}).catch(function() {});
 		};
@@ -4569,7 +4571,7 @@ var dshUsageAggregator = (function(exports) {
 		var chipName = first !== null && providers.length > 1 && chipProvider !== null ? clipText(chipProvider.label, 12) : "";
 		var pickChip = function(id) {
 			var next = chipId === id ? "" : id;
-			api$3.setChip(next).then(load).catch(function() {
+			api$4.setChip(next).then(load).catch(function() {
 				return load();
 			});
 		};
@@ -4581,7 +4583,7 @@ var dshUsageAggregator = (function(exports) {
 			setNote("");
 			setPinned(true);
 			livenessRef.current.setPinned(true);
-			api$3.refresh(id).then(function() {
+			api$4.refresh(id).then(function() {
 				return load();
 			}).catch(function(error) {
 				setNote(failText(error));
@@ -4595,7 +4597,7 @@ var dshUsageAggregator = (function(exports) {
 			setNote("");
 			setPinned(true);
 			livenessRef.current.setPinned(true);
-			api$3.renew(id, true).then(function(result) {
+			api$4.renew(id, true).then(function(result) {
 				if (result !== null && result.provider !== void 0) setState(function(prev) {
 					if (prev === null) return prev;
 					return {
@@ -4623,7 +4625,7 @@ var dshUsageAggregator = (function(exports) {
 			setPinned(true);
 			livenessRef.current.setPinned(true);
 			Promise.all(queryable.map(function(item) {
-				return api$3.refresh(item.id).catch(function() {
+				return api$4.refresh(item.id).catch(function() {
 					return null;
 				});
 			})).then(function() {
@@ -4635,7 +4637,7 @@ var dshUsageAggregator = (function(exports) {
 			className: "duq-quick",
 			ref: containerRef,
 			onMouseEnter: openNow
-		}, h(Styles$4, null), h("button", {
+		}, h(Styles$5, null), h("button", {
 			type: "button",
 			className: "duq-quick-trigger" + (open ? " is-open" : "") + (first === null ? " is-idle" : ""),
 			title: chipProvider === null ? t("quickTitle") : t("quickTitle") + "：" + chipProvider.label + " · " + (first.detail === "" ? chipValue : first.detail),
@@ -4677,11 +4679,11 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/usage/index.js
 	var usage_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$3,
-		__ui: () => __ui$3,
-		apply: () => apply$4,
-		dictionaries: () => dictionaries$3,
-		meta: () => meta$3
+		HubView: () => HubView$4,
+		__ui: () => __ui$4,
+		apply: () => apply$5,
+		dictionaries: () => dictionaries$4,
+		meta: () => meta$4
 	});
 	/**
 	* 功能元信息。
@@ -4692,16 +4694,16 @@ var dshUsageAggregator = (function(exports) {
 	* 命名空间同时只能被一个包注册 —— 新旧插件并存时本功能探不到自己的字典，
 	* 页签上会显示裸的 key 名。
 	*/
-	var meta$3 = {
+	var meta$4 = {
 		id: "usage",
 		namespace: "usage-query",
 		hubOrder: 20,
 		hubTabKey: "tabUsage"
 	};
 	/** 完整字典。 */
-	var dictionaries$3 = {
-		zh: zh$4,
-		en: en$4
+	var dictionaries$4 = {
+		zh: zh$5,
+		en: en$5
 	};
 	/**
 	* 装配本功能。
@@ -4716,14 +4718,14 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator。
 	*/
-	function apply$4(ctx, t) {
+	function apply$5(ctx, t) {
 		ctx.slots.inject("conversation.session.header.utilities", function() {
 			return ctx.slots.register({
 				name: "conversation.session.header.utilities",
 				id: PANEL_ID,
 				order: 30,
 				label: t("tab"),
-				locale: NS$4,
+				locale: NS$5,
 				inject: function() {
 					return { t };
 				}
@@ -4742,7 +4744,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function, ctx: object}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function HubView$3(props) {
+	function HubView$4(props) {
 		return h(PanelShell, {
 			t: props.t,
 			ctx: props.ctx
@@ -4753,7 +4755,7 @@ var dshUsageAggregator = (function(exports) {
 	* 浏览器的环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类
 	* 只在页面上才暴露的问题。运行时不受影响（聚合入口只认 apply / meta / …）。
 	*/
-	var __ui$3 = {
+	var __ui$4 = {
 		Panel,
 		PanelShell,
 		ProviderDetail,
@@ -4775,16 +4777,16 @@ var dshUsageAggregator = (function(exports) {
 		isInsideUnion,
 		createHoverLiveness,
 		UsageIcon,
-		zh: zh$4,
-		en: en$4
+		zh: zh$5,
+		en: en$5
 	};
 	// src/client/features/expander/index.js
 	var expander_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$2,
-		__ui: () => __ui$2,
-		apply: () => apply$3,
-		dictionaries: () => dictionaries$2,
-		meta: () => meta$2
+		HubView: () => HubView$3,
+		__ui: () => __ui$3,
+		apply: () => apply$4,
+		dictionaries: () => dictionaries$3,
+		meta: () => meta$3
 	});
 	/**
 	* locale 命名空间。
@@ -4792,10 +4794,10 @@ var dshUsageAggregator = (function(exports) {
 	* ⚠️ 保持 'pluginExpander' 不变：改名会让新旧命名空间并存
 	* （locale 服务按命名空间存字典，旧的不注销就一直占着）。
 	*/
-	var NS$3 = "pluginExpander";
+	var NS$4 = "pluginExpander";
 	/** <style> 元素的 data-* 标记值。 */
 	var STYLE_ID = "dsh-plugin-expander-style";
-	var zh$3 = {
+	var zh$4 = {
 		tab: "更新",
 		title: "插件更新",
 		intro: "检测当前 profile 已装插件的新版本：npm 包查注册表，git 包比远端仓库的 HEAD。更新走 DSH 官方插件管理器的「卸载 + 安装」两步，完成后立即生效。",
@@ -4831,7 +4833,7 @@ var dshUsageAggregator = (function(exports) {
 		current: "当前：{name}",
 		updateAllRunning: "正在更新 {count} 个插件…"
 	};
-	var en$3 = {
+	var en$4 = {
 		tab: "Updates",
 		title: "Plugin updates",
 		intro: "Checks the plugins installed in this profile for newer releases: npm packages against the registry, git packages against the remote HEAD. Updates reuse the DSH plugin manager's remove-then-install flow and take effect immediately.",
@@ -4877,9 +4879,9 @@ var dshUsageAggregator = (function(exports) {
 	* hubDefault true —— 本页签是聚合页**默认选中**的那一个：打开设置就先看插件更新
 	* （这页要做的是自动检测），而不是先落在主题上。
 	*/
-	var meta$2 = {
+	var meta$3 = {
 		id: "expander",
-		namespace: NS$3,
+		namespace: NS$4,
 		hubOrder: 30,
 		hubTabKey: "tabExpander",
 		hubDefault: true
@@ -4888,9 +4890,9 @@ var dshUsageAggregator = (function(exports) {
 	* 完整字典。聚合入口拿它注册 locale 命名空间
 	* （src/client/index.js → ctx.locale.register(feature.meta.namespace, feature.dictionaries)）。
 	*/
-	var dictionaries$2 = {
-		zh: zh$3,
-		en: en$3
+	var dictionaries$3 = {
+		zh: zh$4,
+		en: en$4
 	};
 	/**
 	* 兜底翻译：直接用内置字典（zh 是基准；en 缺 key 时也回落到这里）。
@@ -4900,12 +4902,12 @@ var dshUsageAggregator = (function(exports) {
 	* @returns {string} 文案。
 	*/
 	function fallbackTranslate(key, vars) {
-		const text = zh$3[key] !== void 0 ? zh$3[key] : key;
+		const text = zh$4[key] !== void 0 ? zh$4[key] : key;
 		return vars === void 0 ? text : text.replace(/\{(\w+)\}/g, function(match, name) {
 			return vars[name] === void 0 ? match : String(vars[name]);
 		});
 	}
-	var api$2 = {
+	var api$3 = {
 		state: function(refresh) {
 			return callApi("GET", EXPANDER_ENDPOINT + "/state" + (refresh === true ? "?refresh=1" : ""));
 		},
@@ -4913,7 +4915,7 @@ var dshUsageAggregator = (function(exports) {
 			return callApi("POST", EXPANDER_ENDPOINT + "/update", payload);
 		}
 	};
-	var CSS$3 = [
+	var CSS$4 = [
 		".dpe-root{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
 		".dpe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;}",
 		".dpe-headtext{flex:1 1 auto;min-width:0;}",
@@ -4965,10 +4967,10 @@ var dshUsageAggregator = (function(exports) {
 	*
 	* @returns {object} React 元素。
 	*/
-	function Styles$3() {
+	function Styles$4() {
 		return h("style", {
 			"data-dsh-plugin-expander": STYLE_ID,
-			dangerouslySetInnerHTML: { __html: CSS$3 }
+			dangerouslySetInnerHTML: { __html: CSS$4 }
 		});
 	}
 	/**
@@ -5084,7 +5086,7 @@ var dshUsageAggregator = (function(exports) {
 		* @returns {Promise<void>} 完成。
 		*/
 		const load = useCallback(function(refresh) {
-			return api$2.state(refresh === true).then(function(next) {
+			return api$3.state(refresh === true).then(function(next) {
 				setState(next);
 				setError("");
 			}).catch(function(failure) {
@@ -5121,7 +5123,7 @@ var dshUsageAggregator = (function(exports) {
 			setPhase("updating");
 			setError("");
 			setMessage("");
-			api$2.update(payload).catch(function(failure) {
+			api$3.update(payload).catch(function(failure) {
 				expectedRef.current = 0;
 				startedAtRef.current = 0;
 				setPhase("idle");
@@ -5187,7 +5189,7 @@ var dshUsageAggregator = (function(exports) {
 				});
 			});
 		}, [load]);
-		return h("div", { className: "dpe-root" }, h(Styles$3, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
+		return h("div", { className: "dpe-root" }, h(Styles$4, null), h("header", { className: "dpe-head" }, h("div", { className: "dpe-headtext" }, h("h2", { className: "dpe-title" }, t("title")), h("p", { className: "dpe-sub" }, t("intro"))), h("div", { className: "dpe-head-actions" }, h("button", {
 			type: "button",
 			className: "dpe-btn is-quiet",
 			disabled: busy === true,
@@ -5247,8 +5249,8 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator（聚合入口传进来）。
 	*/
-	function apply$3(ctx, t) {
-		const translator = typeof t === "function" ? t : makeTranslator$1(ctx.locale, NS$3, zh$3);
+	function apply$4(ctx, t) {
+		const translator = typeof t === "function" ? t : makeTranslator$1(ctx.locale, NS$4, zh$4);
 		ctx.slots.inject("plugins.tab", function() {
 			return ctx.slots.register({
 				name: "plugins.tab",
@@ -5257,7 +5259,7 @@ var dshUsageAggregator = (function(exports) {
 				label: function() {
 					return translator("tab");
 				},
-				locale: NS$3,
+				locale: NS$4,
 				inject: function() {
 					return { t: translator };
 				}
@@ -5276,29 +5278,29 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function, ctx: object}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function HubView$2(props) {
+	function HubView$3(props) {
 		const t = typeof props.t === "function" ? props.t : fallbackTranslate;
-		return h(React.Fragment, null, h(Styles$3, null), h(UpdatesTab, { t }));
+		return h(React.Fragment, null, h(Styles$4, null), h(UpdatesTab, { t }));
 	}
 	/**
 	* 离线渲染自检用（scripts/render-check.mjs）：把组件暴露出来，好在没有浏览器的
 	* 环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在页面上
 	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
 	*/
-	var __ui$2 = {
+	var __ui$3 = {
 		UpdatesTab,
 		PackageRow,
-		Styles: Styles$3,
+		Styles: Styles$4,
 		statusText,
 		kindText,
 		fallbackTranslate,
-		zh: zh$3,
-		en: en$3
+		zh: zh$4,
+		en: en$4
 	};
 	// src/client/features/boost/i18n.js
 	/** locale 命名空间。新功能，没有历史包袱，取一个不会与别的包撞的名字。 */
-	var NS$2 = "pcBoost";
-	var zh$2 = {
+	var NS$3 = "pcBoost";
+	var zh$3 = {
 		entry: "小火箭",
 		entryTitle: "电脑加速与清理",
 		title: "电脑加速与清理",
@@ -5352,7 +5354,7 @@ var dshUsageAggregator = (function(exports) {
 		tab: "加速",
 		hubIntro: "右下角的小火箭是同一份体检结果：这里能看到完整清单与结论。"
 	};
-	var en$2 = {
+	var en$3 = {
 		entry: "Rocket",
 		entryTitle: "Speed up & clean up",
 		title: "Speed up & clean up",
@@ -5408,7 +5410,7 @@ var dshUsageAggregator = (function(exports) {
 	};
 	// src/client/features/boost/view.js
 	/** 与 Host 侧同一套路径（src/client/shared/constants.js）。 */
-	var api$1 = {
+	var api$2 = {
 		scan: (refresh) => callApi("GET", `${BOOST_ENDPOINT}/scan${refresh === true ? "?refresh=1" : ""}`),
 		status: () => callApi("GET", `${BOOST_ENDPOINT}/status`),
 		execute: (items) => callApi("POST", `${BOOST_ENDPOINT}/execute`, { items }),
@@ -5474,7 +5476,7 @@ var dshUsageAggregator = (function(exports) {
 		const [error, setError] = useState("");
 		const start = useCallback(function(refresh) {
 			setError("");
-			return api$1.scan(refresh === true).then(function(next) {
+			return api$2.scan(refresh === true).then(function(next) {
 				setJob(next);
 				return next;
 			}).catch(function(failure) {
@@ -5486,7 +5488,7 @@ var dshUsageAggregator = (function(exports) {
 		useEffect(function() {
 			if (!running) return void 0;
 			const timer = window.setInterval(function() {
-				api$1.status().then(function(next) {
+				api$2.status().then(function(next) {
 					if (next !== null && next !== void 0) setJob(next);
 				}).catch(function() {});
 			}, 1e3);
@@ -5654,7 +5656,7 @@ var dshUsageAggregator = (function(exports) {
 						total: selected.length,
 						label: ""
 					});
-					api$1.execute(selected).then(function() {
+					api$2.execute(selected).then(function() {
 						pollExecute();
 					}).catch(function(failure) {
 						setPhase("idle");
@@ -5669,7 +5671,7 @@ var dshUsageAggregator = (function(exports) {
 				*/
 				function pollExecute() {
 					window.setTimeout(function() {
-						api$1.executeStatus().then(function(state) {
+						api$2.executeStatus().then(function(state) {
 							if (state === null || state === void 0) {
 								setPhase("done");
 								setTone("is-ok");
@@ -5901,7 +5903,7 @@ var dshUsageAggregator = (function(exports) {
 	};
 	// src/client/features/boost/styles.js
 	/** 样式表正文。 */
-	var CSS$2 = [
+	var CSS$3 = [
 		".dsh-boost{position:fixed;right:24px;bottom:24px;z-index:2147483000;pointer-events:auto;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
 		".dsh-boost-launch{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease,background .15s ease;user-select:none;touch-action:none;-webkit-user-select:none;}",
 		".dsh-boost-launch:hover{background:var(--dsw-alias-interactive-bg-hover);box-shadow:0 8px 22px rgba(0,0,0,.24);}",
@@ -5973,10 +5975,10 @@ var dshUsageAggregator = (function(exports) {
 	*
 	* @returns {object} React 元素。
 	*/
-	function Styles$2() {
+	function Styles$3() {
 		return h("style", {
 			"data-dsh-boost": "dsh-boost-style",
-			dangerouslySetInnerHTML: { __html: CSS$2 }
+			dangerouslySetInnerHTML: { __html: CSS$3 }
 		});
 	}
 	// src/client/features/boost/panel.js
@@ -6009,7 +6011,7 @@ var dshUsageAggregator = (function(exports) {
 		}, 0);
 		const analysis = job?.analysis ?? null;
 		const ageLabel = scanAgeLabel(t, job);
-		return h("div", { className: "dsh-boost-hub" }, h(Styles$2, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null, h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
+		return h("div", { className: "dsh-boost-hub" }, h(Styles$3, null), h("p", { className: "dsh-boost-sub" }, t("hubIntro")), ageLabel !== "" ? h("p", { className: "dsh-boost-age" }, t("scannedAt", { age: ageLabel })) : null, h("div", { className: "dsh-boost-hub-row" }, h("span", { className: "dsh-boost-msg" }, items.length === 0 ? t("totalUnknown") : t("total", { size: formatBytes(totalBytes) })), h("div", { className: "dsh-boost-foot-actions" }, items.length > 0 ? h("button", {
 			type: "button",
 			className: "dsh-boost-btn is-quiet",
 			onClick: function() {
@@ -6298,7 +6300,7 @@ var dshUsageAggregator = (function(exports) {
 		return h("div", {
 			className: "dsh-boost" + (dragging ? " is-dragging" : "") + (high ? " is-high" : ""),
 			style
-		}, h(Styles$2, null), open ? h("div", {
+		}, h(Styles$3, null), open ? h("div", {
 			className: "dsh-boost-panel",
 			role: "dialog",
 			"aria-label": t("title")
@@ -6357,11 +6359,11 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/boost/index.js
 	var boost_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView$1,
-		__ui: () => __ui$1,
-		apply: () => apply$2,
-		dictionaries: () => dictionaries$1,
-		meta: () => meta$1
+		HubView: () => HubView$2,
+		__ui: () => __ui$2,
+		apply: () => apply$3,
+		dictionaries: () => dictionaries$2,
+		meta: () => meta$2
 	});
 	/**
 	* 功能标识。
@@ -6371,18 +6373,18 @@ var dshUsageAggregator = (function(exports) {
 	* hubTabKey 'tabBoost' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
 	* 字典里（src/client/hub/i18n.js）。
 	*/
-	var meta$1 = {
+	var meta$2 = {
 		id: "boost",
-		namespace: NS$2,
+		namespace: NS$3,
 		hubOrder: 40,
 		hubTabKey: "tabBoost"
 	};
 	/**
 	* 完整字典。聚合入口拿它注册 locale 命名空间。
 	*/
-	var dictionaries$1 = {
-		zh: zh$2,
-		en: en$2
+	var dictionaries$2 = {
+		zh: zh$3,
+		en: en$3
 	};
 	/**
 	* 装配本功能。
@@ -6390,14 +6392,14 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {(key: string, vars?: object) => string} t 本功能命名空间的 translator。
 	*/
-	function apply$2(ctx, t) {
-		const translator = typeof t === "function" ? t : (key) => zh$2[key] !== void 0 ? zh$2[key] : key;
+	function apply$3(ctx, t) {
+		const translator = typeof t === "function" ? t : (key) => zh$3[key] !== void 0 ? zh$3[key] : key;
 		ctx.slots.inject("shell.overlay", function() {
 			return ctx.slots.register({
 				name: "shell.overlay",
 				id: "axzo-boost",
 				order: 30,
-				locale: NS$2
+				locale: NS$3
 			}, function(slotProps) {
 				return h(BoostWidget, {
 					t: translator,
@@ -6419,26 +6421,26 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	var HubView$1 = (props) => h(BoostPanel, props);
+	var HubView$2 = (props) => h(BoostPanel, props);
 	/**
 	* 离线渲染自检用（scripts/ui-check-boost.mjs）：把组件暴露出来，好在没有浏览器的
 	* 环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在页面上
 	* 才暴露的问题。运行时不受影响（聚合入口只认 meta / dictionaries / apply / HubView）。
 	*/
-	var __ui$1 = {
+	var __ui$2 = {
 		BoostWidget,
 		BoostPanel,
 		DiagnosisBlock,
 		ItemList,
 		useHandoff,
-		zh: zh$2,
-		en: en$2
+		zh: zh$3,
+		en: en$3
 	};
 	// src/client/features/autocomplete/i18n.js
 	/** locale 命名空间。 */
-	var NS$1 = "pcAutocomplete";
+	var NS$2 = "pcAutocomplete";
 	/** 中文（基准字典）。 */
-	var zh$1 = {
+	var zh$2 = {
 		tab: "AI 补全",
 		title: "AI 自动补全",
 		intro: "在会话输入框里自动补全：打字停顿后由模型给出候选，按 Tab 采纳第一条，下拉列表里可以换其他候选。",
@@ -6483,7 +6485,7 @@ var dshUsageAggregator = (function(exports) {
 		ghostLabel: "补全"
 	};
 	/** 英文。 */
-	var en$1 = {
+	var en$2 = {
 		tab: "AI Complete",
 		title: "AI autocomplete",
 		intro: "Autocomplete in the conversation composer: the model proposes candidates after you pause typing, Tab accepts the first one, and the dropdown offers the others.",
@@ -6528,7 +6530,7 @@ var dshUsageAggregator = (function(exports) {
 		ghostLabel: "complete"
 	};
 	// src/client/features/autocomplete/api.js
-	var api = {
+	var api$1 = {
 		/** 读设置。 */
 		settings: function() {
 			return callApi("GET", AUTOCOMPLETE_ENDPOINT + "/settings");
@@ -6832,7 +6834,7 @@ var dshUsageAggregator = (function(exports) {
 		const phase = input !== null && input !== void 0 && typeof input.phase === "string" ? input.phase : "plain";
 		useEffect(function() {
 			let alive = true;
-			api.settings().then(function(result) {
+			api$1.settings().then(function(result) {
 				if (!alive) return;
 				const loaded = result !== null && typeof result === "object" && result.settings !== null && typeof result.settings === "object" ? result.settings : null;
 				setState(sessionId, { settings: loaded });
@@ -6864,7 +6866,7 @@ var dshUsageAggregator = (function(exports) {
 				seqRef.current = seq;
 				setState(sessionId, { status: "thinking" });
 				const context = contextFromChat(chat, settings.contextMessages);
-				api.suggest({
+				api$1.suggest({
 					sessionId,
 					draft,
 					context,
@@ -6901,7 +6903,7 @@ var dshUsageAggregator = (function(exports) {
 		return state;
 	}
 	// src/client/features/autocomplete/styles.js
-	var CSS$1 = [
+	var CSS$2 = [
 		".dsh-ac-root{position:absolute;left:0;right:0;top:0;height:0;}",
 		".dsh-ac-ghost{position:absolute;white-space:pre;pointer-events:none;color:var(--dsw-alias-label-tertiary);z-index:1;}",
 		".dsh-ac-wrap{position:relative;width:100%;max-width:var(--dsh-composer-card-max-width);margin:0 auto;}",
@@ -6949,10 +6951,10 @@ var dshUsageAggregator = (function(exports) {
 	*
 	* @returns {object} React 元素。
 	*/
-	function Styles$1() {
+	function Styles$2() {
 		return h("style", {
 			"data-dsh-usage-aggregator": "autocomplete",
-			dangerouslySetInnerHTML: { __html: CSS$1 }
+			dangerouslySetInnerHTML: { __html: CSS$2 }
 		});
 	}
 	// src/client/features/autocomplete/dock.js
@@ -6993,7 +6995,7 @@ var dshUsageAggregator = (function(exports) {
 				status: "idle"
 			});
 		};
-		return h("div", { className: "dsh-ac-wrap" }, h(Styles$1, null), open ? h("div", {
+		return h("div", { className: "dsh-ac-wrap" }, h(Styles$2, null), open ? h("div", {
 			className: "dsh-ac-menu",
 			role: "listbox",
 			"aria-label": t("dropdownTitle")
@@ -7224,7 +7226,7 @@ var dshUsageAggregator = (function(exports) {
 		return h("div", {
 			className: "dsh-ac-root",
 			ref: rootRef
-		}, h(Styles$1, null), ghost !== null ? h("span", {
+		}, h(Styles$2, null), ghost !== null ? h("span", {
 			className: "dsh-ac-ghost",
 			"aria-hidden": "true",
 			style: {
@@ -7273,7 +7275,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{label: string, hint: string, value: number, min: number, max: number, onChange: Function}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function NumberField(props) {
+	function NumberField$1(props) {
 		return h("div", { className: "dsh-ac-field" }, h("div", { className: "dsh-ac-field-main" }, h("span", { className: "dsh-ac-label" }, props.label), h("span", { className: "dsh-ac-hint" }, props.hint)), h("div", { className: "dsh-ac-control" }, h("input", {
 			type: "number",
 			className: "dsh-ac-number",
@@ -7293,7 +7295,7 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{label: string, hint: string, checked: boolean, onChange: Function}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	function ToggleField(props) {
+	function ToggleField$1(props) {
 		return h("div", { className: "dsh-ac-field" }, h("div", { className: "dsh-ac-field-main" }, h("span", { className: "dsh-ac-label" }, props.label), h("span", { className: "dsh-ac-hint" }, props.hint)), h("div", { className: "dsh-ac-control" }, h("input", {
 			type: "checkbox",
 			className: "dsh-ac-check",
@@ -7321,14 +7323,14 @@ var dshUsageAggregator = (function(exports) {
 		const [busy, setBusy] = useState(false);
 		useEffect(function() {
 			let alive = true;
-			api.settings().then(function(result) {
+			api$1.settings().then(function(result) {
 				if (!alive) return;
 				setSettings(result !== null && typeof result === "object" && result.settings !== null ? result.settings : null);
 			}).catch(function(failure) {
 				if (!alive) return;
 				setError(t("loadFailed", { error: String(failure.message || failure) }));
 			});
-			api.models().then(function(result) {
+			api$1.models().then(function(result) {
 				if (!alive) return;
 				setModels(result !== null && typeof result === "object" ? result : null);
 			}).catch(function() {});
@@ -7336,7 +7338,7 @@ var dshUsageAggregator = (function(exports) {
 				alive = false;
 			};
 		}, [t]);
-		if (settings === null) return h("div", { className: "dsh-ac-page" }, h(Styles$1, null), error !== "" ? h("p", { className: "dsh-ac-msg is-error" }, error) : h("p", { className: "dsh-ac-msg" }, "…"));
+		if (settings === null) return h("div", { className: "dsh-ac-page" }, h(Styles$2, null), error !== "" ? h("p", { className: "dsh-ac-msg is-error" }, error) : h("p", { className: "dsh-ac-msg" }, "…"));
 		/**
 		* 改一项设置。
 		*
@@ -7360,7 +7362,7 @@ var dshUsageAggregator = (function(exports) {
 			setBusy(true);
 			setMessage("");
 			setError("");
-			api.saveSettings({
+			api$1.saveSettings({
 				enabled: settings.enabled,
 				maxSuggestions: settings.maxSuggestions,
 				minChars: settings.minChars,
@@ -7392,14 +7394,14 @@ var dshUsageAggregator = (function(exports) {
 				items: [option]
 			});
 		}
-		return h("div", { className: "dsh-ac-page" }, h(Styles$1, null), h("p", { className: "dsh-ac-intro" }, t("intro")), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionSuggest")), ToggleField({
+		return h("div", { className: "dsh-ac-page" }, h(Styles$2, null), h("p", { className: "dsh-ac-intro" }, t("intro")), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionSuggest")), ToggleField$1({
 			label: t("enabled"),
 			hint: t("enabledHint"),
 			checked: settings.enabled === true,
 			onChange: function(value) {
 				change("enabled", value);
 			}
-		}), NumberField({
+		}), NumberField$1({
 			label: t("maxSuggestions"),
 			hint: t("maxSuggestionsHint"),
 			value: settings.maxSuggestions,
@@ -7408,7 +7410,7 @@ var dshUsageAggregator = (function(exports) {
 			onChange: function(value) {
 				change("maxSuggestions", value);
 			}
-		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionTrigger")), NumberField({
+		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionTrigger")), NumberField$1({
 			label: t("minChars"),
 			hint: t("minCharsHint"),
 			value: settings.minChars,
@@ -7417,7 +7419,7 @@ var dshUsageAggregator = (function(exports) {
 			onChange: function(value) {
 				change("minChars", value);
 			}
-		}), NumberField({
+		}), NumberField$1({
 			label: t("debounce"),
 			hint: t("debounceHint"),
 			value: settings.debounceMs,
@@ -7426,7 +7428,7 @@ var dshUsageAggregator = (function(exports) {
 			onChange: function(value) {
 				change("debounceMs", value);
 			}
-		}), NumberField({
+		}), NumberField$1({
 			label: t("contextMessages"),
 			hint: t("contextMessagesHint"),
 			value: settings.contextMessages,
@@ -7435,7 +7437,7 @@ var dshUsageAggregator = (function(exports) {
 			onChange: function(value) {
 				change("contextMessages", value);
 			}
-		}), NumberField({
+		}), NumberField$1({
 			label: t("maxInputChars"),
 			hint: t("maxInputCharsHint"),
 			value: settings.maxInputChars,
@@ -7444,21 +7446,21 @@ var dshUsageAggregator = (function(exports) {
 			onChange: function(value) {
 				change("maxInputChars", value);
 			}
-		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionDisplay")), ToggleField({
+		})), h("div", { className: "dsh-ac-card" }, h("h3", { className: "dsh-ac-card-title" }, t("sectionDisplay")), ToggleField$1({
 			label: t("allowMultiline"),
 			hint: t("allowMultilineHint"),
 			checked: settings.allowMultiline === true,
 			onChange: function(value) {
 				change("allowMultiline", value);
 			}
-		}), ToggleField({
+		}), ToggleField$1({
 			label: t("inlineHint"),
 			hint: t("inlineHintHint"),
 			checked: settings.inlineHint === true,
 			onChange: function(value) {
 				change("inlineHint", value);
 			}
-		}), ToggleField({
+		}), ToggleField$1({
 			label: t("placeholderHint"),
 			hint: t("placeholderHintHint"),
 			checked: settings.placeholderHint === true,
@@ -7499,11 +7501,11 @@ var dshUsageAggregator = (function(exports) {
 	}
 	// src/client/features/autocomplete/index.js
 	var autocomplete_exports = /* @__PURE__ */ __exportAll({
-		HubView: () => HubView,
-		__ui: () => __ui,
-		apply: () => apply$1,
-		dictionaries: () => dictionaries,
-		meta: () => meta
+		HubView: () => HubView$1,
+		__ui: () => __ui$1,
+		apply: () => apply$2,
+		dictionaries: () => dictionaries$1,
+		meta: () => meta$1
 	});
 	/**
 	* 功能元信息。
@@ -7512,16 +7514,16 @@ var dshUsageAggregator = (function(exports) {
 	* hubOrder 50 —— 聚合页里排第五（主题 10 / 用量 20 / 插件更新 30 / 加速 40）。
 	* hubTabKey 'tabAutocomplete' —— 页签标签在聚合页自己的字典里。
 	*/
-	var meta = {
+	var meta$1 = {
 		id: "autocomplete",
-		namespace: NS$1,
+		namespace: NS$2,
 		hubOrder: 50,
 		hubTabKey: "tabAutocomplete"
 	};
 	/** 完整字典。聚合入口拿它注册 locale 命名空间。 */
-	var dictionaries = {
-		zh: zh$1,
-		en: en$1
+	var dictionaries$1 = {
+		zh: zh$2,
+		en: en$2
 	};
 	/**
 	* 装配本功能。
@@ -7529,14 +7531,14 @@ var dshUsageAggregator = (function(exports) {
 	* @param {object} ctx 插件上下文。
 	* @param {Function} t 本功能命名空间的 translator。
 	*/
-	function apply$1(ctx, t) {
-		const translator = typeof t === "function" ? t : (key) => zh$1[key] !== void 0 ? zh$1[key] : key;
+	function apply$2(ctx, t) {
+		const translator = typeof t === "function" ? t : (key) => zh$2[key] !== void 0 ? zh$2[key] : key;
 		ctx.slots.inject("conversation.input.dock", function() {
 			return ctx.slots.register({
 				name: "conversation.input.dock",
 				id: "axzo-autocomplete-bar",
 				order: 20,
-				locale: NS$1
+				locale: NS$2
 			}, function(slotProps) {
 				const props = slotProps !== void 0 && slotProps !== null ? slotProps : {};
 				return h(AutocompleteDock, {
@@ -7552,7 +7554,7 @@ var dshUsageAggregator = (function(exports) {
 				name: "conversation.input.overlay",
 				id: "axzo-autocomplete",
 				order: 20,
-				locale: NS$1
+				locale: NS$2
 			}, function(slotProps) {
 				const props = slotProps !== void 0 && slotProps !== null ? slotProps : {};
 				return h(AutocompleteOverlay, {
@@ -7571,17 +7573,667 @@ var dshUsageAggregator = (function(exports) {
 	* @param {{t: Function}} props 属性。
 	* @returns {object} React 元素。
 	*/
-	var HubView = (props) => h(AutocompletePanel, props);
+	var HubView$1 = (props) => h(AutocompletePanel, props);
 	/**
 	* 离线渲染自检用（scripts/ui-check-autocomplete.mjs）：把组件暴露出来，好在没有
 	* 浏览器的环境里用 react-dom/server 真渲染一遍，抓「组件一渲染就崩」这类只在
 	* 页面上才暴露的问题。运行时不受影响。
 	*/
-	var __ui = {
+	var __ui$1 = {
 		AutocompleteDock,
 		AutocompleteOverlay,
 		AutocompletePanel,
 		modelOptions,
+		zh: zh$2,
+		en: en$2
+	};
+	// src/client/features/dingtalk/i18n.js
+	/** locale 命名空间。 */
+	var NS$1 = "pcDingtalk";
+	var zh$1 = {
+		heading: "发钉钉消息",
+		to: "收件人",
+		why: "为什么发给他",
+		content: "拟好的正文",
+		reviseHint: "要改哪里？写一句要求（可留空）",
+		revisePlaceholder: "例如：把复现步骤写具体一点，别贴日志",
+		expand: "展开",
+		collapse: "收起",
+		send: "发送",
+		revise: "改一下",
+		dismiss: "不用了",
+		working: "处理中…",
+		retry: "再试一次",
+		pickWho: "有多个同名的人，选一个：",
+		candidate: "姓名",
+		statusSent: "已发送（messageId：{id}）",
+		statusSubmitted: "已提交，未确认送达 —— 没回查到消息 ID，别当成已送达。",
+		statusFailed: "发送失败：{error}",
+		statusRevising: "已要求改稿，等新稿出来。",
+		statusDismissed: "已放弃，不再发送。",
+		statusAmbigous: "同名多人，选一个再发。",
+		transport: "卡片动作没送达（网络或宿主没响应），再点一次试试。",
+		badgePending: "待确认",
+		badgeSent: "已发送",
+		badgeSubmitted: "未确认送达",
+		badgeFailed: "发送失败",
+		badgeAmbiguous: "待选人",
+		badgeRevising: "改稿中",
+		badgeDismissed: "已放弃",
+		channelDm: "单聊",
+		channelGroup: "群聊",
+		channelHint: "群聊要写清 @ 谁。",
+		intro: "在会话里发钉钉消息、收钉钉消息。发消息一律走卡片确认，收消息只做分析、不动手。",
+		sectionSwitch: "功能开关",
+		enabled: "启用「钉钉沙发」",
+		enabledHint: "关着时不注册技能、不挂卡片、不后台拉消息 —— 装了插件也不改变任何行为。",
+		sectionStatus: "状态",
+		dwsReady: "dws 命令可用",
+		dwsMissing: "本机没有 dws 命令：这个功能需要官方 CLI（登录态由它管，插件不碰凭据）。",
+		dwsVersion: "版本：{version}",
+		unread: "项目外未读：{count} 条",
+		lastPoll: "最近一次拉取：{at}（{count} 条）",
+		neverPolled: "还没拉过",
+		baseline: "首次同步只做基线：{count} 条历史消息没有逐条分析（问「钉钉有什么新消息」可以随时看）。",
+		pollNow: "现在拉一次",
+		polling: "拉取中…",
+		pollDone: "拉了 {count} 条，其中 {relevant} 条与当前项目相关。",
+		pollFailed: "拉取失败：{error}",
+		sectionInterval: "拉取间隔",
+		interval: "每隔多少秒拉一次",
+		intervalHint: "默认 180 秒；拉得越勤越容易打扰，也越吃 dws 的额度。",
+		sectionRules: "规矩",
+		rules: "发消息必须由你在卡片上点【发送】；同名多人由你选；收到消息先分析，要不要处理由你定。",
+		foot: "项目外的钉钉消息只累一个未读计数，不会来打扰会话。",
+		save: "保存",
+		saved: "已保存",
+		saveFailed: "保存失败：{error}",
+		loadFailed: "读取设置失败：{error}"
+	};
+	var en$1 = {
+		heading: "Send a DingTalk message",
+		to: "Recipient",
+		why: "Why this person",
+		content: "Drafted message",
+		reviseHint: "What should change? Write one line (optional)",
+		revisePlaceholder: "e.g. spell out the reproduction steps, drop the log dump",
+		expand: "Expand",
+		collapse: "Collapse",
+		send: "Send",
+		revise: "Revise",
+		dismiss: "Not now",
+		working: "Working…",
+		retry: "Try again",
+		pickWho: "Several people share this name — pick one:",
+		candidate: "Name",
+		statusSent: "Sent (messageId: {id})",
+		statusSubmitted: "Submitted, delivery not confirmed — no message ID came back, so do not call it delivered.",
+		statusFailed: "Send failed: {error}",
+		statusRevising: "Revision requested — waiting for the new draft.",
+		statusDismissed: "Dismissed. Nothing was sent.",
+		statusAmbigous: "Same name, several people — pick one to send.",
+		transport: "The card action did not reach the host (network or no reply). Try again.",
+		badgePending: "Pending",
+		badgeSent: "Sent",
+		badgeSubmitted: "Not confirmed",
+		badgeFailed: "Failed",
+		badgeAmbiguous: "Pick a recipient",
+		badgeRevising: "Revising",
+		badgeDismissed: "Dismissed",
+		channelDm: "Direct message",
+		channelGroup: "Group",
+		channelHint: "For a group, say who is mentioned.",
+		intro: "Send and receive DingTalk messages inside the session. Sending always goes through a card you confirm; receiving is analysed, never acted on.",
+		sectionSwitch: "Switch",
+		enabled: "Enable “DingTalk sofa”",
+		enabledHint: "While off, no skill, no card and no background polling — installing the plugin changes nothing.",
+		sectionStatus: "Status",
+		dwsReady: "dws command available",
+		dwsMissing: "No dws command on this machine: this feature needs the official CLI (it owns the login state; the plugin never touches credentials).",
+		dwsVersion: "Version: {version}",
+		unread: "Out-of-project unread: {count}",
+		lastPoll: "Last poll: {at} ({count} messages)",
+		neverPolled: "never polled",
+		baseline: "The first sync only sets a baseline: {count} older messages were not analysed one by one (ask “what is new in DingTalk” any time).",
+		pollNow: "Poll now",
+		polling: "Polling…",
+		pollDone: "Fetched {count} messages, {relevant} of them look related to the current project.",
+		pollFailed: "Poll failed: {error}",
+		sectionInterval: "Polling interval",
+		interval: "Seconds between polls",
+		intervalHint: "180 by default; polling more often interrupts more and spends more of the dws quota.",
+		sectionRules: "Rules",
+		rules: "Sending needs your click on 【Send】; same-name recipients are picked by you; incoming messages are analysed first and you decide what happens next.",
+		foot: "Messages outside the current project only raise an unread count — they never interrupt the session.",
+		save: "Save",
+		saved: "Saved",
+		saveFailed: "Save failed: {error}",
+		loadFailed: "Could not load the settings: {error}"
+	};
+	// src/client/features/dingtalk/styles.js
+	var CSS$1 = [
+		".dsh-dt-root{display:flex;flex-direction:column;}",
+		".dsh-dt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:var(--dsw-alias-bg-module-platform);color:var(--dsw-alias-label-secondary);font-size:12px;line-height:1.5;}",
+		".dsh-dt-badge{flex:0 0 auto;padding:1px 8px;border-radius:999px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);font-size:11px;}",
+		".dsh-dt-badge.is-ok{color:var(--dsw-alias-state-success-primary);}",
+		".dsh-dt-badge.is-warn{color:var(--dsw-alias-state-warn-primary);}",
+		".dsh-dt-badge.is-error{color:var(--dsw-alias-state-error-primary);}",
+		".dsh-dt-body{display:flex;flex-direction:column;gap:12px;padding:16px 20px 20px;}",
+		".dsh-dt-meta{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;padding:10px 12px;border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-2);}",
+		".dsh-dt-meta dt{font-size:12px;line-height:1.6;color:var(--dsw-alias-label-tertiary);white-space:nowrap;}",
+		".dsh-dt-meta dd{margin:0;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;}",
+		".dsh-dt-idhint{color:var(--dsw-alias-label-tertiary);font-size:12px;}",
+		".dsh-dt-section-label{margin:0;font-size:12px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-tag{margin-left:6px;padding:0 6px;border-radius:var(--dsw-radius-sm);background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-secondary);font-size:11px;}",
+		".dsh-dt-label{margin:0;font-size:12px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-content{padding:12px;border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-2);font-size:13px;line-height:1.7;max-height:280px;overflow-y:auto;}",
+		".dsh-dt-candidates{display:flex;flex-direction:column;gap:6px;}",
+		".dsh-dt-candidates-title{margin:0;font-size:12px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-candidate{box-sizing:border-box;width:100%;text-align:left;padding:8px 10px;border:none;border-radius:var(--dsw-radius-sm);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);font:inherit;font-size:13px;line-height:1.5;cursor:pointer;}",
+		".dsh-dt-candidate:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-dt-candidate:disabled{opacity:.4;cursor:not-allowed;}",
+		".dsh-dt-status{margin:0;font-size:12px;line-height:1.6;color:var(--dsw-alias-label-secondary);}",
+		".dsh-dt-status.is-ok{color:var(--dsw-alias-state-success-primary);}",
+		".dsh-dt-status.is-warn{color:var(--dsw-alias-state-warn-primary);}",
+		".dsh-dt-status.is-error{color:var(--dsw-alias-state-error-primary);}",
+		".dsh-dt-status.is-info{color:var(--dsw-alias-state-info-primary);}",
+		".dsh-dt-status.is-muted{color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;padding:16px 20px;border-top:.5px solid var(--dsw-alias-border-l1);}",
+		".dsh-dt-input{flex:1 1 220px;min-width:0;box-sizing:border-box;height:34px;padding:0 12px;border:.5px solid var(--dsw-alias-border-l4);border-radius:var(--dsw-radius-md);background:var(--dsw-alias-bg-layer-3);font:inherit;font-size:13px;line-height:1.5;color:var(--dsw-alias-label-primary);}",
+		".dsh-dt-input::placeholder{color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}",
+		".dsh-dt-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:4px;height:28px;padding:0 10px;border:none;border-radius:var(--dsw-radius-sm);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;line-height:18px;cursor:pointer;}",
+		".dsh-dt-btn:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover);}",
+		".dsh-dt-btn:active:not(:disabled){background:var(--dsw-alias-interactive-bg-active);}",
+		".dsh-dt-btn:disabled{opacity:.4;cursor:not-allowed;}",
+		".dsh-dt-btn.is-primary{background:var(--dsw-alias-button-primary-fill);color:var(--dsw-alias-label-primary-foreground);}",
+		".dsh-dt-btn.is-primary:hover:not(:disabled){background:var(--dsw-alias-button-primary-hover);}",
+		".dsh-dt-btn:focus-visible,.dsh-dt-input:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--dsw-focus-ring-color,var(--dsw-alias-state-business-primary));}",
+		".dsh-dt-page{display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);}",
+		".dsh-dt-intro{margin:0;font-size:12px;color:var(--dsw-alias-label-secondary);max-width:76ch;}",
+		".dsh-dt-card-box{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);border:.5px solid var(--dsw-alias-border-l1);}",
+		".dsh-dt-card-title{margin:0;font-size:12px;font-weight:600;color:var(--dsw-alias-label-primary);}",
+		".dsh-dt-field{display:flex;align-items:flex-start;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;}",
+		".dsh-dt-field-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}",
+		".dsh-dt-label{font-size:12px;font-weight:500;}",
+		".dsh-dt-hint{font-size:11px;color:var(--dsw-alias-label-tertiary);}",
+		".dsh-dt-control{flex:0 0 auto;display:flex;align-items:center;gap:8px;}",
+		".dsh-dt-number{box-sizing:border-box;width:92px;height:34px;padding:0 12px;border:.5px solid var(--dsw-alias-border-l4);border-radius:var(--dsw-radius-md);background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-primary);font:inherit;font-size:13px;}",
+		".dsh-dt-check{width:15px;height:15px;accent-color:var(--dsw-alias-button-primary-fill);cursor:pointer;}",
+		".dsh-dt-msg{font-size:12px;color:var(--dsw-alias-label-secondary);}",
+		".dsh-dt-msg.is-error{color:var(--dsw-alias-state-error-primary);}",
+		".dsh-dt-msg.is-ok{color:var(--dsw-alias-state-success-primary);}",
+		".dsh-dt-msg.is-warn{color:var(--dsw-alias-state-warn-primary);}",
+		".dsh-dt-foot-note{margin:0;font-size:11px;color:var(--dsw-alias-label-tertiary);}"
+	].join("\n");
+	/**
+	* 样式组件。
+	*
+	* @returns {object} React 元素。
+	*/
+	function Styles$1() {
+		return h("style", {
+			"data-dsh-usage-aggregator": "dingtalk",
+			dangerouslySetInnerHTML: { __html: CSS$1 }
+		});
+	}
+	// src/client/features/dingtalk/card.js
+	/** 卡片里各类拒绝原因对应的文案键。 */
+	var REASON_KEYS = {
+		ambiguous: "statusAmbigous",
+		"not-found": "statusFailed",
+		unknown: "statusFailed",
+		unavailable: "statusFailed",
+		"access-denied": "statusFailed",
+		"not-live-root": "statusFailed",
+		closing: "statusFailed",
+		"unknown-verb": "statusFailed"
+	};
+	/**
+	* 取唯一标识的尾片段。
+	*
+	* @param {string} id 标识。
+	* @returns {string} 片段（没有就是空串）。
+	*/
+	function idHint(id) {
+		const value = typeof id === "string" ? id.trim() : "";
+		if (value === "") return "";
+		return value.length <= 6 ? value : "…" + value.slice(-4);
+	}
+	/**
+	* 从提议里读出 details 的字符串字段。
+	*
+	* @param {object} proposal 卡片提议。
+	* @returns {{recipient: string, recipientId: string, channel: string, reason: string, body: string}} 字段。
+	*/
+	function readDetails(proposal) {
+		const raw = proposal?.details !== null && typeof proposal?.details === "object" ? proposal.details : {};
+		const text = (value) => typeof value === "string" ? value : "";
+		return {
+			recipient: text(raw.recipient),
+			recipientId: text(raw.recipientId),
+			channel: text(raw.channel) === "group" ? "group" : "dm",
+			reason: text(raw.reason),
+			body: text(raw.body)
+		};
+	}
+	/**
+	* 卡片当前处于什么状态（顶部徽标 + 正文下方的状态行）。
+	*
+	* @param {string|undefined} phase 卡片状态。
+	* @param {object} data 状态数据。
+	* @param {Function} t translator。
+	* @returns {{badge: {text: string, tone: string}, line: {text: string, tone: string}|null}} 状态描述。
+	*/
+	function describeState(phase, data, t) {
+		if (phase === void 0) return {
+			badge: {
+				text: t("badgePending"),
+				tone: ""
+			},
+			line: null
+		};
+		if (phase === "sent") return {
+			badge: {
+				text: t("badgeSent"),
+				tone: "is-ok"
+			},
+			line: {
+				text: t("statusSent", { id: String(data.messageId ?? "") }),
+				tone: "is-ok"
+			}
+		};
+		if (phase === "submitted") return {
+			badge: {
+				text: t("badgeSubmitted"),
+				tone: "is-warn"
+			},
+			line: {
+				text: t("statusSubmitted"),
+				tone: "is-warn"
+			}
+		};
+		if (phase === "failed") return {
+			badge: {
+				text: t("badgeFailed"),
+				tone: "is-error"
+			},
+			line: {
+				text: t("statusFailed", { error: String(data.error ?? "") }),
+				tone: "is-error"
+			}
+		};
+		if (phase === "ambiguous") return {
+			badge: {
+				text: t("badgeAmbiguous"),
+				tone: "is-warn"
+			},
+			line: {
+				text: t("statusAmbigous"),
+				tone: "is-warn"
+			}
+		};
+		if (phase === "revising") return {
+			badge: {
+				text: t("badgeRevising"),
+				tone: "is-info"
+			},
+			line: {
+				text: t("statusRevising"),
+				tone: "is-info"
+			}
+		};
+		if (phase === "dismissed") return {
+			badge: {
+				text: t("badgeDismissed"),
+				tone: "is-muted"
+			},
+			line: null
+		};
+		return {
+			badge: {
+				text: t("badgePending"),
+				tone: ""
+			},
+			line: null
+		};
+	}
+	/**
+	* 卡片正文。
+	*
+	* @param {object} props 宿主给的属性。
+	* @returns {object} React 元素。
+	*/
+	function DingtalkCardBody(props) {
+		const t = props.t;
+		const details = readDetails(props.proposal);
+		const decision = props.decision;
+		const phase = decision?.phase;
+		const data = decision?.data !== null && typeof decision?.data === "object" ? decision.data : {};
+		const [pending, setPending] = useState("");
+		const [error, setError] = useState("");
+		const [instruction, setInstruction] = useState("");
+		const busy = pending !== "";
+		const candidates = Array.isArray(data.candidates) ? data.candidates : [];
+		const state = describeState(phase, data, t);
+		const settled = phase !== void 0 && phase !== "failed" && phase !== "ambiguous";
+		/**
+		* 发一个用户动作。
+		*
+		* @param {string} verb 动作名。
+		* @param {object} [payload] 动作数据。
+		*/
+		const run = async (verb, payload) => {
+			setPending(verb);
+			setError("");
+			try {
+				const result = await props.act(verb, payload);
+				if (result === void 0) setError(t("transport"));
+				else if (result.status === "refused" || result.status === "unconfirmed") {
+					const key = REASON_KEYS[result.reason];
+					setError(key !== void 0 ? t(key) : t("statusFailed", { error: String(result.reason) }));
+				}
+			} catch {
+				setError(t("transport"));
+			} finally {
+				setPending("");
+			}
+		};
+		return h("div", { className: "dsh-dt-root" }, h(Styles$1, null), h("header", { className: "dsh-dt-head" }, h("span", null, t("heading")), h("span", { className: "dsh-dt-badge " + state.badge.tone }, state.badge.text)), h("div", { className: "dsh-dt-body" }, props.summary, h("dl", { className: "dsh-dt-meta" }, h("dt", null, t("to")), h("dd", null, details.recipient === "" ? "—" : details.recipient, details.recipientId === "" ? null : h("span", { className: "dsh-dt-idhint" }, "（" + idHint(details.recipientId) + "）"), h("span", { className: "dsh-dt-tag" }, details.channel === "group" ? t("channelGroup") : t("channelDm"))), h("dt", null, t("why")), h("dd", null, details.reason === "" ? "—" : details.reason)), h("p", { className: "dsh-dt-section-label" }, t("content")), h("div", { className: "dsh-dt-content" }, h(props.Folded, {
+			text: details.body,
+			expandLabel: t("expand"),
+			collapseLabel: t("collapse")
+		})), candidates.length > 0 ? h("div", { className: "dsh-dt-candidates" }, h("p", { className: "dsh-dt-candidates-title" }, t("pickWho")), candidates.map((candidate) => h("button", {
+			key: String(candidate.openDingTalkId || candidate.userId || candidate.name),
+			type: "button",
+			className: "dsh-dt-candidate",
+			disabled: busy,
+			onClick: () => run("send", { recipientId: candidate.openDingTalkId || candidate.userId })
+		}, String(candidate.label || candidate.name)))) : null, state.line === null ? null : h("p", {
+			className: "dsh-dt-status " + state.line.tone,
+			role: "status"
+		}, state.line.text), error === "" ? null : h("p", {
+			className: "dsh-dt-status is-error",
+			role: "alert"
+		}, error)), settled ? null : h("footer", { className: "dsh-dt-foot" }, h("input", {
+			type: "text",
+			className: "dsh-dt-input",
+			value: instruction,
+			placeholder: t("revisePlaceholder"),
+			"aria-label": t("reviseHint"),
+			disabled: busy,
+			onChange: (event) => setInstruction(event.target.value)
+		}), h("div", { className: "dsh-dt-actions" }, h("button", {
+			type: "button",
+			className: "dsh-dt-btn",
+			disabled: busy,
+			onClick: () => run("revise", { instruction })
+		}, pending === "revise" ? t("working") : t("revise")), h("button", {
+			type: "button",
+			className: "dsh-dt-btn",
+			disabled: busy,
+			onClick: () => run("dismiss")
+		}, pending === "dismiss" ? t("working") : t("dismiss")), h("button", {
+			type: "button",
+			className: "dsh-dt-btn is-primary",
+			disabled: busy,
+			onClick: () => run("send")
+		}, pending === "send" ? t("working") : phase === "failed" ? t("retry") : t("send")))));
+	}
+	// src/client/features/dingtalk/api.js
+	var api = {
+		/** 读设置与状态。 */
+		status: function() {
+			return callApi("GET", DINGTALK_ENDPOINT + "/settings");
+		},
+		/** 保存设置（只传要改的字段）。 */
+		saveSettings: function(patch) {
+			return callApi("POST", DINGTALK_ENDPOINT + "/settings/save", patch);
+		},
+		/** 手动拉一次钉钉消息。 */
+		poll: function() {
+			return callApi("POST", DINGTALK_ENDPOINT + "/poll", {});
+		}
+	};
+	// src/client/features/dingtalk/panel.js
+	/**
+	* 把毫秒时间戳变成一句能读的时间。
+	*
+	* @param {number} ms 毫秒时间戳（0 表示没有）。
+	* @returns {string} 文本。
+	*/
+	function stamp(ms) {
+		if (!Number.isFinite(ms) || ms <= 0) return "";
+		const date = new Date(ms);
+		const pad = (n) => String(n).padStart(2, "0");
+		return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + " " + pad(date.getHours()) + ":" + pad(date.getMinutes()) + ":" + pad(date.getSeconds());
+	}
+	/**
+	* 开关项。
+	*
+	* @param {{label: string, hint: string, checked: boolean, onChange: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function ToggleField(props) {
+		return h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-field-main" }, h("span", { className: "dsh-dt-label" }, props.label), h("span", { className: "dsh-dt-hint" }, props.hint)), h("div", { className: "dsh-dt-control" }, h("input", {
+			type: "checkbox",
+			className: "dsh-dt-check",
+			checked: props.checked === true,
+			onChange: (event) => props.onChange(event.target.checked === true)
+		})));
+	}
+	/**
+	* 数字输入项。
+	*
+	* @param {{label: string, hint: string, value: number, min: number, max: number, onChange: Function}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function NumberField(props) {
+		return h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-field-main" }, h("span", { className: "dsh-dt-label" }, props.label), h("span", { className: "dsh-dt-hint" }, props.hint)), h("div", { className: "dsh-dt-control" }, h("input", {
+			type: "number",
+			className: "dsh-dt-number",
+			value: props.value,
+			min: props.min,
+			max: props.max,
+			step: 10,
+			onChange: (event) => {
+				const next = Number(event.target.value);
+				if (Number.isFinite(next)) props.onChange(next);
+			}
+		})));
+	}
+	/**
+	* 「钉钉」页签。
+	*
+	* @param {{t: Function, initialStatus?: object}} props 属性。
+	*   initialStatus 只给离线渲染自检用；真页面上数据由下面的 useEffect 去 Host 拉。
+	* @returns {object} React 元素。
+	*/
+	function DingtalkPanel(props) {
+		const t = props.t;
+		const [status, setStatus] = useState(props.initialStatus ?? null);
+		const [settings, setSettings] = useState(props.initialStatus?.settings ?? null);
+		const [message, setMessage] = useState("");
+		const [error, setError] = useState("");
+		const [busy, setBusy] = useState(false);
+		const [polling, setPolling] = useState(false);
+		/**
+		* 重新读一次 Host 的状态。
+		*/
+		const refresh = () => {
+			api.status().then((result) => {
+				setStatus(result !== null && typeof result === "object" ? result : null);
+				if (result !== null && typeof result === "object" && result.settings !== null) setSettings(result.settings);
+			}).catch((failure) => {
+				setError(t("loadFailed", { error: String(failure.message || failure) }));
+			});
+		};
+		useEffect(function() {
+			let alive = true;
+			api.status().then((result) => {
+				if (!alive) return;
+				setStatus(result !== null && typeof result === "object" ? result : null);
+				if (result !== null && typeof result === "object" && result.settings !== null) setSettings(result.settings);
+			}).catch((failure) => {
+				if (!alive) return;
+				setError(t("loadFailed", { error: String(failure.message || failure) }));
+			});
+			return function() {
+				alive = false;
+			};
+		}, [t]);
+		if (settings === null) return h("div", { className: "dsh-dt-page" }, h(Styles$1, null), error !== "" ? h("p", { className: "dsh-dt-msg is-error" }, error) : h("p", { className: "dsh-dt-msg" }, "…"));
+		/**
+		* 改一项设置。
+		*
+		* @param {string} key 字段名。
+		* @param {unknown} value 新值。
+		*/
+		const change = (key, value) => {
+			setSettings((current) => current === null ? current : {
+				...current,
+				[key]: value
+			});
+			setMessage("");
+			setError("");
+		};
+		/**
+		* 保存。开关的落盘与生效都在 Host 侧（存文件 + 注册/注销）。
+		*/
+		const save = () => {
+			setBusy(true);
+			setMessage("");
+			setError("");
+			api.saveSettings({
+				enabled: settings.enabled === true,
+				pollIntervalSeconds: settings.pollIntervalSeconds
+			}).then((result) => {
+				setBusy(false);
+				if (result !== null && typeof result === "object" && result.settings !== null) setSettings(result.settings);
+				setMessage(t("saved"));
+				refresh();
+			}).catch((failure) => {
+				setBusy(false);
+				setError(t("saveFailed", { error: String(failure.message || failure) }));
+			});
+		};
+		/**
+		* 手动拉一次。
+		*/
+		const poll = () => {
+			setPolling(true);
+			setMessage("");
+			setError("");
+			api.poll().then((result) => {
+				setPolling(false);
+				if (result !== null && typeof result === "object" && result.ok === false) {
+					setError(t("pollFailed", { error: String(result.error || "") }));
+					return;
+				}
+				setMessage(t("pollDone", {
+					count: String(result?.count ?? 0),
+					relevant: String(result?.relevant ?? 0)
+				}));
+				refresh();
+			}).catch((failure) => {
+				setPolling(false);
+				setError(t("pollFailed", { error: String(failure.message || failure) }));
+			});
+		};
+		const availability = status?.availability ?? {
+			installed: false,
+			version: ""
+		};
+		const at = status?.lastPollAt ?? 0;
+		return h("div", { className: "dsh-dt-page" }, h(Styles$1, null), h("p", { className: "dsh-dt-intro" }, t("intro")), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionSwitch")), ToggleField({
+			label: t("enabled"),
+			hint: t("enabledHint"),
+			checked: settings.enabled === true,
+			onChange: (value) => change("enabled", value)
+		})), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionStatus")), h("p", { className: "dsh-dt-msg" }, availability.installed === true ? t("dwsReady") : t("dwsMissing"), availability.installed === true && availability.version !== "" ? "（" + t("dwsVersion", { version: availability.version }) + "）" : ""), h("p", { className: "dsh-dt-msg" }, t("unread", { count: String(status?.unread ?? 0) })), h("p", { className: "dsh-dt-msg" }, at === 0 ? t("neverPolled") : t("lastPoll", {
+			at: stamp(at),
+			count: String(status?.lastPollCount ?? 0)
+		})), Number.isFinite(status?.lastBaselined) && status.lastBaselined > 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("baseline", { count: String(status.lastBaselined) })) : null, status?.lastError ? h("p", { className: "dsh-dt-msg is-error" }, String(status.lastError)) : null, h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-control" }, h("button", {
+			type: "button",
+			className: "dsh-dt-btn",
+			disabled: polling === true || settings.enabled !== true,
+			onClick: poll
+		}, polling === true ? t("polling") : t("pollNow"))))), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionInterval")), NumberField({
+			label: t("interval"),
+			hint: t("intervalHint"),
+			value: settings.pollIntervalSeconds,
+			min: 60,
+			max: 3600,
+			onChange: (value) => change("pollIntervalSeconds", value)
+		})), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionRules")), h("p", { className: "dsh-dt-intro" }, t("rules"))), h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-control" }, h("button", {
+			type: "button",
+			className: "dsh-dt-btn is-primary",
+			disabled: busy === true,
+			onClick: save
+		}, t("save"))), message !== "" ? h("span", { className: "dsh-dt-msg is-ok" }, message) : null, error !== "" ? h("span", { className: "dsh-dt-msg is-error" }, error) : null), h("p", { className: "dsh-dt-foot-note" }, t("foot")));
+	}
+	// src/client/features/dingtalk/index.js
+	var dingtalk_exports = /* @__PURE__ */ __exportAll({
+		CARD_ACTION: () => CARD_ACTION,
+		HubView: () => HubView,
+		__ui: () => __ui,
+		apply: () => apply$1,
+		dictionaries: () => dictionaries,
+		meta: () => meta
+	});
+	/** 卡片动作名（与 Host 侧 card.js 里的 ACTION 一致）。 */
+	var CARD_ACTION = "dingtalk.send";
+	/**
+	* 功能元信息。
+	*
+	* namespace 'pcDingtalk' —— 新功能，没有历史包袱，但规矩一样：定了就不改。
+	* hubTabKey 'tabDingtalk' —— 聚合页里本功能页签的标签键，标签文案在聚合页自己的
+	* 字典里（src/client/hub/i18n.js）。
+	*/
+	var meta = {
+		id: "dingtalk",
+		namespace: NS$1,
+		hubOrder: 60,
+		hubTabKey: "tabDingtalk"
+	};
+	/** 完整字典。 */
+	var dictionaries = {
+		zh: zh$1,
+		en: en$1
+	};
+	/**
+	* 装配本功能。
+	*
+	* @param {object} ctx 插件上下文。
+	* @param {Function} t 本功能命名空间的 translator。
+	*/
+	function apply$1(ctx, t) {
+		ctx.inject(["actionCards"], (scope) => {
+			ctx.effect(() => scope.actionCards.register({
+				action: CARD_ACTION,
+				locale: NS$1,
+				Body: DingtalkCardBody
+			}), "dsh-usage-aggregator: dingtalk card body");
+		});
+	}
+	/**
+	* 聚合设置页里本功能的视图。
+	*
+	* @param {{t: Function, ctx: object}} props 属性。
+	* @returns {object} React 元素。
+	*/
+	function HubView(props) {
+		return h(DingtalkPanel, { t: props.t });
+	}
+	/**
+	* 离线渲染自检用（scripts/ui-check-dingtalk.mjs）。
+	*/
+	var __ui = {
+		DingtalkCardBody,
+		DingtalkPanel,
+		Styles: Styles$1,
+		readDetails,
+		idHint,
 		zh: zh$1,
 		en: en$1
 	};
@@ -7592,7 +8244,8 @@ var dshUsageAggregator = (function(exports) {
 		usage_exports,
 		expander_exports,
 		boost_exports,
-		autocomplete_exports
+		autocomplete_exports,
+		dingtalk_exports
 	];
 	// src/client/hub/i18n.js
 	/** 聚合页的 locale 命名空间。 */
@@ -7604,7 +8257,8 @@ var dshUsageAggregator = (function(exports) {
 		tabExpander: "插件更新",
 		tabBoost: "加速",
 		tabAutocomplete: "AI 补全",
-		hint: "五块能力在同一个插件里。左侧切换，下方是当前功能的设置。",
+		tabDingtalk: "钉钉",
+		hint: "六块能力在同一个插件里。左侧切换，下方是当前功能的设置。",
 		empty: "没有可用的功能。",
 		buildAt: "客户端构建于 {at}"
 	};
@@ -7615,7 +8269,8 @@ var dshUsageAggregator = (function(exports) {
 		tabExpander: "Plugin Updates",
 		tabBoost: "Boost",
 		tabAutocomplete: "AI Complete",
-		hint: "Five capabilities in one plugin. Switch below to configure each one.",
+		tabDingtalk: "DingTalk",
+		hint: "Six capabilities in one plugin. Switch below to configure each one.",
 		empty: "No capability available.",
 		buildAt: "Client built at {at}"
 	};
@@ -7742,7 +8397,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-11-17 00:36:35";
+	var BUILD_AT = "2026-11-20 10:40:12";
 	/**
 	* 声明要等的服务。
 	*

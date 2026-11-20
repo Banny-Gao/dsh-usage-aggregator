@@ -11,6 +11,7 @@
 //   /dsh-usage-aggregator/expander/*   —— 插件更新
 //   /dsh-usage-aggregator/boost/*      —— 电脑加速与清理
 //   /dsh-usage-aggregator/autocomplete/* —— AI 自动补全
+//   /dsh-usage-aggregator/dingtalk/*     —— 钉钉沙发
 // 主题功能没有 Host 路由（它的可调项走 localStorage）。
 
 /** 所有插件路由的公共前缀。 */
@@ -27,3 +28,6 @@ export const BOOST_ENDPOINT = ENDPOINT_BASE + '/boost';
 
 /** AI 自动补全的路由前缀。 */
 export const AUTOCOMPLETE_ENDPOINT = ENDPOINT_BASE + '/autocomplete';
+
+/** 钉钉沙发的路由前缀。 */
+export const DINGTALK_ENDPOINT = ENDPOINT_BASE + '/dingtalk';

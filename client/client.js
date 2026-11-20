@@ -3795,7 +3795,7 @@ var dshUsageAggregator = (function(exports) {
 	* @see src/client/index.js —— 聚合入口用同一套 define，聚合页自己也会显示构建时间。
 	*/
 	var BUILD_AT$1 = (function() {
-		return "2026-11-20 10:40:12";
+		return "2026-11-20 14:09:59";
 	})();
 	/**
 	* 根面板：接口列表 + 详情 + 接入。
@@ -7629,8 +7629,23 @@ var dshUsageAggregator = (function(exports) {
 		enabledHint: "关着时不注册技能、不挂卡片、不后台拉消息 —— 装了插件也不改变任何行为。",
 		sectionStatus: "状态",
 		dwsReady: "dws 命令可用",
-		dwsMissing: "本机没有 dws 命令：这个功能需要官方 CLI（登录态由它管，插件不碰凭据）。",
+		dwsMissing: "本机没有 dws 命令：这块功能需要官方 CLI（登录态由它管，插件不碰凭据）。",
 		dwsVersion: "版本：{version}",
+		dwsPath: "路径：{path}",
+		dwsLoginOk: "已登录（登录态在 dws 那边，插件不碰凭据）。",
+		dwsLoginNo: "还没登录：在终端跑一次 dws auth login 扫码。",
+		dwsLoginUnknown: "登录状态没问出来（dws auth status 没给结论）。",
+		dwsInstallHint: "下面这按钮会自动挑一条本机有的路装上：npm 全局 / Homebrew / 官方安装脚本。",
+		dwsInstallNone: "本机没找到可用的安装器（要 npm 或 Homebrew，或能下脚本的 curl）。",
+		installBtn: "自动安装 dws",
+		installingShort: "安装中…",
+		installing: "正在装 dws（{method}）…",
+		installStarted: "开始装了，装完自动刷新。",
+		installDone: "dws 装好了（{method}）。",
+		installFailed: "装不上：{error}",
+		methodNpm: "npm 全局",
+		methodBrew: "Homebrew",
+		methodScript: "官方安装脚本",
 		unread: "项目外未读：{count} 条",
 		lastPoll: "最近一次拉取：{at}（{count} 条）",
 		neverPolled: "还没拉过",
@@ -7691,6 +7706,21 @@ var dshUsageAggregator = (function(exports) {
 		dwsReady: "dws command available",
 		dwsMissing: "No dws command on this machine: this feature needs the official CLI (it owns the login state; the plugin never touches credentials).",
 		dwsVersion: "Version: {version}",
+		dwsPath: "Path: {path}",
+		dwsLoginOk: "Logged in (the login state lives in dws; the plugin never touches credentials).",
+		dwsLoginNo: "Not logged in yet: run dws auth login once in a terminal and scan the code.",
+		dwsLoginUnknown: "Login state is unknown (dws auth status gave no verdict).",
+		dwsInstallHint: "The button below picks whichever route this machine has: npm global / Homebrew / the official install script.",
+		dwsInstallNone: "No installer available here (needs npm or Homebrew, or curl to fetch the script).",
+		installBtn: "Install dws",
+		installingShort: "Installing…",
+		installing: "Installing dws ({method})…",
+		installStarted: "Install started; the page refreshes when it is done.",
+		installDone: "dws is installed ({method}).",
+		installFailed: "Could not install: {error}",
+		methodNpm: "npm global",
+		methodBrew: "Homebrew",
+		methodScript: "official script",
 		unread: "Out-of-project unread: {count}",
 		lastPoll: "Last poll: {at} ({count} messages)",
 		neverPolled: "never polled",
@@ -7993,6 +8023,10 @@ var dshUsageAggregator = (function(exports) {
 		/** 手动拉一次钉钉消息。 */
 		poll: function() {
 			return callApi("POST", DINGTALK_ENDPOINT + "/poll", {});
+		},
+		/** 启动一次 dws 安装（后台跑，进度靠 status 轮询）。 */
+		install: function() {
+			return callApi("POST", DINGTALK_ENDPOINT + "/install", {});
 		}
 	};
 	// src/client/features/dingtalk/panel.js
@@ -8057,6 +8091,17 @@ var dshUsageAggregator = (function(exports) {
 		const [error, setError] = useState("");
 		const [busy, setBusy] = useState(false);
 		const [polling, setPolling] = useState(false);
+		const [installing, setInstalling] = useState(false);
+		/** Host 那边的安装任务状态（装 dws 要下二进制，可能要一两分钟）。 */
+		const installJob = status?.install ?? {
+			running: false,
+			stage: "",
+			method: "",
+			ok: false,
+			error: ""
+		};
+		/** 本地刚点了安装，或者 Host 那边正在装 —— 两者取并，按钮才不会点出第二次。 */
+		const installRunning = installing === true || installJob.running === true;
 		/**
 		* 重新读一次 Host 的状态。
 		*/
@@ -8082,6 +8127,20 @@ var dshUsageAggregator = (function(exports) {
 				alive = false;
 			};
 		}, [t]);
+		useEffect(function() {
+			if (installRunning !== true) return void 0;
+			const timer = window.setInterval(function() {
+				api.status().then((result) => {
+					if (result === null || typeof result !== "object") return;
+					setStatus(result);
+					if (result.settings !== null) setSettings(result.settings);
+					if (result.install === void 0 || result.install === null || result.install.running !== true) setInstalling(false);
+				}).catch(() => {});
+			}, 2e3);
+			return function() {
+				window.clearInterval(timer);
+			};
+		}, [installRunning]);
 		if (settings === null) return h("div", { className: "dsh-dt-page" }, h(Styles$1, null), error !== "" ? h("p", { className: "dsh-dt-msg is-error" }, error) : h("p", { className: "dsh-dt-msg" }, "…"));
 		/**
 		* 改一项设置。
@@ -8140,20 +8199,51 @@ var dshUsageAggregator = (function(exports) {
 				setError(t("pollFailed", { error: String(failure.message || failure) }));
 			});
 		};
+		/**
+		* 装 dws。
+		*
+		* 装的是官方 CLI；登录态仍然由 dws 自己管，插件不碰凭据。
+		*/
+		const install = () => {
+			setInstalling(true);
+			setMessage("");
+			setError("");
+			api.install().then((result) => {
+				if (result !== null && typeof result === "object" && result.ok === false) {
+					setInstalling(false);
+					setError(t("installFailed", { error: String(result.error || "") }));
+					return;
+				}
+				setMessage(t("installStarted"));
+			}).catch((failure) => {
+				setInstalling(false);
+				setError(t("installFailed", { error: String(failure.message || failure) }));
+			});
+		};
 		const availability = status?.availability ?? {
 			installed: false,
-			version: ""
+			version: "",
+			path: "",
+			loggedIn: "unknown",
+			installers: []
 		};
+		const installers = Array.isArray(availability.installers) ? availability.installers : [];
 		const at = status?.lastPollAt ?? 0;
+		const methodLabel = installJob.method === "" ? "" : t("method" + installJob.method.charAt(0).toUpperCase() + installJob.method.slice(1));
 		return h("div", { className: "dsh-dt-page" }, h(Styles$1, null), h("p", { className: "dsh-dt-intro" }, t("intro")), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionSwitch")), ToggleField({
 			label: t("enabled"),
 			hint: t("enabledHint"),
 			checked: settings.enabled === true,
 			onChange: (value) => change("enabled", value)
-		})), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionStatus")), h("p", { className: "dsh-dt-msg" }, availability.installed === true ? t("dwsReady") : t("dwsMissing"), availability.installed === true && availability.version !== "" ? "（" + t("dwsVersion", { version: availability.version }) + "）" : ""), h("p", { className: "dsh-dt-msg" }, t("unread", { count: String(status?.unread ?? 0) })), h("p", { className: "dsh-dt-msg" }, at === 0 ? t("neverPolled") : t("lastPoll", {
+		})), h("div", { className: "dsh-dt-card-box" }, h("h3", { className: "dsh-dt-card-title" }, t("sectionStatus")), h("p", { className: "dsh-dt-msg" }, availability.installed === true ? t("dwsReady") + (availability.version !== "" ? "（" + t("dwsVersion", { version: availability.version }) + "）" : "") : t("dwsMissing")), availability.installed === true && availability.path !== "" && availability.path !== "dws" ? h("p", { className: "dsh-dt-msg" }, t("dwsPath", { path: availability.path })) : null, availability.installed === true ? h("p", { className: "dsh-dt-msg" + (availability.loggedIn === "no" ? " is-warn" : "") }, availability.loggedIn === "yes" ? t("dwsLoginOk") : availability.loggedIn === "no" ? t("dwsLoginNo") : t("dwsLoginUnknown")) : null, availability.installed === false ? h("p", { className: "dsh-dt-msg" }, t("dwsInstallHint")) : null, availability.installed === false && installers.length === 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("dwsInstallNone")) : null, installJob.running === true ? h("p", { className: "dsh-dt-msg" }, methodLabel === "" ? t("installingShort") : t("installing", { method: methodLabel })) : null, installJob.running === false && installJob.ok === true ? h("p", { className: "dsh-dt-msg is-ok" }, t("installDone", { method: methodLabel })) : null, installJob.running === false && installJob.error !== "" ? h("p", { className: "dsh-dt-msg is-error" }, t("installFailed", { error: String(installJob.error) })) : null, h("p", { className: "dsh-dt-msg" }, t("unread", { count: String(status?.unread ?? 0) })), h("p", { className: "dsh-dt-msg" }, at === 0 ? t("neverPolled") : t("lastPoll", {
 			at: stamp(at),
 			count: String(status?.lastPollCount ?? 0)
-		})), Number.isFinite(status?.lastBaselined) && status.lastBaselined > 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("baseline", { count: String(status.lastBaselined) })) : null, status?.lastError ? h("p", { className: "dsh-dt-msg is-error" }, String(status.lastError)) : null, h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-control" }, h("button", {
+		})), Number.isFinite(status?.lastBaselined) && status.lastBaselined > 0 ? h("p", { className: "dsh-dt-msg is-warn" }, t("baseline", { count: String(status.lastBaselined) })) : null, status?.lastError ? h("p", { className: "dsh-dt-msg is-error" }, String(status.lastError)) : null, h("div", { className: "dsh-dt-field" }, h("div", { className: "dsh-dt-control" }, availability.installed === false ? h("button", {
+			type: "button",
+			className: "dsh-dt-btn is-primary",
+			disabled: installRunning,
+			onClick: install
+		}, installRunning ? t("installingShort") : t("installBtn")) : null, h("button", {
 			type: "button",
 			className: "dsh-dt-btn",
 			disabled: polling === true || settings.enabled !== true,
@@ -8397,7 +8487,7 @@ var dshUsageAggregator = (function(exports) {
 	* 由 vite 的 define 注入。页面上显示它，是为了回答「我改了代码，怎么没生效」——
 	* 看到旧时间戳就知道进程里的还是旧产物。
 	*/
-	var BUILD_AT = "2026-11-20 10:40:12";
+	var BUILD_AT = "2026-11-20 14:09:59";
 	/**
 	* 声明要等的服务。
 	*

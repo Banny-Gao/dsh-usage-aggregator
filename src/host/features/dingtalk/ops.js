@@ -7,6 +7,8 @@
 //   2. 绝不信「发送任务 ID」是消息 ID —— 发完必须回查，回查不到就报「未确认送达」；
 //   3. 任何回显都带「姓名 + 唯一标识片段」，避免同名发错人。
 
+import { runProcess } from '../../shared/cmd.js';
+import { detectEnvironment, installDws } from './install.js';
 import { explainFailure, runDws } from './dws.js';
 import { collectMessages, collectPeople, idHint } from './shapes.js';
 import { readStored, writePreferences, normalize } from './store.js';
@@ -94,36 +96,143 @@ export function keywordOf(body) {
  */
 export function createOps(deps = {}) {
   const dws = deps.dws ?? runDws;
-  const run = deps.run ?? null;
   const now = deps.now ?? (() => Date.now());
   const env = deps.env ?? process.env;
+  /** 自检注入的假 dws —— 有它就不用去真机上探测。 */
+  const hasCustomDws = deps.dws !== undefined && deps.dws !== null;
+  /** 跑外部命令。 */
+  const runner = deps.run ?? runProcess;
+  /** 环境探测（可注入，便于自检）。 */
+  const detect = deps.detect ?? ((options) => detectEnvironment(options));
+  /** 装 dws（可注入，便于自检）。 */
+  const installer = deps.installer ?? installDws;
+  /** 目标平台（自检可以指定，免得去真机上试 brew）。 */
+  const platform = deps.platform ?? process.platform;
 
   /** 会话 → 姓名 → 人员。同一会话里解析过一次就不再问通讯录。 */
   const resolvedBySession = new Map();
   /** dws 是否装着的探测结果。 */
   let probe = null;
+  /** 安装任务状态（装 dws 可能要一两分钟，HTTP 不能一直挂着）。 */
+  let installJob = {
+    running: false,
+    stage: '',
+    method: '',
+    startedAt: 0,
+    finishedAt: 0,
+    ok: false,
+    error: '',
+  };
 
   /**
-   * dws 装没装。
+   * 用注入的 dws 问版本（自检里那套假 dws 走这条路）。
    *
-   * @returns {Promise<{installed: boolean, version: string}>} 探测结果。
+   * @returns {Promise<{version: string, path: string}|null>} 问不到就是 null。
+   */
+  async function probeInjected() {
+    const result = await dws(['--version'], { format: false });
+    if (result.reason === 'dws-not-found') return null;
+    return { version: String(result.stdout ?? '').trim().split('\n')[0], path: '' };
+  }
+
+  /**
+   * dws 装没装、在哪、登录了没有、有哪些安装器可用。
+   *
+   * @returns {Promise<{installed: boolean, version: string, path: string, loggedIn: string, installers: Array<object>}>} 探测结果。
    */
   async function availability() {
     if (probe !== null && now() - probe.at < 60000) return probe.value;
-    let value = { installed: false, version: '' };
-    if (run !== null) {
-      try {
-        const result = await run('dws', ['--version'], { timeoutMs: 5000 });
-        value = { installed: result.missing !== true, version: String(result.stdout ?? '').trim().split('\n')[0] };
-      } catch {
-        value = { installed: false, version: '' };
-      }
-    } else {
-      const result = await dws(['--version'], { format: false });
-      value = { installed: result.reason !== 'dws-not-found', version: String(result.stdout ?? '').trim().split('\n')[0] };
-    }
+    const value = await detect({
+      env,
+      run: runner,
+      platform,
+      // 注入了假 dws 时不去真机上找 —— 那是自检，不该被本机环境影响。
+      probe: hasCustomDws ? probeInjected : undefined,
+      installers: hasCustomDws ? false : true,
+    });
     probe = { at: now(), value };
     return value;
+  }
+
+  /**
+   * 调 dws：优先用探测到的绝对路径。
+   *
+   * 为什么：官方脚本装到 ~/.local/bin、npm 全局装到 `npm prefix -g/bin`，
+   * 这两个目录常常不在宿主进程的 PATH 上 —— 只认 PATH 的话，用户明明装好了，
+   * 插件却还在说「没装」。
+   *
+   * @param {string[]} args 命令参数。
+   * @param {object} options 选项。
+   * @returns {Promise<object>} 调用结果。
+   */
+  async function callDws(args, options = {}) {
+    if (probe === null) await availability();
+    const known = probe?.value?.path ?? '';
+    return dws(args, known === '' ? options : { ...options, bin: known });
+  }
+
+  /**
+   * 启动一次安装（后台跑，调用方立刻返回）。
+   *
+   * @returns {Promise<{ok: boolean, error?: string, started?: boolean}>} 启动结果。
+   */
+  async function startInstall() {
+    if (installJob.running) return { ok: false, error: '安装已经在进行中' };
+    installJob = {
+      running: true,
+      stage: 'detecting',
+      method: '',
+      startedAt: now(),
+      finishedAt: 0,
+      ok: false,
+      error: '',
+    };
+    void (async () => {
+      try {
+        const result = await installer({
+          env,
+          run: runner,
+          platform,
+          onStage: (stage, method) => {
+            installJob.stage = stage;
+            if (method !== '') installJob.method = method;
+          },
+        });
+        // 装完必须重探：装上 ≠ 能用。
+        probe = null;
+        installJob.ok = result.ok === true;
+        installJob.error = result.error ?? '';
+        installJob.stage = result.ok === true ? 'done' : 'failed';
+        if (result.ok === true && result.method !== '') installJob.method = result.method;
+      } catch (error) {
+        installJob.ok = false;
+        installJob.error = String(error?.message ?? error);
+        installJob.stage = 'failed';
+      }
+      installJob.running = false;
+      installJob.finishedAt = now();
+    })();
+    return { ok: true, started: true };
+  }
+
+  /**
+   * 缺 dws 就装上。
+   *
+   * @returns {Promise<{ok: boolean, skipped?: boolean, error?: string}>} 结果。
+   */
+  async function ensureInstalled() {
+    const state = await availability();
+    if (state.installed === true) return { ok: true, skipped: true };
+    return startInstall();
+  }
+
+  /**
+   * 读安装任务的状态（面板轮询用）。
+   *
+   * @returns {object} 任务状态。
+   */
+  function installState() {
+    return { ...installJob };
   }
 
   /**
@@ -196,7 +305,7 @@ export function createOps(deps = {}) {
     const cached = cacheOf(sessionId).get(name);
     if (cached !== undefined) return { status: 'resolved', person: cached };
 
-    const result = await dws(['aisearch', 'person', '--query', name, '--dimension', 'name']);
+    const result = await callDws(['aisearch', 'person', '--query', name, '--dimension', 'name']);
     if (!result.ok) {
       return { status: 'error', error: explainFailure(result) };
     }
@@ -278,7 +387,7 @@ export function createOps(deps = {}) {
       recipientIdKind,
       channel,
     }), '--content', body];
-    const result = await dws(args);
+    const result = await callDws(args);
     if (!result.ok) return { status: 'failed', error: explainFailure(result) };
 
     // openTaskId 是**发送任务 ID**，不是消息 ID —— 别拿它当回执。
@@ -308,7 +417,7 @@ export function createOps(deps = {}) {
     args.push('--start', toIso(Math.max(0, (request?.sinceMs ?? now()) - 60000)));
     args.push('--end', toIso(now() + 60000));
 
-    const result = await dws(args);
+    const result = await callDws(args);
     if (!result.ok) return { found: false, messageId: '' };
 
     const messages = collectMessages(result.json);
@@ -329,7 +438,7 @@ export function createOps(deps = {}) {
    * @returns {Promise<{ok: boolean, messages: Array<object>, error?: string}>} 结果。
    */
   async function readMessages(options = {}) {
-    const result = await dws(['chat', '+at-me', '--page-all']);
+    const result = await callDws(['chat', '+at-me', '--page-all']);
     if (!result.ok) return { ok: false, messages: [], error: explainFailure(result) };
     let messages = collectMessages(result.json);
     if (Number.isFinite(options?.sinceMs) && options.sinceMs > 0) {
@@ -343,6 +452,12 @@ export function createOps(deps = {}) {
 
   return {
     availability,
+    /** 启动一次安装（后台跑）。 */
+    startInstall,
+    /** 缺 dws 就装上。 */
+    ensureInstalled,
+    /** 读安装任务状态。 */
+    installState,
     settings,
     saveSettings,
     resolveRecipient,

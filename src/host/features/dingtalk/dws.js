@@ -11,6 +11,9 @@
 //   3. 零命中 / 多候选就停下来交给人，绝不取第一个。
 //
 // ⚠️ 这里只暴露**本功能要用的那几条**命令，不把 CLI 的 shortcut 全量摊开成工具。
+//
+// 另一处会跑 dws 的是 install.js —— 它只做「装 dws / 问版本 / 问登录态」这三件事，
+// 不带任何业务命令。
 
 import { runProcess } from '../../shared/cmd.js';
 
@@ -130,7 +133,7 @@ export async function runDws(args, options = {}) {
 export function explainFailure(result) {
   if (result === null || result === undefined) return '钉钉调用失败';
   if (result.reason === 'dws-not-found') {
-    return '本机没有装 dws 命令，装好并登录后这个功能才能用（dws 负责钉钉登录态，插件不碰凭据）';
+    return '本机没有装 dws 命令 —— 聚合设置页的「钉钉」页签点一下就能自动装上（dws 负责钉钉登录态，插件不碰凭据）';
   }
   if (result.reason === 'dws-timeout') return 'dws 调用超时（钉钉侧没在预期时间内返回）';
   const detail = typeof result.stderr === 'string' ? result.stderr.trim() : '';

@@ -69,7 +69,7 @@ docs/adr/            架构决策记录
 |---|---|
 | `hard-metrics`（显示名「硬指标」） | PTC 基座（与官方 `preset-ptc` 差四处：人格约束换成《硬指标手册》全文、多一个守卫行、多 `name`/`description`、`order` 为 5）；追加 `hard-metrics-guard`，把「永不自动提交或推送」落到工具执行层 —— 提交 / 推送必须有用户**当轮**的显式授权，每个动作各只够用一次；提交命令没做成（退出码非零）时这次授权不算用掉，重试不用再问用户；复合指令（如「提交，然后继续 X」）里的「提交」同样算当轮授权；`git checkout --` / `git reset --hard` / `git clean -f` 一律拒绝；重命令（类型检查 / 静态检查 / 全量测试 / 端到端测试 / 构建）子代理一律不跑，主代理每跑一次都要用户当轮同意；项目自己的包脚本按脚本链内容判定 |
 
-**HTTP 路由**（24 条，全部在 `/dsh-usage-aggregator/` 之下）：
+**HTTP 路由**（25 条，全部在 `/dsh-usage-aggregator/` 之下）：
 
 | 前缀 | 条数 | 用途 |
 |---|---|---|
@@ -77,7 +77,7 @@ docs/adr/            架构决策记录
 | `/expander` | 2 | `state`（已装清单与更新状态）· `update`（执行更新） |
 | `/boost` | 4 | `scan`（开始体检）· `status`（轮询体检进度）· `execute`（起清理任务）· `execute-status`（轮询清理进度） |
 | `/autocomplete` | 4 | `settings`（读设置）· `settings/save`（存设置）· `models`（可选模型）· `suggest`（要候选） |
-| `/dingtalk` | 3 | `settings`（读设置与状态）· `settings/save`（存设置）· `poll`（手动拉一次） |
+| `/dingtalk` | 4 | `settings`（读设置与状态）· `settings/save`（存设置）· `poll`（手动拉一次）· `install`（装 dws） |
 
 **配置**：写在 profile 的 `cordis.patch.yml` 里，**只对 Host 半边生效**。
 
@@ -173,7 +173,9 @@ Agent 会先说明要做什么再动手；会话不可用时面板直接执行�
   项目内的消息才唤醒模型给三段结论，再由你点「处理 / 忽略」；
   项目外的只累未读计数。想看全部随时说「钉钉有什么新消息」。
 
-> 需要本机装好官方 `dws` CLI 并完成钉钉登录 —— 登录态由它管，插件不碰凭据。
+> 官方 `dws` CLI 缺了会自动装 —— 拨开开关即装（npm 全局 / Homebrew / 官方安装脚本按本机环境择优），
+> 聚合设置页的「钉钉」页签另有【自动安装 dws】按钮；登录仍要你自己跑一次 `dws auth login` 扫码，
+> 登录态由 dws 管，插件不碰凭据。
 > 卡片由 DSH 自带的 `actionCards` 框架渲染，profile 里需要「个性化推荐」那个 bundle。
 
 ## 关系

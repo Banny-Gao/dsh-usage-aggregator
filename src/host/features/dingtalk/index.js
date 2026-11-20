@@ -3,7 +3,8 @@
 // 「钉钉沙发」功能的 Host 装配。
 //
 // 这里只做接线：
-//   dws.js       官方 CLI 的包装（唯一碰 dws 的地方）
+//   dws.js       官方 CLI 的包装（业务调用走这里）
+//   install.js   环境自检与依赖安装（缺 dws 就装上；只做装 / 问版本 / 问登录态）
 //   shapes.js    把 CLI 的 JSON 变成插件要的字段
 //   relevance.js 粗筛：这条消息跟当前项目有没有关系（纯函数）
 //   context.js   从会话里取项目上下文（分支 / 需求号 / 最近进展）
@@ -142,12 +143,16 @@ export function apply(ctx, featureConfig = {}, shared) {
 
   /**
    * 打开功能。
+   *
+   * 缺 dws 就自动装：用户拨开这个开关，就等于授权为这块功能准备依赖
+   * （装的是官方 CLI，不碰登录态）。
    */
   async function enable() {
     if (enabled) return;
     enabled = true;
     registerAll();
     await startTimer();
+    void ops.ensureInstalled().catch(() => {});
   }
 
   /**
@@ -194,13 +199,16 @@ export function apply(ctx, featureConfig = {}, shared) {
           const settings = await ops.settings(config.enabled === true);
           const availability = await ops.availability();
           const state = receiverOf().status();
-          return { ok: true, enabled, settings, availability, ...state };
+          return { ok: true, enabled, settings, availability, install: ops.installState(), ...state };
         },
         async saveSettings(body) {
           const result = await ops.saveSettings(body);
           if (result.settings.enabled) await enable();
           else await disable();
           return result;
+        },
+        async install() {
+          return ops.startInstall();
         },
         async pollNow() {
           if (enabled === false) return { ok: false, error: '功能没开' };

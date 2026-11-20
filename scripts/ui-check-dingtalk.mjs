@@ -171,24 +171,33 @@ check('同名多人：列出候选', () => {
 
 /* ── 设置页 ── */
 
-const panel = ReactDOMServer.renderToStaticMarkup(
-  React.createElement(DingtalkPanel, {
-    t,
-    initialStatus: {
-      ok: true,
-      enabled: true,
-      settings: { enabled: true, pollIntervalSeconds: 180 },
-      availability: { installed: false, version: '' },
-      unread: 2,
-      baselined: true,
-      lastPollAt: 0,
-      lastPollCount: 0,
-      lastRelevant: 0,
-      lastBaselined: 3,
-      lastError: '',
-    },
-  })
-);
+/**
+ * 渲染设置页。
+ *
+ * @param {object} overrides 要覆盖的状态字段。
+ * @returns {string} 渲染结果。
+ */
+function renderPanel(overrides) {
+  const base = {
+    ok: true,
+    enabled: true,
+    settings: { enabled: true, pollIntervalSeconds: 180 },
+    availability: { installed: false, version: '', path: '', loggedIn: 'unknown', installers: [] },
+    install: { running: false, stage: '', method: '', ok: false, error: '' },
+    unread: 2,
+    baselined: true,
+    lastPollAt: 0,
+    lastPollCount: 0,
+    lastRelevant: 0,
+    lastBaselined: 3,
+    lastError: '',
+  };
+  return ReactDOMServer.renderToStaticMarkup(
+    React.createElement(DingtalkPanel, { t, initialStatus: { ...base, ...overrides } })
+  );
+}
+
+const panel = renderPanel({});
 
 check('设置页渲染得出来', () => assert.ok(panel.length > 0));
 check('设置页有开关与状态', () => {
@@ -196,6 +205,56 @@ check('设置页有开关与状态', () => {
   assert.ok(markup(panel).includes('未读'));
 });
 check('没有 dws 时如实说没有', () => assert.ok(markup(panel).includes('没有 dws 命令')));
+
+/* ── 设置页：缺 dws 时的自动安装 ── */
+
+check('缺 dws 时给出自动安装按钮', () => {
+  const html = markup(renderPanel({ availability: { installed: false, version: '', path: '', loggedIn: 'unknown', installers: [{ id: 'npm', label: 'npm 全局安装' }] } }));
+  assert.ok(html.includes('自动安装 dws'), '要有安装按钮');
+  assert.ok(html.includes('npm 全局'), '要说清会用哪条路');
+});
+
+check('本机没有安装器时如实说没有，并提示手动装', () => {
+  const html = markup(renderPanel({ availability: { installed: false, version: '', path: '', loggedIn: 'unknown', installers: [] } }));
+  assert.ok(html.includes('没找到可用的安装器'));
+});
+
+check('安装中：按钮禁用并显示进度', () => {
+  const html = markup(renderPanel({
+    availability: { installed: false, version: '', path: '', loggedIn: 'unknown', installers: [{ id: 'npm', label: 'npm 全局安装' }] },
+    install: { running: true, stage: 'installing', method: 'npm', ok: false, error: '' },
+  }));
+  assert.ok(html.includes('正在装 dws'));
+  assert.ok(html.includes('npm 全局'));
+  assert.ok(html.includes('disabled'), '安装中按钮要禁用');
+});
+
+check('装完：报成功并说清用的哪条路', () => {
+  const html = markup(renderPanel({
+    availability: { installed: true, version: 'dws 1.0.99', path: '/home/u/.local/bin/dws', loggedIn: 'yes', installers: [] },
+    install: { running: false, stage: 'done', method: 'npm', ok: true, error: '' },
+  }));
+  assert.ok(html.includes('dws 装好了'));
+  assert.ok(html.includes('npm 全局'));
+  assert.ok(html.includes('/home/u/.local/bin/dws'), '要显示 dws 的实际路径');
+});
+
+check('装不上：显示原因', () => {
+  const html = markup(renderPanel({
+    availability: { installed: false, version: '', path: '', loggedIn: 'unknown', installers: [{ id: 'npm', label: 'npm 全局安装' }] },
+    install: { running: false, stage: 'failed', method: 'npm', ok: false, error: 'E404 not found' },
+  }));
+  assert.ok(html.includes('装不上'));
+  assert.ok(html.includes('E404 not found'));
+});
+
+check('装了但没登录：提示用户自己扫码（插件不碰凭据）', () => {
+  const html = markup(renderPanel({
+    availability: { installed: true, version: 'dws 1.0.99', path: '', loggedIn: 'no', installers: [] },
+  }));
+  assert.ok(html.includes('dws auth login'), '要给出登录命令');
+  assert.ok(!html.includes('自动安装 dws'), '已经装了就不该再显示安装按钮');
+});
 
 /* ───────────────────────────── 报告 ───────────────────────────── */
 

@@ -92,6 +92,12 @@ export function DingtalkPanel(props) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [polling, setPolling] = useState(false);
+  const [installing, setInstalling] = useState(false);
+
+  /** Host 那边的安装任务状态（装 dws 要下二进制，可能要一两分钟）。 */
+  const installJob = status?.install ?? { running: false, stage: '', method: '', ok: false, error: '' };
+  /** 本地刚点了安装，或者 Host 那边正在装 —— 两者取并，按钮才不会点出第二次。 */
+  const installRunning = installing === true || installJob.running === true;
 
   /**
    * 重新读一次 Host 的状态。
@@ -117,6 +123,24 @@ export function DingtalkPanel(props) {
     });
     return function () { alive = false; };
   }, [t]);
+
+  // 安装在跑的时候轮询状态 —— 装 dws 要下二进制，可能要一两分钟。
+  useEffect(function () {
+    if (installRunning !== true) return undefined;
+    const timer = window.setInterval(function () {
+      api.status().then((result) => {
+        if (result === null || typeof result !== 'object') return;
+        setStatus(result);
+        if (result.settings !== null) setSettings(result.settings);
+        if (result.install === undefined || result.install === null || result.install.running !== true) {
+          setInstalling(false);
+        }
+      }).catch(() => {
+        /* 轮询失败不改状态，下一轮再说 */
+      });
+    }, 2000);
+    return function () { window.clearInterval(timer); };
+  }, [installRunning]);
 
   if (settings === null) {
     return h('div', { className: 'dsh-dt-page' },
@@ -182,8 +206,34 @@ export function DingtalkPanel(props) {
     });
   };
 
-  const availability = status?.availability ?? { installed: false, version: '' };
+  /**
+   * 装 dws。
+   *
+   * 装的是官方 CLI；登录态仍然由 dws 自己管，插件不碰凭据。
+   */
+  const install = () => {
+    setInstalling(true);
+    setMessage('');
+    setError('');
+    api.install().then((result) => {
+      if (result !== null && typeof result === 'object' && result.ok === false) {
+        setInstalling(false);
+        setError(t('installFailed', { error: String(result.error || '') }));
+        return;
+      }
+      setMessage(t('installStarted'));
+    }).catch((failure) => {
+      setInstalling(false);
+      setError(t('installFailed', { error: String(failure.message || failure) }));
+    });
+  };
+
+  const availability = status?.availability ?? { installed: false, version: '', path: '', loggedIn: 'unknown', installers: [] };
+  const installers = Array.isArray(availability.installers) ? availability.installers : [];
   const at = status?.lastPollAt ?? 0;
+  const methodLabel = installJob.method === ''
+    ? ''
+    : t('method' + installJob.method.charAt(0).toUpperCase() + installJob.method.slice(1));
 
   return h('div', { className: 'dsh-dt-page' },
     h(Styles, null),
@@ -202,9 +252,35 @@ export function DingtalkPanel(props) {
     h('div', { className: 'dsh-dt-card-box' },
       h('h3', { className: 'dsh-dt-card-title' }, t('sectionStatus')),
       h('p', { className: 'dsh-dt-msg' },
-        availability.installed === true ? t('dwsReady') : t('dwsMissing'),
-        availability.installed === true && availability.version !== '' ? '（' + t('dwsVersion', { version: availability.version }) + '）' : ''
+        availability.installed === true
+          ? t('dwsReady') + (availability.version !== '' ? '（' + t('dwsVersion', { version: availability.version }) + '）' : '')
+          : t('dwsMissing')
       ),
+      availability.installed === true && availability.path !== '' && availability.path !== 'dws'
+        ? h('p', { className: 'dsh-dt-msg' }, t('dwsPath', { path: availability.path }))
+        : null,
+      availability.installed === true
+        ? h('p', { className: 'dsh-dt-msg' + (availability.loggedIn === 'no' ? ' is-warn' : '') },
+            availability.loggedIn === 'yes'
+              ? t('dwsLoginOk')
+              : availability.loggedIn === 'no' ? t('dwsLoginNo') : t('dwsLoginUnknown'))
+        : null,
+      availability.installed === false
+        ? h('p', { className: 'dsh-dt-msg' }, t('dwsInstallHint'))
+        : null,
+      availability.installed === false && installers.length === 0
+        ? h('p', { className: 'dsh-dt-msg is-warn' }, t('dwsInstallNone'))
+        : null,
+      installJob.running === true
+        ? h('p', { className: 'dsh-dt-msg' },
+            methodLabel === '' ? t('installingShort') : t('installing', { method: methodLabel }))
+        : null,
+      installJob.running === false && installJob.ok === true
+        ? h('p', { className: 'dsh-dt-msg is-ok' }, t('installDone', { method: methodLabel }))
+        : null,
+      installJob.running === false && installJob.error !== ''
+        ? h('p', { className: 'dsh-dt-msg is-error' }, t('installFailed', { error: String(installJob.error) }))
+        : null,
       h('p', { className: 'dsh-dt-msg' }, t('unread', { count: String(status?.unread ?? 0) })),
       h('p', { className: 'dsh-dt-msg' },
         at === 0
@@ -217,6 +293,14 @@ export function DingtalkPanel(props) {
       status?.lastError ? h('p', { className: 'dsh-dt-msg is-error' }, String(status.lastError)) : null,
       h('div', { className: 'dsh-dt-field' },
         h('div', { className: 'dsh-dt-control' },
+          availability.installed === false
+            ? h('button', {
+              type: 'button',
+              className: 'dsh-dt-btn is-primary',
+              disabled: installRunning,
+              onClick: install,
+            }, installRunning ? t('installingShort') : t('installBtn'))
+            : null,
           h('button', {
             type: 'button',
             className: 'dsh-dt-btn',

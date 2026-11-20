@@ -20,7 +20,8 @@
 
 import { strict as assert } from 'node:assert';
 import { register } from 'node:module';
-import { access, constants } from 'node:fs/promises';
+import { access, chmod, constants, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -41,6 +42,7 @@ register('data:text/javascript,' + encodeURIComponent([
 // card.js 必须在解析钩子注册**之后**再加载，所以这里用动态 import。
 const { createSendKind } = await import('../src/host/features/dingtalk/card.js');
 const { explainFailure, runDws } = await import('../src/host/features/dingtalk/dws.js');
+const { detectEnvironment, installDws } = await import('../src/host/features/dingtalk/install.js');
 const { collectMessages, collectPeople } = await import('../src/host/features/dingtalk/shapes.js');
 const { createOps } = await import('../src/host/features/dingtalk/ops.js');
 const { classifyMessage, extractReqCodes } = await import('../src/host/features/dingtalk/relevance.js');
@@ -453,6 +455,157 @@ await check('classifyMessage：需求号 / 分支 / 关键词命中才算项目�
 await check('extractReqCodes 把需求号与缺陷号归一化', () => {
   assert.deepEqual(extractReqCodes('REQ-1234 与 BUG-88'), ['REQ-1234', 'BUG-88']);
 });
+
+console.log('');
+console.log('→ 环境自检与依赖安装：缺 dws 就装上');
+const FAKE_HOME = await mkdtemp(join(tmpdir(), 'dws-env-'));
+const FAKE_PREFIX = join(FAKE_HOME, 'npm-prefix');
+const FAKE_DWS = join(FAKE_HOME, '.local', 'bin', 'dws');
+
+/**
+ * 造一条成功的结果。
+ *
+ * @param {string} stdout 标准输出。
+ * @returns {object} 结果。
+ */
+function okResult(stdout = '') {
+  return { ok: true, code: 0, stdout, stderr: '', timedOut: false, missing: false };
+}
+
+/**
+ * 造一条「命令不存在」的结果。
+ *
+ * @returns {object} 结果。
+ */
+function missingResult() {
+  return { ok: false, code: 1, stdout: '', stderr: '', timedOut: false, missing: true };
+}
+
+/** 假环境的可变状态。 */
+const fakeState = { installed: false };
+
+/**
+ * 假的环境命令：npm 装 dws 时会在 ~/.local/bin 放一个可执行的假 dws。
+ *
+ * 故意让 PATH 上的 'dws' **永远不存在** —— 官方脚本装的就是 PATH 之外的位置，
+ * 这样才验得到「装在 PATH 外也认得出」这条。
+ *
+ * @param {string} command 命令。
+ * @param {string[]} args 参数。
+ * @returns {Promise<object>} 结果。
+ */
+function fakeRunner(command, args = []) {
+  const cmd = String(command);
+  const list = args.map((item) => String(item));
+  if (cmd === 'npm') {
+    if (list[0] === '--version') return Promise.resolve(okResult('11.16.0'));
+    if (list[0] === 'config') return Promise.resolve(okResult(FAKE_PREFIX));
+    if (list[0] === 'install') {
+      fakeState.installed = true;
+      return mkdir(join(FAKE_HOME, '.local', 'bin'), { recursive: true })
+        .then(() => writeFile(FAKE_DWS, '#!/usr/bin/env bash\nprintf "dws 1.0.99\\n"\n'))
+        .then(() => chmod(FAKE_DWS, 0o755))
+        .then(() => okResult('added 1 package'));
+    }
+    return Promise.resolve(missingResult());
+  }
+  if (cmd === 'brew' || cmd === 'curl') return Promise.resolve(missingResult());
+  if (cmd === 'sh') return Promise.resolve(okResult(''));
+  if (cmd === 'dws') return Promise.resolve(missingResult());
+  if (cmd === FAKE_DWS) {
+    if (fakeState.installed !== true) return Promise.resolve(missingResult());
+    if (list[0] === 'auth') return Promise.resolve(okResult('not logged in'));
+    return Promise.resolve(okResult('dws 1.0.99'));
+  }
+  return Promise.resolve(missingResult());
+}
+
+/** 假环境：PATH 上没有 dws，家目录指向临时目录。 */
+const fakeEnv = { HOME: FAKE_HOME, PATH: '' };
+
+/**
+ * 等一个条件成立（后台任务收尾用）。
+ *
+ * @param {Function} predicate 条件。
+ * @param {number} timeoutMs 超时（毫秒）。
+ * @returns {Promise<void>} 完成。
+ */
+async function waitFor(predicate, timeoutMs = 5000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error('等待超时');
+}
+
+await check('没有 dws 时如实说没装，并列出本机可用的安装器', async () => {
+  fakeState.installed = false;
+  const detected = await detectEnvironment({ env: fakeEnv, run: fakeRunner, platform: 'linux' });
+  assert.equal(detected.installed, false);
+  assert.equal(detected.version, '');
+  assert.equal(detected.loggedIn, 'unknown', '没装时不该猜登录态');
+  assert.deepEqual(detected.installers.map((item) => item.id), ['npm'], '本机只有 npm 这一条路');
+});
+
+await check('装完重新探测：装在 PATH 之外也认得出（记绝对路径）', async () => {
+  const result = await installDws({ env: fakeEnv, run: fakeRunner, platform: 'linux' });
+  assert.equal(result.ok, true, result.error);
+  assert.equal(result.method, 'npm');
+  assert.equal(result.path, FAKE_DWS, '要记绝对路径，不能只说 PATH 上有');
+  assert.equal(result.version, 'dws 1.0.99');
+});
+
+await check('登录态：dws 说没登录就报没登录（插件不碰凭据）', async () => {
+  const detected = await detectEnvironment({ env: fakeEnv, run: fakeRunner, platform: 'linux' });
+  assert.equal(detected.installed, true);
+  assert.equal(detected.path, FAKE_DWS);
+  assert.equal(detected.loggedIn, 'no');
+});
+
+await check('ops.startInstall：后台装完状态转 done，availability 跟着变已装', async () => {
+  fakeState.installed = false;
+  const ops = createOps({ env: fakeEnv, run: fakeRunner, platform: 'linux' });
+  const started = await ops.startInstall();
+  assert.equal(started.ok, true);
+  await waitFor(() => ops.installState().running === false);
+  const job = ops.installState();
+  assert.equal(job.ok, true, job.error);
+  assert.equal(job.method, 'npm');
+  const probe = await ops.availability();
+  assert.equal(probe.installed, true, '装完 availability 要说已装');
+  assert.equal(probe.path, FAKE_DWS);
+});
+
+await check('ops.ensureInstalled：已经装了就跳过，不重复装', async () => {
+  const calls = [];
+  const counting = (command, args = []) => {
+    calls.push([String(command), ...args.map((item) => String(item))]);
+    return fakeRunner(command, args);
+  };
+  const ops = createOps({ env: fakeEnv, run: counting, platform: 'linux' });
+  const result = await ops.ensureInstalled();
+  assert.equal(result.ok, true);
+  assert.equal(result.skipped, true, '已经装了就该跳过');
+  assert.equal(calls.filter((row) => row[1] === 'install').length, 0, '已装不该再跑 npm install');
+});
+
+await check('装不上时如实报失败（不假装成功）', async () => {
+  const failing = (command, args = []) => {
+    const cmd = String(command);
+    if (cmd === 'npm' && args[0] === '--version') return Promise.resolve(okResult('11.16.0'));
+    if (cmd === 'npm' && args[0] === 'config') return Promise.resolve(okResult(FAKE_PREFIX));
+    if (cmd === 'npm') {
+      return Promise.resolve({ ok: false, code: 1, stdout: '', stderr: 'E404 not found', timedOut: false, missing: false });
+    }
+    return Promise.resolve(missingResult());
+  };
+  const result = await installDws({ env: fakeEnv, run: failing, platform: 'linux' });
+  assert.equal(result.ok, false);
+  assert.match(result.error, /npm/, '失败要说清是哪条路挂的');
+});
+
+await rm(FAKE_HOME, { recursive: true, force: true });
 
 console.log('');
 if (failures.length > 0) {

@@ -163,8 +163,8 @@ try {
     // AI 自动补全：读设置 / 存设置 / 模型清单 / 要候选。
     //   读与存分成两条路径 —— 同一个路径挂两条路由，webserver 会直接 throw。
     autocomplete: ['/autocomplete/settings', '/autocomplete/settings/save', '/autocomplete/models', '/autocomplete/suggest'],
-    // 钉钉沙发：读设置 / 存设置 / 手动拉一次。
-    dingtalk: ['/dingtalk/settings', '/dingtalk/settings/save', '/dingtalk/poll'],
+    // 钉钉沙发：读设置 / 存设置 / 手动拉一次 / 装 dws。
+    dingtalk: ['/dingtalk/settings', '/dingtalk/settings/save', '/dingtalk/poll', '/dingtalk/install'],
   };
   for (const [featureId, suffixes] of Object.entries(EXPECTED)) {
     const actual = routes
